@@ -396,7 +396,8 @@ function schedDays(s) {
   return on.some(Boolean) ? on : [0, 1, 1, 1, 1, 1, 0];
 }
 const isWorkday = (s, date) => !!schedDays(s)[new Date(date + 'T00:00:00').getDay()];
-const scheduled = (s, date) => isWorkday(s, date) && (!s.enr.course_start_date || s.enr.course_start_date <= date);
+const isHoliday = date => !!((D().holidays || {})[date]);
+const scheduled = (s, date) => !isHoliday(date) && isWorkday(s, date) && (!s.enr.course_start_date || s.enr.course_start_date <= date);
 const certLabel = st => st === 'Issued' ? 'Issued' : st === 'Completed' ? 'Ready' : st === 'Started' ? 'In process' : 'Pending';
 const tasksOf = s => D().tasks.filter(t => t.registration_number === s.registration_number);
 const testsOf = s => D().assessments.filter(t => t.registration_number === s.registration_number);
@@ -979,7 +980,7 @@ function calHtml(s, interactive) {
   const c = S.cal || (S.cal = { y: new Date().getFullYear(), m: new Date().getMonth() }), T = today(), n = new Date(c.y, c.m + 1, 0).getDate(), o = (new Date(c.y, c.m, 1).getDay() + 6) % 7;
   let h = ''; for (let i = 0; i < o; i++) h += '<span></span>';
   for (let d = 1; d <= n; d++) {
-    const k = c.y + '-' + pad(c.m + 1) + '-' + pad(d), v = s.attendance[k], cl = v ? v[0] : (k > T ? 'fut' : !isWorkday(s, k) || k < s.enr.course_start_date ? 'off' : ''), tdc = k === T ? ' today' : '';
+    const k = c.y + '-' + pad(c.m + 1) + '-' + pad(d), v = s.attendance[k], cl = v ? v[0] : isHoliday(k) ? 'H' : (k > T ? 'fut' : !isWorkday(s, k) || k < s.enr.course_start_date ? 'off' : ''), tdc = k === T ? ' today' : '';
     h += interactive && k <= T ? `<button class="${cl}${tdc}" data-a="attday" data-reg="${s.registration_number}" data-d="${k}">${d}</button>` : `<span class="d ${cl}${tdc}">${d}</span>`;
   }
   return `<div class="row" style="margin-bottom:10px"><button class="hbtn" style="background:var(--field);color:var(--ink)" data-a="calm" data-n="-1">${ic('back', 's')}</button><b class="grow" style="text-align:center">${MONF[c.m]} ${c.y}</b><button class="hbtn" style="background:var(--field);color:var(--ink)" data-a="calm" data-n="1">${ic('next', 's')}</button></div><div class="cal">${['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(x => `<div class="dn">${x}</div>`).join('')}${h}</div><div class="legend"><span style="color:var(--ok)">Present</span><span style="color:var(--bad)">Absent</span><span style="color:var(--orange)">Leave</span></div>`;
@@ -1496,6 +1497,834 @@ V.s_place = () => {
 };
 A.resumeup = () => { const s = me(); readFile('rf', f => { if (!f) return toast('Choose your resume file.', 'bad'); Object.assign(s.placement, { resume_file: f, resume_submitted: true, resume_status: 'Pending' }); save(); toast('Resume submitted for verification', 'ok'); render(); }); };
 A.portsave = () => { const s = me(); if (!fv('pu')) return toast('Paste your portfolio link.', 'bad'); Object.assign(s.placement, { portfolio_link_url: fv('pu'), portfolio_submitted: true, portfolio_status: 'Pending' }); save(); toast('Portfolio link saved', 'ok'); render(); };
+
+/* =====================================================================
+   BALSAM — "More" redesign patch (app-style hub, PhonePe / GPay / LinkedIn Learning feel)
+   HOW TO USE: paste this whole block into Balsam-App.html, INSIDE the <script>,
+   directly ABOVE the comment line that says: ---------- boot ----------
+   It overrides: V.a_more, V.a_materials, V.a_work, V.a_complete, V.a_place
+   (all existing actions, forms and detail screens keep working).
+   ===================================================================== */
+(function () {
+  const css = document.createElement('style');
+  css.textContent = `
+.mx-prof{display:flex;align-items:center;gap:13px;background:linear-gradient(135deg,#0F1B4D,#2454E8);color:#fff;border-radius:22px;padding:16px;margin-bottom:12px;box-shadow:0 12px 26px rgba(36,84,232,.25);position:relative;overflow:hidden}
+.mx-prof:after{content:"";position:absolute;right:-30px;top:-40px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.09)}
+.mx-prof .avatar{width:52px;height:52px;background:rgba(255,255,255,.2);color:#fff;font-size:17px}
+.mx-prof b{display:block;font-size:16px}.mx-prof small{opacity:.8;font-size:12px}
+.mx-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.mx-stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:11px 6px;text-align:center;box-shadow:var(--sh)}
+.mx-stat b{display:block;font-size:18px;font-weight:800;line-height:1.2}.mx-stat span{font-size:11px;color:var(--mut);font-weight:600}
+.mx-group{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 6px 4px;margin-bottom:12px;box-shadow:var(--sh)}
+.mx-group h4{font-size:12px;margin:0 10px 12px;color:var(--mut);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.mx-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px 0}
+.mx-t{display:flex;flex-direction:column;align-items:center;gap:7px;padding:2px 2px 12px;font-size:11.5px;font-weight:600;text-align:center;line-height:1.2;position:relative}
+.mx-t:active{transform:scale(.94);transition:transform .08s}
+.mx-t .c{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
+.mx-t .c.o{background:var(--warnbg);color:var(--orange)}.mx-t .c.g{background:var(--okbg);color:var(--ok)}.mx-t .c.v{background:var(--violetbg);color:var(--violet)}.mx-t .c.r{background:var(--badbg);color:var(--bad)}.mx-t .c.k{background:var(--skybg);color:var(--sky)}
+.mx-t u{position:absolute;top:-2px;right:calc(50% - 32px);min-width:18px;height:18px;border-radius:9px;background:var(--orange);color:#fff;font:700 10px/18px Inter,sans-serif;text-align:center;text-decoration:none;padding:0 5px;border:2px solid var(--card);box-sizing:content-box}
+.mx-sc{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.mx-sc button,.mx-sc div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 6px;text-align:center;box-shadow:var(--sh)}
+.mx-sc b{display:block;font-size:20px;font-weight:800}.mx-sc span{font-size:11px;color:var(--mut);font-weight:600}
+.mx-sc .hot b{color:var(--orange)}
+.mx-tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin:0 -18px 14px;padding:0 18px}
+.mx-tabs button{flex:1;padding:11px 2px;font-weight:700;font-size:13px;color:var(--mut);text-align:center;border-bottom:3px solid transparent;margin-bottom:-1px}
+.mx-tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+.mx-tabs i{font-style:normal;background:var(--orange);color:#fff;border-radius:9px;font-size:10px;padding:1px 6px;margin-left:5px}
+.mx-h{display:flex;align-items:baseline;gap:8px;margin:16px 2px 8px;font-size:12px;font-weight:700;color:var(--mut);letter-spacing:.5px;text-transform:uppercase}.mx-h i{margin-left:auto;font-style:normal;background:var(--tint);color:var(--accent);border-radius:9px;padding:1px 8px;font-size:11px}
+.mx-list{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);overflow:hidden;margin-bottom:12px}
+.mx-row{display:flex;align-items:center;gap:12px;padding:13px 14px;width:100%;text-align:left}.mx-row+.mx-row{border-top:1px solid var(--line)}.mx-row:active{background:var(--field)}
+.mx-row .ci{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--tint);color:var(--accent)}
+.mx-row .ci.o{background:var(--warnbg);color:var(--orange)}.mx-row .ci.g{background:var(--okbg);color:var(--ok)}.mx-row .ci.v{background:var(--violetbg);color:var(--violet)}.mx-row .ci.r{background:var(--badbg);color:var(--bad)}
+.mx-row .t{flex:1;min-width:0}.mx-row .t b{display:block;font-size:14px;font-weight:600}.mx-row .t span{display:block;font-size:12px;color:var(--mut)}
+.mx-row .rt{text-align:right;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:4px}.mx-row .rt small{font-size:11px;color:var(--mut)}
+.mx-course{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);padding:12px;margin-bottom:10px;width:100%;text-align:left}
+.mx-course:active{transform:scale(.99)}
+.mx-th{width:78px;height:78px;border-radius:14px;display:grid;place-items:center;color:#fff;flex:none;position:relative}
+.mx-th small{position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.6px;opacity:.9}
+.mx-course .t{flex:1;min-width:0}.mx-course .t b{display:block;font-size:14px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.mx-course .t span{display:block;font-size:12px;color:var(--mut);margin-top:3px}
+.mx-sc2{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh);padding:14px;margin-bottom:12px}
+.mx-sc2 .top{display:flex;align-items:center;gap:12px}
+.mx-sc2 .top .t{flex:1;min-width:0}.mx-sc2 .top .t b{display:block;font-size:14.5px}.mx-sc2 .top .t span{display:block;font-size:12px;color:var(--mut)}
+.mx-mini{display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-size:12px;color:var(--mut);font-weight:600}.mx-mini .bar-t{flex:1}
+.mx-acts{display:flex;gap:8px;margin-top:12px}.mx-acts .btn{min-height:42px;padding:10px;font-size:13px}
+.mx-acts .more{width:46px;flex:none;background:var(--field);color:var(--ink);box-shadow:none}
+.mx-done{display:flex;align-items:center;gap:8px;margin-top:12px;background:var(--okbg);color:var(--ok);border-radius:12px;padding:10px 12px;font-weight:700;font-size:12.5px}
+`;
+  document.head.appendChild(css);
+
+  const pipe = (flags, labels) => { const cur = flags.indexOf(false); return `<div class="pipe">${flags.map((f, j) => `<i class="${f ? 'on' : j === cur ? 'cur' : ''}">${f ? '✓' : j + 1}</i>${j < flags.length - 1 ? `<s class="${f ? 'on' : ''}"></s>` : ''}`).join('')}</div><div class="pipel">${labels.map(l => `<span>${l}</span>`).join('')}</div>`; };
+  const tabsBar = (k, opts, badges) => { const c = sg(k, opts); return `<div class="mx-tabs">${opts.map(o => `<button class="${c === o ? 'on' : ''}" data-a="seg" data-k="${k}" data-v="${o}">${o}${badges && badges[o] ? `<i>${badges[o]}</i>` : ''}</button>`).join('')}</div>`; };
+  const H = (t, n) => `<div class="mx-h">${t}${n != null ? `<i>${n}</i>` : ''}</div>`;
+
+  A.gos = d => { S.seg[d.k] = d.v; go(d.view); };
+  A.gof = d => { S.f[d.k] = d.v; go(d.view); };
+  A.wflt = (d, el) => { S.f.wc = el.value; render(); };
+  A.certnext = d => A.certset({ reg: d.reg, v: d.v });
+
+  /* ---------------- MORE hub ---------------- */
+  V.a_more = () => {
+    const d = D(), rev = d.tasks.filter(t => t.status === 'Submitted').length + d.students.filter(s => s.project && s.project.status === 'Submitted').length + d.assessments.filter(a => a.status === 'Scheduled' && a.scheduled_date <= today()).length;
+    const al = adminAlerts().length, ready = d.students.filter(s => s.certificate.status === 'Completed').length;
+    const tile = (i, tone, l, attrs, b) => `<button class="mx-t" ${attrs}>${b ? `<u>${b}</u>` : ''}<span class="c ${tone}">${ic(i)}</span>${l}</button>`;
+    const grp = (t, items) => `<div class="mx-group"><h4>${t}</h4><div class="mx-grid">${items.join('')}</div></div>`;
+    const pend = d.tasks.filter(t => t.status === 'Submitted').length, tst = d.assessments.filter(a => a.status === 'Scheduled' && a.scheduled_date <= today()).length, prj = d.students.filter(s => s.project && s.project.status === 'Submitted').length;
+    return {
+      t: 'More', sub: 'All modules in one place', right: bellBtn(),
+      body: `<div class="mx-prof"><span class="avatar">AD</span><div class="grow"><b>${esc(d.admin.full_name)}</b><small>Balsam Creative Technology · Admin</small></div><button class="hbtn" style="background:rgba(255,255,255,.16);color:#fff" data-a="go" data-v="a_settings" aria-label="Settings">${ic('gear')}</button></div>
+      <div class="mx-stats"><div class="mx-stat"><b>${d.students.length}</b><span>Students</span></div><div class="mx-stat"><b style="color:var(--orange)">${rev}</b><span>To review</span></div><div class="mx-stat"><b style="color:var(--ok)">${ready}</b><span>Certs ready</span></div></div>` +
+        grp('Learning', [
+          tile('book', '', 'Courses', 'data-a="go" data-v="a_courses"'),
+          tile('folder', 'o', 'Materials', 'data-a="go" data-v="a_materials"'),
+          tile('clip', 'v', 'Assign-<br>ments', 'data-a="gos" data-k="wk" data-v="Assignments" data-view="a_work"', pend),
+          tile('check', 'k', 'Tests', 'data-a="gos" data-k="wk" data-v="Assessments" data-view="a_work"', tst),
+          tile('target', 'r', 'Projects', 'data-a="gos" data-k="wk" data-v="Projects" data-view="a_work"', prj)]) +
+        grp('Students', [
+          tile('layers', 'g', 'Completion', 'data-a="go" data-v="a_complete"'),
+          tile('award', 'o', 'Certificates', 'data-a="go" data-v="a_complete"', ready),
+          tile('brief', 'v', 'Placement', 'data-a="go" data-v="a_place"'),
+          tile('users', '', 'All students', 'data-a="tab" data-t="students"')]) +
+        grp('Tools', [
+          tile('bell', 'r', 'Alerts', 'data-a="go" data-v="a_notif"', al),
+          tile('chart', '', 'Reports', 'data-a="go" data-v="a_reports"'),
+          tile('swap', 'v', 'Import &amp; export', 'data-a="go" data-v="a_data"'),
+          tile('palette', 'o', 'Appearance', 'data-a="go" data-v="appearance"')]) +
+        `<button class="btn danger" data-a="logout">${ic('out', 's')} Sign out</button>`
+    };
+  };
+
+  /* ---------------- MATERIALS (LinkedIn-Learning style cards) ---------------- */
+  const MT = { PDF: ['linear-gradient(135deg,#E4463A,#FF8A80)', 'file'], Video: ['linear-gradient(135deg,#6D4AE8,#A18BFF)', 'target'], Notes: ['linear-gradient(135deg,#F26A10,#FFA45C)', 'book'], Link: ['linear-gradient(135deg,#0E9FC4,#5CD0EE)', 'link'], Other: ['linear-gradient(135deg,#64708A,#98A3BC)', 'folder'] };
+  V.a_materials = () => {
+    const L = D().materials.slice().sort((a, b) => b.uploaded_at - a.uploaded_at), types = ['All', 'PDF', 'Video', 'Notes', 'Link', 'Other'], cnt = {};
+    types.forEach(t => cnt[t] = t === 'All' ? L.length : L.filter(m => m.type === t).length);
+    const f = flt('mf', types), q = (S.q.mat || '').toLowerCase(), l2 = L.filter(m => (f === 'All' || m.type === f) && (!q || m.title.toLowerCase().includes(q)));
+    const who = m => m.assigned_to.includes('ALL') ? 'All students' : m.assigned_to.length + ' student' + (m.assigned_to.length > 1 ? 's' : '');
+    return {
+      t: 'Learning materials', sub: 'Notes, files and links', fab: { a: 'go', d: 'data-v="a_material_form"', l: 'Add', i: 'plus' },
+      body: `<div class="mx-sc"><div><b>${L.length}</b><span>Total</span></div><div><b>${L.filter(m => m.file).length}</b><span>Files</span></div><div><b>${L.filter(m => m.link).length}</b><span>Links</span></div></div>` + searchBox('mat', 'Search materials') + chips('mf', types, cnt) +
+        (l2.length ? l2.map(m => { const t = MT[m.type] || MT.Other; return `<button class="mx-course" data-a="matview" data-id="${m.material_id}"><span class="mx-th" style="background:${t[0]}">${ic(t[1], 'l')}<small>${m.type.toUpperCase()}</small></span><span class="t"><b>${esc(m.title)}</b><span>${m.file ? esc(m.file.name) : esc(m.link || '')}</span><span style="margin-top:8px">${pill(who(m), '')} <span style="display:inline">${fmtTs(m.uploaded_at)}</span></span></span>${ic('next', 's')}</button>`; }).join('') : empty('No materials found', 'Tap Add to share notes, files or links.', 'folder'))
+    };
+  };
+
+  /* ---------------- ASSIGNMENTS / TESTS / PROJECTS ---------------- */
+  V.a_work = () => {
+    const tabs = ['Assignments', 'Assessments', 'Projects'], tabv = sg('wk', tabs), d = D(), T = today();
+    const cn = r => (stu(r) || { enr: { course_name: 'Other' } }).enr.course_name, nm = r => (stu(r) || { full_name: r }).full_name;
+    const build = {
+      Assignments: () => d.tasks.map(t => { const od = taskOverdue(t); let b = 'wait', tone = od ? 'r' : 'o', pl = pill(od ? 'Overdue' : t.status, od ? 'bad' : null);
+        if (t.status === 'Submitted') { b = 'act'; tone = 'v'; pl = pill('Review', 'v'); } else if (t.status === 'Completed') { b = 'done'; tone = 'g'; pl = pill('Grade ' + (t.grade || '–'), 'ok'); }
+        return { b, tone, icon: 'clip', title: t.title, sub: nm(t.registration_number) + ' · ' + cn(t.registration_number), meta: t.status === 'Submitted' || t.status === 'Completed' ? 'Submitted ' + fmtS(t.submitted_at) : 'Due ' + fmtS(t.due_date), pl, sort: t.due_date, attrs: `data-a="go" data-v="a_task" data-id="${t.task_id}"` }; }),
+      Assessments: () => d.assessments.map(a => { const due = a.status === 'Scheduled' && a.scheduled_date <= T; let b = 'wait', tone = 'k', pl = pill(a.status);
+        if (due) { b = 'act'; tone = 'o'; pl = pill('Add marks', 'warn'); } else if (a.status === 'Completed') { b = 'done'; tone = 'g'; pl = pill(a.marks + '/' + a.max_marks, 'ok'); } else if (a.status === 'Cancelled') { b = 'done'; pl = pill('Cancelled', 'n'); }
+        return { b, tone, icon: 'check', title: a.title, sub: nm(a.registration_number) + ' · ' + a.assessment_type, meta: fmtS(a.scheduled_date) + ', ' + t12(a.scheduled_time), pl, sort: a.scheduled_date, attrs: `data-a="go" data-v="a_test" data-id="${a.schedule_id}"` }; }),
+      Projects: () => d.students.filter(x => x.project).map(x => { const p = x.project; let b = 'wait', tone = 'v', pl = pill(p.status);
+        if (p.status === 'Submitted' || p.status === 'Under Review') { b = 'act'; pl = pill(p.status === 'Submitted' ? 'Review' : 'In review', 'v'); } else if (p.status === 'Evaluated') { b = 'done'; tone = 'g'; pl = pill(p.evaluation_score + '/100', 'ok'); }
+        return { b, tone, icon: 'target', title: p.title, sub: x.full_name + ' · ' + x.enr.course_name, meta: 'Due ' + fmtS(p.due_date), pl, sort: p.due_date, attrs: `data-a="go" data-v="a_proj" data-reg="${x.registration_number}"` }; })
+    };
+    const all = {}; tabs.forEach(t => all[t] = build[t]());
+    const badges = {}; tabs.forEach(t => badges[t] = all[t].filter(i => i.b === 'act').length);
+    const items = all[tabv], courses = ['All courses'].concat([...new Set(items.map(i => i.sub.split(' · ')[1]))].sort()), cf = flt('wc', courses), q = (S.q.wq || '').toLowerCase();
+    const base = items.filter(i => (cf === 'All courses' || i.sub.endsWith(cf) || i.sub.includes(' · ' + cf)) && (!q || (i.title + i.sub).toLowerCase().includes(q)));
+    const n = k => base.filter(i => i.b === k).length;
+    const LAB = { act: tabv === 'Assessments' ? 'Add marks' : 'Needs your review', wait: tabv === 'Assessments' ? 'Upcoming' : 'Waiting for students', done: 'Done' };
+    const row = i => `<button class="mx-row" ${i.attrs}><span class="ci ${i.tone}">${ic(i.icon)}</span><span class="t"><b class="trunc">${esc(i.title)}</b><span class="trunc">${esc(i.sub)}</span></span><span class="rt">${i.pl}<small>${esc(i.meta)}</small></span></button>`;
+    const secs = ['act', 'wait', 'done'].map(k => { const L = base.filter(i => i.b === k).sort((x, y) => k === 'done' ? (x.sort < y.sort ? 1 : -1) : (x.sort < y.sort ? -1 : 1)); return L.length ? H(LAB[k], L.length) + `<div class="mx-list">${L.map(row).join('')}</div>` : ''; }).join('');
+    const fab = { Assignments: { a: 'go', d: 'data-v="a_task_form"', l: 'New', i: 'plus' }, Assessments: { a: 'go', d: 'data-v="a_test_form"', l: 'Schedule', i: 'plus' }, Projects: { a: 'go', d: 'data-v="a_proj_form"', l: 'Assign', i: 'plus' } }[tabv];
+    return {
+      t: 'Academics', sub: 'Assignments, tests &amp; projects', fab,
+      body: tabsBar('wk', tabs, badges) + `<div class="mx-sc"><div class="${n('act') ? 'hot' : ''}"><b>${n('act')}</b><span>To review</span></div><div><b>${n('wait')}</b><span>${tabv === 'Assessments' ? 'Upcoming' : 'Pending'}</span></div><div><b style="color:var(--ok)">${n('done')}</b><span>Done</span></div></div>` +
+        `<div class="tools"><label class="search tl">${ic('search', 's')}<input id="q-wq" data-q="wq" value="${esc(S.q.wq || '')}" placeholder="Search title or student" autocomplete="off"></label><select class="wsel" data-onchange="wflt" aria-label="Course">${courses.map(c => `<option ${c === cf ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div>` +
+        (secs || empty('Nothing here', 'Tap the + button to add one.', 'clip'))
+    };
+  };
+
+  /* ---------------- COMPLETION & CERTIFICATES ---------------- */
+  const NEXT = { Pending: ['Started', 'Start certificate'], Started: ['Completed', 'Mark ready'], Completed: ['Issued', 'Issue certificate'] };
+  V.a_complete = () => {
+    const d = D(), act = d.students.filter(s => s.stage === 'active'), F2 = ['All', 'Pending', 'In process', 'Ready', 'Issued'], map = { Pending: 'Pending', 'In process': 'Started', Ready: 'Completed', Issued: 'Issued' }, cnt = {};
+    F2.forEach(f => cnt[f] = f === 'All' ? act.length : act.filter(s => s.certificate.status === map[f]).length);
+    const f = flt('cmf', F2), q = (S.q.cm || '').toLowerCase(), L = act.filter(s => (f === 'All' || s.certificate.status === map[f]) && (!q || (s.full_name + s.enr.course_name).toLowerCase().includes(q)));
+    const avg = act.length ? Math.round(act.reduce((a, s) => a + s.enr.progress_percent, 0) / act.length) : 0;
+    const card = s => { const R = reqs(s), met = R.filter(r => r[1]).length, c = s.certificate, i = CERT.indexOf(c.status), nx = NEXT[c.status];
+      return `<div class="mx-sc2"><div class="top">${ring(s.enr.progress_percent, 56, undefined, undefined, undefined)}<div class="t"><b class="trunc">${esc(s.full_name)}</b><span class="trunc">${esc(s.enr.course_name)}</span></div>${pill(certLabel(c.status), stTone(c.status === 'Completed' ? 'Ready' : c.status))}</div>
+      <div class="mx-mini"><span>Requirements</span>${bar(met / R.length * 100, met === R.length ? 'var(--ok)' : '')}<span>${met}/${R.length}</span></div>
+      <div style="margin-top:12px">${pipe(CERT.map((x, j) => j < i || (j === i && c.status === 'Issued')), ['Pending', 'Started', 'Ready', 'Issued'])}</div>
+      ${c.status === 'Issued' ? `<div class="mx-done">${ic('award', 's')} ${esc(c.certificate_number)} · ${fmtS(c.issued_at)}</div>` : ''}
+      <div class="mx-acts">${nx ? `<button class="btn ${nx[0] === 'Issued' ? 'ok' : ''}" data-a="certnext" data-reg="${s.registration_number}" data-v="${nx[0]}">${nx[1]}</button>` : ''}<button class="btn sec" data-a="go" data-v="a_complete_stu" data-reg="${s.registration_number}">Progress</button><button class="btn more" data-a="certsheet" data-reg="${s.registration_number}" aria-label="More options">${ic('gear', 's')}</button></div></div>`; };
+    return {
+      t: 'Completion', sub: 'Progress and certificates', right: bellBtn(),
+      body: `<div class="mx-sc"><div><b>${avg}%</b><span>Avg progress</span></div><div class="${cnt.Ready ? 'hot' : ''}"><b>${cnt.Ready}</b><span>Ready to issue</span></div><div><b style="color:var(--ok)">${cnt.Issued}</b><span>Issued</span></div></div>` + searchBox('cm', 'Search student or course') + chips('cmf', F2, cnt) +
+        (L.length ? L.map(card).join('') : empty('No students here', 'Nobody is at this certificate stage.', 'award'))
+    };
+  };
+
+  /* ---------------- PLACEMENT ---------------- */
+  V.a_place = () => {
+    const d = D(), S2 = d.students, en = S2.filter(s => s.placement_enabled), F2 = ['All', 'Enabled', 'Eligible', 'Placed', 'To review'];
+    const rev = s => s.placement_enabled && ((s.placement.resume_submitted && s.placement.resume_status === 'Pending') || (s.placement.portfolio_submitted && s.placement.portfolio_status === 'Pending'));
+    const test = { All: () => true, Enabled: s => s.placement_enabled, Eligible: s => s.placement_enabled && s.placement.eligibility_status === 'Eligible', Placed: s => s.placement.placement_status === 'Placed', 'To review': rev }, cnt = {};
+    F2.forEach(f => cnt[f] = S2.filter(test[f]).length);
+    const f = flt('plf', F2), q = (S.q.pl || '').toLowerCase(), L = S2.filter(s => test[f](s) && (!q || (s.full_name + s.enr.course_name).toLowerCase().includes(q)));
+    const iv = en.reduce((a, s) => a + s.placement.interviews.filter(i => i.status === 'Scheduled').length, 0);
+    const card = s => { const pl = s.placement;
+      return `<div class="mx-sc2"><div class="top"><span class="avatar">${ini(s.full_name)}</span><button class="t" data-a="go" data-v="a_place_stu" data-reg="${s.registration_number}" style="text-align:left"><b class="trunc">${esc(s.full_name)}</b><span class="trunc">${esc(s.enr.course_name)}${s.placement_enabled ? ' · ' + pl.eligibility_status : ''}</span></button><label class="sw"><input type="checkbox" ${s.placement_enabled ? 'checked' : ''} data-onchange="plog" data-reg="${s.registration_number}"><i></i></label></div>` +
+        (s.placement_enabled ? `<div style="margin-top:12px">${pipe([pl.resume_status === 'Verified', pl.portfolio_status === 'Verified', pl.interviews.length > 0, pl.placement_status === 'Placed'], ['Resume', 'Portfolio', 'Interview', 'Placed'])}</div>${rev(s) ? `<div class="mx-acts"><button class="btn sec" data-a="go" data-v="a_place_stu" data-reg="${s.registration_number}">${ic('eye', 's')} Review submissions</button></div>` : ''}` : `<div class="mut sm" style="margin-top:8px">Turn on to unlock resume, portfolio and interviews.</div>`) + `</div>`; };
+    return {
+      t: 'Placement', sub: 'Access, verification and interviews', right: bellBtn(),
+      body: `<div class="mx-sc" style="grid-template-columns:repeat(4,1fr)"><div><b>${en.length}</b><span>Enabled</span></div><div><b>${en.filter(s => s.placement.eligibility_status === 'Eligible').length}</b><span>Eligible</span></div><div><b style="color:var(--orange)">${iv}</b><span>Interviews</span></div><div><b style="color:var(--ok)">${S2.filter(s => s.placement.placement_status === 'Placed').length}</b><span>Placed</span></div></div>` + searchBox('pl', 'Search student') + chips('plf', F2, cnt) +
+        (L.length ? L.map(card).join('') : empty('No students here', 'Try another filter.', 'brief'))
+    };
+  };
+})();
+
+
+/* ===================== SIMPLE HOME + CALENDAR ATTENDANCE ===================== */
+(function () {
+  const css = document.createElement('style');
+  css.textContent = `
+.hm-today{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--sh);padding:18px;margin-bottom:14px}
+.hm-today .d{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--mut)}
+.hm-today h2{font:600 22px/1.25 Poppins,Inter,sans-serif;margin:4px 0 12px;color:var(--navy-h,#0F1B4D)}
+.hm-today .btn{min-height:54px;font-size:16px}
+.hm-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
+.hm-nums button{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 6px;text-align:center;box-shadow:var(--sh)}
+.hm-nums b{display:block;font-size:18px;font-weight:800}.hm-nums span{font-size:11px;color:var(--mut);font-weight:600}
+.hm-big{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.hm-big button{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);padding:16px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;font-weight:700;font-size:14px;text-align:left}
+.hm-big button:active{transform:scale(.97)}
+.hm-big .c{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
+.hm-big .c.g{background:var(--okbg);color:var(--ok)}.hm-big .c.o{background:var(--warnbg);color:var(--orange)}.hm-big .c.v{background:var(--violetbg);color:var(--violet)}
+.hm-big small{display:block;font-weight:500;color:var(--mut);font-size:11.5px;margin-top:-6px}
+.ac-card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh);padding:14px;margin-bottom:12px}
+.ac-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ac-nav b{flex:1;text-align:center;font-size:15px}
+.ac-nav button{width:38px;height:38px;border-radius:12px;background:var(--field);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink);flex:none}
+.ac-nav .tdy{width:auto;padding:0 12px;font-weight:700;font-size:12px;color:var(--accent)}
+.ac-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.ac-grid .dn{font-size:10.5px;font-weight:700;color:var(--mut);padding:4px 0}
+.ac-d{aspect-ratio:1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-weight:700;font-size:14px;position:relative}
+.ac-d:after{content:"";width:6px;height:6px;border-radius:50%;background:transparent}
+.ac-d.ok:after{background:var(--ok)}.ac-d.part:after{background:var(--orange)}.ac-d.miss:after{background:var(--bad)}
+.ac-d.off{color:#B5BDD0;font-weight:600}.ac-d.H{background:var(--violetbg);color:var(--violet)}.ac-d.H:after{background:var(--violet)}
+.ac-d.today{outline:2px solid var(--accent);outline-offset:-2px}.ac-d.sel{background:var(--accent);color:#fff}.ac-d.sel:after{background:#fff}
+.ac-leg{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:11.5px;color:var(--mut);font-weight:600;margin-top:10px}
+.ac-leg span:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:currentColor}
+.ac-day{display:flex;align-items:center;gap:10px;margin:4px 2px 12px}.ac-day h3{font-size:17px}.ac-day .btn{width:auto;min-height:40px;padding:0 14px;font-size:13px;box-shadow:none}
+.ac-prog{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-weight:700;font-size:13px}.ac-prog .bar-t{flex:1}
+.ac-row{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:var(--sh)}
+.ac-row.mP{border-left-color:var(--ok)}.ac-row.mA{border-left-color:var(--bad)}.ac-row.mL{border-left-color:var(--orange)}
+.ac-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.ac-btns button{height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--field);font-weight:700;font-size:13.5px;color:var(--mut);text-align:center;display:flex;align-items:center;justify-content:center;gap:5px}
+.ac-btns .P.on{background:var(--ok);border-color:var(--ok);color:#fff}.ac-btns .A.on{background:var(--bad);border-color:var(--bad);color:#fff}.ac-btns .L.on{background:var(--orange);border-color:var(--orange);color:#fff}
+.ac-hol{background:var(--violetbg);border-radius:18px;padding:16px;display:flex;gap:12px;align-items:center;margin-bottom:12px}.ac-hol b{color:var(--violet);display:block;font-size:15px}
+.ac-hl{display:flex;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid var(--line)}.ac-hl:first-child{border-top:0}
+.cal .H{background:var(--violetbg);color:var(--violet)}
+`;
+  document.head.appendChild(css);
+
+  const short = n => n >= 1e5 ? '₹' + (n / 1e5).toFixed(1).replace(/\.0$/, '') + 'L' : n >= 1e3 ? '₹' + Math.round(n / 1e3) + 'K' : inr(n);
+  const hols = () => (D().holidays = D().holidays || {});
+  const longD = k => new Date(k + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  /* ---------------- HOME ---------------- */
+  V.a_home = () => {
+    const d = D(), T = today(), act = activeStu(), sched = act.filter(s => scheduled(s, T)), marked = sched.filter(s => s.attendance[T]).length, pres = sched.filter(s => s.attendance[T] === 'Present').length;
+    const pend = d.students.reduce((a, s) => a + balance(s), 0), rev = d.tasks.filter(t => t.status === 'Submitted').length + d.students.filter(s => s.project && s.project.status === 'Submitted').length;
+    const al = adminAlerts(), hol = hols()[T], up = Object.keys(hols()).filter(k => k > T).sort().slice(0, 3);
+    const big = (i, tone, l, sub, attrs) => `<button ${attrs}><span class="c ${tone}">${ic(i)}</span><span>${l}${sub ? `<small>${sub}</small>` : ''}</span></button>`;
+    let title, btn;
+    if (hol) { title = 'Holiday today · ' + esc(hol); btn = `<button class="btn sec" data-a="attopen" data-d="${T}">${ic('cal', 's')} Open calendar</button>`; }
+    else if (!sched.length) { title = 'No classes today'; btn = `<button class="btn sec" data-a="attopen" data-d="${T}">${ic('cal', 's')} Open calendar</button>`; }
+    else if (marked < sched.length) { title = marked ? marked + ' of ' + sched.length + ' students marked' : 'Attendance not taken yet'; btn = `<button class="btn" data-a="attopen" data-d="${T}">${ic('cal', 's')} ${marked ? 'Continue attendance' : 'Take attendance'}</button>`; }
+    else { title = pres + ' of ' + sched.length + ' present today'; btn = `<button class="btn sec" data-a="attopen" data-d="${T}">${ic('tick', 's')} Attendance done · view</button>`; }
+    return {
+      greet: { t: 'Hello, Admin 👋', s: greet() },
+      hdr: `<header class="hdr"><div class="hdr-top"><div class="avatar">AD</div><div class="grow"><small style="margin:0">${greet()}</small><h1>Hello, Admin 👋</h1></div>${bellBtn()}</div></header>`,
+      body: `<div class="hm-today"><div class="d">Today · ${longD(T)}</div><h2>${title}</h2>${sched.length && !hol ? bar(sched.length ? marked / sched.length * 100 : 0, 'var(--ok)') + '<div style="height:12px"></div>' : ''}${btn}</div>` +
+        `<div class="hm-nums"><button data-a="tab" data-t="students"><b>${d.students.length}</b><span>Students</span></button><button data-a="tab" data-t="fees"><b style="color:var(--orange)">${short(pend)}</b><span>Fees pending</span></button><button data-a="go" data-v="a_work"><b style="color:var(--violet)">${rev}</b><span>To review</span></button></div>` +
+        sec('What do you want to do?') + `<div class="hm-big">${big('cal', 'g', 'Take attendance', 'Pick a date', 'data-a="attopen" data-d="' + T + '"')}${big('rupee', 'o', 'Collect fee', 'Record a payment', 'data-a="payform"')}${big('plus', '', 'Add student', 'New admission', 'data-a="go" data-v="a_student_form"')}${big('mega', 'v', 'Send message', 'To students', 'data-a="go" data-v="a_notif" data-tab="Compose"')}</div>` +
+        `<button class="btn sec" style="margin-bottom:6px" data-a="tab" data-t="more">${ic('grid', 's')} More tools</button>` +
+        sec('Needs attention', al.length > 3 ? `<button data-a="go" data-v="a_notif">View all (${al.length})</button>` : '') + (al.length ? al.slice(0, 3).map(alertCard).join('') : `<div class="note ok">All clear — nothing needs your attention.</div>`) +
+        sec('Upcoming holidays', `<button data-a="holform">+ Add</button>`) + (up.length ? `<div class="card flush list">${up.map(k => `<button class="item" data-a="attopen" data-d="${k}"><span class="ico v">${ic('flag')}</span><span class="grow"><b>${esc(hols()[k])}</b><div class="mut">${longD(k)} · ${rel(k)}</div></span>${ic('next', 's')}</button>`).join('')}</div>` : `<div class="note">No holidays added. Tap + Add when the institute is closed.</div>`)
+    };
+  };
+  A.attopen = d => { S.date = d.d; S.acal = { y: +d.d.slice(0, 4), m: +d.d.slice(5, 7) - 1 }; tab('att'); };
+
+  /* ---------------- ATTENDANCE ---------------- */
+  V.a_att = () => {
+    const T = today(), date = S.date || T, c = S.acal || (S.acal = { y: +date.slice(0, 4), m: +date.slice(5, 7) - 1 }), H = hols(), act = activeStu();
+    const info = k => { if (H[k]) return 'H'; if (k > T) return ''; const on = act.filter(s => scheduled(s, k)); if (!on.length) return 'off'; const m = on.filter(s => s.attendance[k]).length; return m === on.length ? 'ok' : m ? 'part' : (k < T ? 'miss' : ''); };
+    const n = new Date(c.y, c.m + 1, 0).getDate(), o = (new Date(c.y, c.m, 1).getDay() + 6) % 7; let cells = ''; for (let i = 0; i < o; i++) cells += '<span></span>';
+    for (let i = 1; i <= n; i++) { const k = c.y + '-' + pad(c.m + 1) + '-' + pad(i); cells += `<button class="ac-d ${info(k)} ${k === T ? 'today' : ''} ${k === date ? 'sel' : ''}" data-a="acpick" data-d="${k}" aria-label="${longD(k)}">${i}</button>`; }
+    const mh = Object.keys(H).filter(k => k.startsWith(c.y + '-' + pad(c.m + 1))).sort();
+    const cal = `<div class="ac-card"><div class="ac-nav"><button data-a="acm" data-n="-1" aria-label="Previous month">${ic('back', 's')}</button><b>${MONF[c.m]} ${c.y}</b><button data-a="acm" data-n="1" aria-label="Next month">${ic('next', 's')}</button><button class="tdy" data-a="acpick" data-d="${T}">Today</button></div><div class="ac-grid">${['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(x => `<div class="dn">${x}</div>`).join('')}${cells}</div><div class="ac-leg"><span style="color:var(--ok)">All marked</span><span style="color:var(--orange)">Some left</span><span style="color:var(--bad)">Not taken</span><span style="color:var(--violet)">Holiday</span></div></div>`;
+    const on = act.filter(s => scheduled(s, date)), cur2 = s => s.attendance[date] || '', q = (S.q.att || '').toLowerCase();
+    const cnt = { Present: 0, Absent: 0, Leave: 0, none: 0 }; on.forEach(s => cnt[cur2(s) || 'none']++);
+    let day = `<div class="ac-day"><h3 class="grow">${longD(date)}</h3>${H[date] ? '' : `<button class="btn sec" data-a="holform" data-d="${date}">${ic('flag', 's')} Mark holiday</button>`}</div>`;
+    if (H[date]) day += `<div class="ac-hol"><span class="ico v">${ic('flag')}</span><div class="grow"><b>Holiday · ${esc(H[date])}</b><span class="mut">No classes. Attendance is not counted for this day.</span></div><button class="btn sec sm" data-a="holdel" data-d="${date}">Remove</button></div>`;
+    else if (date > T) day += `<div class="note">This day hasn't come yet. You can take attendance on the day, or mark it as a holiday now.</div>`;
+    else if (!on.length) day += empty('No classes this day', 'No active student has a session on this day.', 'cal');
+    else {
+      const done = on.length - cnt.none, vis = on.filter(s => !q || s.full_name.toLowerCase().includes(q));
+      day += `<div class="ac-prog"><span>${done} of ${on.length} marked</span>${bar(done / on.length * 100, 'var(--ok)')}</div><div class="row" style="gap:8px;margin-bottom:12px;font-size:12px;font-weight:700"><span style="color:var(--ok)">${cnt.Present} present</span><span style="color:var(--bad)">${cnt.Absent} absent</span><span style="color:var(--orange)">${cnt.Leave} leave</span></div>` +
+        (cnt.none ? `<button class="btn ok" style="margin-bottom:12px" data-a="allpresent" data-d="${date}">${ic('tick', 's')} Everyone is present</button><div class="mut sm" style="text-align:center;margin:-4px 0 12px">Then just change the few who are absent or on leave.</div>` : `<div class="note ok">All students marked for this day. Tap a button to change.</div>`) +
+        (on.length > 6 ? searchBox('att', 'Search student') : '') +
+        vis.map(s => { const v = cur2(s); return `<div class="ac-row ${v ? 'm' + v[0] : ''}"><div class="row"><span class="avatar" style="width:40px;height:40px;font-size:12.5px">${ini(s.full_name)}</span><div class="grow"><b class="trunc" style="display:block">${esc(s.full_name)}</b><div class="mut sm trunc">${esc(s.enr.course_name)} · ${t12(s.enr.slot_start_time)}</div></div></div><div class="ac-btns">${[['Present', '✓'], ['Absent', '✕'], ['Leave', '☾']].map(([nm, g]) => `<button class="${nm[0]} ${v === nm ? 'on' : ''}" aria-pressed="${v === nm}" data-a="mark" data-reg="${s.registration_number}" data-d="${date}" data-v="${nm}">${g} ${nm}</button>`).join('')}</div></div>`; }).join('');
+    }
+    const hl = `<div class="ac-card"><div class="row" style="margin-bottom:6px"><b class="grow">Holidays in ${MONF[c.m]}</b><button class="btn sec sm" data-a="holform" data-d="${date}">+ Add</button></div>${mh.length ? mh.map(k => `<div class="ac-hl"><span class="ico sm2 v">${ic('flag', 's')}</span><span class="grow"><b>${esc(H[k])}</b><div class="mut sm">${longD(k)}</div></span><button class="btn danger sm" data-a="holdel" data-d="${k}">Remove</button></div>`).join('') : '<div class="mut sm">No holidays this month.</div>'}</div>`;
+    return {
+      t: 'Attendance', sub: 'Pick a date, then mark each student', right: bellBtn(),
+      body: cal + day + `<div style="height:8px"></div>` + hl + `<div class="atools" style="grid-template-columns:1fr 1fr 1fr"><button class="btn sec sm" data-a="leaveform">${ic('user', 's')} Long leave</button><button class="btn sec sm" data-a="go" data-v="a_att_student">${ic('cal', 's')} By student</button><button class="btn sec sm" data-a="go" data-v="a_att_import">${ic('up', 's')} Import</button></div>`
+    };
+  };
+  A.acm = d => { const c = S.acal; c.m += +d.n; if (c.m < 0) { c.m = 11; c.y--; } if (c.m > 11) { c.m = 0; c.y++; } render(); };
+  A.acpick = d => { S.date = d.d; S.acal = { y: +d.d.slice(0, 4), m: +d.d.slice(5, 7) - 1 }; render(); };
+  A.mark = d => { const s = stu(d.reg); if (s.attendance[d.d] === d.v) delete s.attendance[d.d]; else s.attendance[d.d] = d.v; save(); render(); };
+  A.allpresent = d => { let n = 0; activeStu().filter(s => scheduled(s, d.d) && !s.attendance[d.d]).forEach(s => { s.attendance[d.d] = 'Present'; n++; }); save(); if (n) logAct('daily_attendance', 'Manual', '', n); toast(n + ' marked present', 'ok'); render(); };
+
+  /* holidays */
+  A.holform = d => {
+    const H = hols(), dt = (d && d.d) || S.date || today();
+    openSheet(`<h3>Mark holiday</h3><p class="sub">Institute is closed. Nobody is marked absent and the day is not counted in attendance %.</p>${F.t('hr', 'Reason *', '', { ph: 'e.g. Deepavali, Pongal' })}<div class="g2">${F.t('hf', 'From *', dt, { type: 'date' })}${F.t('ht', 'To (optional)', '', { type: 'date' })}</div><label class="row" style="margin-bottom:12px;gap:10px"><input type="checkbox" id="f-hn" checked><span>Tell all students</span></label><div class="btns"><button class="btn sec" data-a="close">Cancel</button><button class="btn" data-a="holsave">${ic('tick', 's')} Save holiday</button></div>`);
+  };
+  A.holsave = () => {
+    if (!need([['hr', 'a reason'], ['hf', 'a start date']])) return; const f = fv('hf'), t = fv('ht') || f; if (t < f) return toast('"To" date is before "From".', 'bad'); if (diff(f, t) > 30) return toast('Holiday is too long (max 31 days).', 'bad');
+    const H = hols(); let n = 0; for (let k = f; k <= t; k = addDays(k, 1)) { H[k] = fv('hr'); D().students.forEach(s => delete s.attendance[k]); n++; }
+    if ($('#f-hn').checked) notify({ to: 'ALL', notification_type: 'Holiday Notice', title: 'Holiday: ' + fv('hr'), message: 'No classes on ' + (f === t ? fmtD(f) : fmtD(f) + ' to ' + fmtD(t)) + '. Classes resume on the next working day.' });
+    save(); logAct('holidays', 'Manual', '', n); S.sheet = null; S.date = f; S.acal = { y: +f.slice(0, 4), m: +f.slice(5, 7) - 1 }; toast('Holiday saved · ' + n + ' day' + (n > 1 ? 's' : ''), 'ok'); render();
+  };
+  A.holdel = d => { delete hols()[d.d]; save(); toast('Holiday removed'); render(); };
+
+  /* leave for several days */
+  A.leaveform = () => {
+    const L = activeStu();
+    openSheet(`<h3>Long leave</h3><p class="sub">Use this when one student is away for several days. Class days in the range are marked Leave.</p>${F.s('lst', 'Student', L.map(s => [s.registration_number, s.full_name]), (L[0] || {}).registration_number)}<div class="g2">${F.t('lf', 'From *', S.date || today(), { type: 'date' })}${F.t('lt', 'To *', S.date || today(), { type: 'date' })}</div><div class="btns"><button class="btn sec" data-a="close">Cancel</button><button class="btn" data-a="leavesave">Save leave</button></div>`);
+  };
+  A.leavesave = () => {
+    const s = stu(fv('lst')), f = fv('lf'), t = fv('lt'); if (!s || !f || !t) return toast('Choose a student and both dates.', 'bad'); if (t < f) return toast('"To" date is before "From".', 'bad'); if (diff(f, t) > 60) return toast('Max 61 days at once.', 'bad');
+    let n = 0; for (let k = f; k <= t; k = addDays(k, 1)) if (k <= today() && scheduled(s, k)) { s.attendance[k] = 'Leave'; n++; }
+    save(); logAct('daily_attendance', 'Manual', '', n); S.sheet = null; toast(s.full_name.split(' ')[0] + ': ' + n + ' leave day' + (n === 1 ? '' : 's') + ' marked', 'ok'); render();
+  };
+})();
+
+
+/* ===================== V2: PROFESSIONAL HOME + COMPACT ATTENDANCE ===================== */
+(function () {
+  const css = document.createElement('style');
+  css.textContent = `
+/* attendance v2 */
+.a2-top{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh);padding:12px 12px 10px;margin-bottom:12px}
+.a2-hd{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.a2-hd .mo{flex:1;display:flex;align-items:center;gap:6px;font-weight:700;font-size:15px;text-align:left}
+.a2-hd .mo svg{color:var(--mut);transition:transform .2s}.a2-hd .mo.open svg{transform:rotate(180deg)}
+.a2-hd .ib{width:36px;height:36px;border-radius:11px;background:var(--field);display:grid;place-items:center;color:var(--ink);flex:none}
+.a2-hd .tdy{height:36px;padding:0 12px;border-radius:11px;background:var(--tint);color:var(--accent);font-weight:700;font-size:12px;flex:none}
+.a2-wk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.a2-wd{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 7px;border-radius:14px;font-size:10.5px;font-weight:700;color:var(--mut)}
+.a2-wd b{font-size:17px;color:var(--ink);font-weight:700}
+.a2-wd:after{content:"";width:6px;height:6px;border-radius:50%;background:transparent;margin-top:2px}
+.a2-wd.ok:after{background:var(--ok)}.a2-wd.part:after{background:var(--orange)}.a2-wd.miss:after{background:var(--bad)}.a2-wd.H:after{background:var(--violet)}
+.a2-wd.H{background:var(--violetbg)}.a2-wd.H b{color:var(--violet)}.a2-wd.off b{color:#B5BDD0}
+.a2-wd.today b{color:var(--accent)}.a2-wd.sel{background:var(--accent);color:#cfdcff}.a2-wd.sel b{color:#fff}.a2-wd.sel:after{background:#fff}
+.a2-leg{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:11px;color:var(--mut);font-weight:600;margin-top:8px}
+.a2-leg span:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:currentColor}
+.a2-sum{display:flex;align-items:center;gap:12px;margin:2px 2px 12px}
+.a2-sum h3{font-size:16px;line-height:1.25}.a2-sum .mut{font-size:12px}
+.a2-sum .hb{height:36px;padding:0 12px;border-radius:11px;background:var(--violetbg);color:var(--violet);font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;flex:none}
+.a2-list{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);overflow:hidden;margin-bottom:12px}
+.a2-r{display:flex;align-items:center;gap:10px;padding:10px 10px 10px 12px}.a2-r+.a2-r{border-top:1px solid var(--line)}
+.a2-r .avatar{width:38px;height:38px;font-size:12px}
+.a2-r .t{flex:1;min-width:0}.a2-r .t b{display:block;font-size:14px;font-weight:600}.a2-r .t span{display:block;font-size:11.5px;color:var(--mut)}
+.a2-g{display:flex;gap:5px;flex:none}
+.a2-g button{width:50px;height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--field);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:9.5px;font-weight:700;color:var(--mut);text-align:center}
+.a2-g button svg{width:16px;height:16px}
+.a2-g .P.on{background:var(--ok);border-color:var(--ok);color:#fff}.a2-g .A.on{background:var(--bad);border-color:var(--bad);color:#fff}.a2-g .L.on{background:var(--orange);border-color:var(--orange);color:#fff}
+.a2-bar{position:sticky;bottom:-24px;margin:0 -18px -24px;padding:12px 18px calc(14px + var(--hb,0px));background:linear-gradient(180deg,transparent,var(--bg) 30%);z-index:2}
+.a2-hol{background:var(--violetbg);border-radius:20px;padding:20px;text-align:center;margin-bottom:12px}
+.a2-hol b{display:block;color:var(--violet);font-size:17px;margin:8px 0 2px}
+/* home v2 */
+.h2-card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--sh);padding:16px;margin-bottom:14px}
+.h2-top{display:flex;align-items:center;gap:14px}
+.h2-top small{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--mut)}
+.h2-top h2{font:600 20px/1.25 Poppins,Inter,sans-serif;color:var(--navy-h,#0F1B4D);margin:3px 0 2px}
+.h2-st{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:14px 0}
+.h2-st div{background:var(--field);border-radius:12px;padding:8px 2px;text-align:center}
+.h2-st b{display:block;font-size:16px;font-weight:800}.h2-st span{font-size:10.5px;color:var(--mut);font-weight:600}
+.h2-q{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:4px 0 16px}
+.h2-q button{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:11px;font-weight:600;text-align:center;line-height:1.2}
+.h2-q button:active{transform:scale(.94)}
+.h2-q .c{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
+.h2-q .c.g{background:var(--okbg);color:var(--ok)}.h2-q .c.o{background:var(--warnbg);color:var(--orange)}.h2-q .c.v{background:var(--violetbg);color:var(--violet)}.h2-q .c.k{background:var(--skybg);color:var(--sky)}
+.h2-k{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.h2-k button{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);padding:14px;text-align:left;display:block}
+.h2-k .ci{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--tint);color:var(--accent);margin-bottom:10px}
+.h2-k .ci.o{background:var(--warnbg);color:var(--orange)}.h2-k .ci.v{background:var(--violetbg);color:var(--violet)}.h2-k .ci.g{background:var(--okbg);color:var(--ok)}
+.h2-k b{display:block;font-size:22px;font-weight:800;letter-spacing:-.4px;line-height:1.1}.h2-k span{display:block;font-size:12px;color:var(--mut);font-weight:600;margin-top:2px}.h2-k small{display:block;font-size:11px;color:var(--mut);margin-top:6px}
+.h2-sch{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;text-align:left}.h2-sch+.h2-sch{border-top:1px solid var(--line)}
+.h2-sch .tm{width:54px;flex:none;text-align:center;border-right:2px solid var(--line);padding-right:10px}.h2-sch .tm b{display:block;font-size:14px;line-height:1.1}.h2-sch .tm small{font-size:10px;color:var(--mut);font-weight:700}
+.h2-sch .t{flex:1;min-width:0}.h2-sch .t b{display:block;font-size:14px;font-weight:600}.h2-sch .t span{display:block;font-size:12px;color:var(--mut)}
+`;
+  document.head.appendChild(css);
+
+  const hols = () => (D().holidays = D().holidays || {});
+  const longD = k => new Date(k + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+  const shortM = n => n >= 1e5 ? '₹' + (n / 1e5).toFixed(1).replace(/\.0$/, '') + 'L' : n >= 1e3 ? '₹' + Math.round(n / 1e3) + 'K' : inr(n);
+  const mon = k => { const d = new Date(k + 'T00:00:00'); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return iso(d); };
+  const dayInfo = (k, act, T) => { if (hols()[k]) return 'H'; if (k > T) return ''; const on = act.filter(s => scheduled(s, k)); if (!on.length) return 'off'; const m = on.filter(s => s.attendance[k]).length; return m === on.length ? 'ok' : m ? 'part' : (k < T ? 'miss' : ''); };
+
+  /* ---------------- ATTENDANCE ---------------- */
+  V.a_att = () => {
+    const T = today(), date = S.date || T, H = hols(), act = activeStu(), c = S.acal || (S.acal = { y: +date.slice(0, 4), m: +date.slice(5, 7) - 1 }), open = !!S.acOpen;
+    let picker;
+    if (!open) {
+      const ws = mon(date), wk = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
+      picker = `<div class="a2-wk">${wk.map(k => `<button class="a2-wd ${dayInfo(k, act, T)} ${k === T ? 'today' : ''} ${k === date ? 'sel' : ''}" data-a="acpick" data-d="${k}" aria-label="${longD(k)}">${DOW[new Date(k + 'T00:00:00').getDay()].slice(0, 2)}<b>${+k.slice(8)}</b></button>`).join('')}</div>`;
+    } else {
+      const n = new Date(c.y, c.m + 1, 0).getDate(), o = (new Date(c.y, c.m, 1).getDay() + 6) % 7; let cells = '<div></div>'.repeat(0);
+      for (let i = 0; i < o; i++) cells += '<span></span>';
+      for (let i = 1; i <= n; i++) { const k = c.y + '-' + pad(c.m + 1) + '-' + pad(i); cells += `<button class="a2-wd ${dayInfo(k, act, T)} ${k === T ? 'today' : ''} ${k === date ? 'sel' : ''}" style="padding:7px 0 5px" data-a="acpick" data-d="${k}" aria-label="${longD(k)}"><b style="font-size:15px">${i}</b></button>`; }
+      picker = `<div class="a2-wk" style="margin-bottom:2px">${['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(x => `<div style="text-align:center;font-size:10.5px;font-weight:700;color:var(--mut)">${x}</div>`).join('')}</div><div class="a2-wk">${cells}</div>`;
+    }
+    const head = `<div class="a2-hd"><button class="mo ${open ? 'open' : ''}" data-a="acexp">${MONF[open ? c.m : +date.slice(5, 7) - 1]} ${open ? c.y : date.slice(0, 4)} ${ic('back', 's').replace('<polyline points="15 18 9 12 15 6"/>', '<polyline points="6 9 12 15 18 9"/>')}</button><button class="tdy" data-a="acpick" data-d="${T}">Today</button><button class="ib" data-a="${open ? 'acm' : 'acw'}" data-n="-1" aria-label="Previous">${ic('back', 's')}</button><button class="ib" data-a="${open ? 'acm' : 'acw'}" data-n="1" aria-label="Next">${ic('next', 's')}</button></div>`;
+    const top = `<div class="a2-top">${head}${picker}<div class="a2-leg"><span style="color:var(--ok)">All marked</span><span style="color:var(--orange)">Some left</span><span style="color:var(--bad)">Not taken</span><span style="color:var(--violet)">Holiday</span></div></div>`;
+
+    const on = act.filter(s => scheduled(s, date)), cur2 = s => s.attendance[date] || '', q = (S.q.att || '').toLowerCase();
+    const cnt = { Present: 0, Absent: 0, Leave: 0, Unmarked: 0 }; on.forEach(s => cnt[cur2(s) || 'Unmarked']++);
+    const done = on.length - cnt.Unmarked;
+    let body = '';
+    if (H[date]) body = `<div class="a2-hol"><span class="ico v" style="margin:0 auto;width:52px;height:52px;border-radius:50%">${ic('flag', 'l')}</span><b>Holiday · ${esc(H[date])}</b><div class="mut">No classes. This day is not counted in attendance %.</div><button class="btn sec sm" style="margin-top:12px" data-a="holdel" data-d="${date}">Remove holiday</button></div>`;
+    else if (date > T) body = `<div class="a2-hol" style="background:var(--tint)"><span class="ico" style="margin:0 auto;width:52px;height:52px;border-radius:50%">${ic('cal', 'l')}</span><b style="color:var(--accent)">${rel(date).replace(/^./, x => x.toUpperCase())}</b><div class="mut">You can take attendance on the day, or mark it as a holiday now.</div><button class="btn sm" style="margin-top:12px" data-a="holform" data-d="${date}">${ic('flag', 's')} Mark as holiday</button></div>`;
+    else if (!on.length) body = empty('No classes this day', 'No active student has a session on this day.', 'cal');
+    else {
+      const FL = ['All', 'Unmarked', 'Present', 'Absent', 'Leave'], f = flt('as', FL), vis = on.filter(s => (f === 'All' || cur2(s) === f || (f === 'Unmarked' && !cur2(s))) && (!q || (s.full_name + s.registration_number).toLowerCase().includes(q)));
+      body = `<div class="a2-sum">${ring(Math.round(done / on.length * 100), 58, '#12986B', '#E3E8F2', '#12986B')}<div class="grow"><h3>${done} of ${on.length} marked</h3><div class="mut">${cnt.Present} present · ${cnt.Absent} absent · ${cnt.Leave} leave</div></div><button class="hb" data-a="holform" data-d="${date}">${ic('flag', 's')} Holiday</button></div>` +
+        (on.length > 7 ? searchBox('att', 'Search student') : '') + chips('as', FL, { All: on.length, Unmarked: cnt.Unmarked, Present: cnt.Present, Absent: cnt.Absent, Leave: cnt.Leave }) +
+        (vis.length ? `<div class="a2-list">${vis.map(s => { const v = cur2(s); return `<div class="a2-r"><span class="avatar">${ini(s.full_name)}</span><div class="t"><b class="trunc">${esc(s.full_name)}</b><span class="trunc">${t12(s.enr.slot_start_time)} · ${esc(s.enr.course_name)}</span></div><div class="a2-g" role="group" aria-label="Mark ${esc(s.full_name)}">${[['Present', 'tick'], ['Absent', 'x'], ['Leave', 'clock']].map(([nm, i]) => `<button class="${nm[0]} ${v === nm ? 'on' : ''}" aria-pressed="${v === nm}" data-a="mark" data-reg="${s.registration_number}" data-d="${date}" data-v="${nm}">${ic(i)}${nm}</button>`).join('')}</div></div>`; }).join('')}</div>` : empty('No students here', 'Nobody matches this filter.', 'users')) +
+        (cnt.Unmarked ? `<div class="a2-bar"><button class="btn ok" data-a="allpresent" data-d="${date}">${ic('tick', 's')} Mark all ${cnt.Unmarked} unmarked as present</button></div>` : '');
+    }
+    return { t: 'Attendance', sub: 'Pick a day, then mark each student', right: `<button class="hbtn" data-a="atmenu" aria-label="More options">${ic('list')}</button>`, body: top + body };
+  };
+  A.acexp = () => { S.acOpen = !S.acOpen; const d = S.date || today(); S.acal = { y: +d.slice(0, 4), m: +d.slice(5, 7) - 1 }; render(); };
+  A.acw = d => { S.date = addDays(S.date || today(), 7 * +d.n); S.acal = { y: +S.date.slice(0, 4), m: +S.date.slice(5, 7) - 1 }; render(); };
+  A.atmenu = () => {
+    const H = hols(), T = today(), up = Object.keys(H).filter(k => k >= addDays(T, -30)).sort();
+    openSheet(`<h3>Attendance tools</h3><div class="card flush list" style="margin-top:10px">${item('flag', 'v', 'Add holiday', 'Institute closed — one day or a range', 'data-a="holform" data-d="' + (S.date || T) + '"')}${item('user', 'o', 'Long leave', 'One student away for several days', 'data-a="leaveform"')}${item('users', '', 'Student-wise calendar', 'See and correct one student', 'data-a="atgo" data-v="a_att_student"')}${item('up', 'g', 'Import from CSV', 'Bulk upload attendance', 'data-a="atgo" data-v="a_att_import"')}${item('dl', 'c', 'Export to CSV', 'Download all attendance', 'data-a="attexp"')}</div>` +
+      `<h3 style="margin:16px 0 8px;font-size:14px">Holidays</h3>` + (up.length ? `<div class="card flush list">${up.map(k => `<div class="item"><span class="ico sm2 v">${ic('flag', 's')}</span><span class="grow"><b>${esc(H[k])}</b><div class="mut">${longD(k)}</div></span><button class="btn danger sm" data-a="holdel" data-d="${k}">Remove</button></div>`).join('')}</div>` : '<div class="note">No holidays yet.</div>'));
+  };
+  A.atgo = d => { S.sheet = null; go(d.v); };
+  A.holdel = d => { delete hols()[d.d]; save(); toast('Holiday removed'); if (S.sheet) A.atmenu(); else render(); };
+
+  /* ---------------- HOME ---------------- */
+  V.a_home = () => {
+    const d = D(), T = today(), act = activeStu(), sched = act.filter(s => scheduled(s, T)), hol = hols()[T];
+    const c = { Present: 0, Absent: 0, Leave: 0, Left: 0 }; sched.forEach(s => c[s.attendance[T] || 'Left']++);
+    const marked = sched.length - c.Left, pct = sched.length ? Math.round(c.Present / sched.length * 100) : 0;
+    const pend = d.students.reduce((a, s) => a + balance(s), 0), overdue = d.students.filter(s => balance(s) > 0 && s.enr.next_due_date && s.enr.next_due_date < T).length;
+    const rev = d.tasks.filter(t => t.status === 'Submitted').length + d.students.filter(s => s.project && s.project.status === 'Submitted').length;
+    const ready = d.students.filter(s => s.certificate.status === 'Completed').length, al = adminAlerts(), up = Object.keys(hols()).filter(k => k > T).sort().slice(0, 3);
+    const title = hol ? 'Holiday · ' + esc(hol) : !sched.length ? 'No classes today' : marked < sched.length ? (marked ? marked + ' of ' + sched.length + ' marked' : 'Not taken yet') : c.Present + ' of ' + sched.length + ' present';
+    const cta = hol || !sched.length ? `<button class="btn sec" data-a="attopen" data-d="${T}">${ic('cal', 's')} Open attendance</button>` : marked < sched.length ? `<button class="btn" data-a="attopen" data-d="${T}">${ic('cal', 's')} ${marked ? 'Continue attendance' : 'Take attendance'}</button>` : `<button class="btn sec" data-a="attopen" data-d="${T}">${ic('tick', 's')} Done · view register</button>`;
+    const q = (i, t, l, a) => `<button ${a}><span class="c ${t}">${ic(i)}</span>${l}</button>`;
+    const k = (i, t, n, l, s2, a) => `<button ${a}><span class="ci ${t}">${ic(i, 's')}</span><b>${n}</b><span>${l}</span><small>${s2}</small></button>`;
+    const sl = sched.slice().sort((a, b) => a.enr.slot_start_time < b.enr.slot_start_time ? -1 : 1).slice(0, 5);
+    return {
+      greet: { t: greet() + ', Admin', s: longD(T) },
+      hdr: `<header class="hdr"><div class="hdr-top"><div class="avatar">AD</div><div class="grow"><small style="margin:0">${greet()}</small><h1>Admin</h1></div>${bellBtn()}</div></header>`,
+      body: `<div class="h2-card"><div class="h2-top">${ring(hol || !sched.length ? 0 : pct, 78, '#12986B', '#E3E8F2', '#12986B')}<div class="grow"><small>Today's attendance</small><h2>${title}</h2><span class="mut">${sched.length ? sched.length + ' student' + (sched.length > 1 ? 's' : '') + ' scheduled' : 'Nothing scheduled'}</span></div></div>${sched.length && !hol ? `<div class="h2-st"><div><b style="color:var(--ok)">${c.Present}</b><span>Present</span></div><div><b style="color:var(--bad)">${c.Absent}</b><span>Absent</span></div><div><b style="color:var(--orange)">${c.Leave}</b><span>Leave</span></div><div><b>${c.Left}</b><span>Not marked</span></div></div>` : '<div style="height:12px"></div>'}${cta}</div>` +
+        `<div class="h2-q">${q('cal', 'g', 'Attendance', 'data-a="attopen" data-d="' + T + '"')}${q('rupee', 'o', 'Collect fee', 'data-a="payform"')}${q('plus', '', 'Add student', 'data-a="go" data-v="a_student_form"')}${q('mega', 'v', 'Message', 'data-a="go" data-v="a_notif" data-tab="Compose"')}${q('grid', 'k', 'More', 'data-a="tab" data-t="more"')}</div>` +
+        `<div class="h2-k">${k('users', '', d.students.length, 'Students', act.length + ' active', 'data-a="tab" data-t="students"')}${k('rupee', 'o', shortM(pend), 'Fees pending', overdue ? overdue + ' overdue' : 'None overdue', 'data-a="tab" data-t="fees"')}${k('clip', 'v', rev, 'To review', 'Assignments &amp; projects', 'data-a="go" data-v="a_work"')}${k('award', 'g', ready, 'Certificates ready', 'Waiting to be issued', 'data-a="go" data-v="a_complete"')}</div>` +
+        sec("Today's classes", sched.length > 5 ? `<button data-a="attopen" data-d="${T}">See all (${sched.length})</button>` : '') + (sl.length && !hol ? `<div class="card flush list" style="margin-bottom:12px">${sl.map(s => { const v = s.attendance[T], tm = t12(s.enr.slot_start_time).split(' '); return `<button class="h2-sch" data-a="attopen" data-d="${T}"><span class="tm"><b>${tm[0]}</b><small>${tm[1]}</small></span><span class="t"><b class="trunc">${esc(s.full_name)}</b><span class="trunc">${esc(s.enr.course_name)} · ${esc(s.enr.faculty_name)}</span></span>${v ? pill(v, v === 'Present' ? 'ok' : v === 'Absent' ? 'bad' : 'warn') : pill('Not marked', 'n')}</button>`; }).join('')}</div>` : `<div class="note">${hol ? 'Institute is closed today.' : 'No classes scheduled today.'}</div>`) +
+        sec('Needs attention', al.length > 3 ? `<button data-a="go" data-v="a_notif">View all (${al.length})</button>` : '') + (al.length ? al.slice(0, 3).map(alertCard).join('') : `<div class="note ok">All clear — nothing needs your attention.</div>`) +
+        sec('Upcoming holidays', `<button data-a="holform">+ Add</button>`) + (up.length ? `<div class="card flush list">${up.map(x => `<button class="item" data-a="attopen" data-d="${x}"><span class="ico v">${ic('flag')}</span><span class="grow"><b>${esc(hols()[x])}</b><div class="mut">${longD(x)} · ${rel(x)}</div></span>${ic('next', 's')}</button>`).join('')}</div>` : `<div class="note">No holidays added yet.</div>`)
+    };
+  };
+  A.attopen = d => { S.date = d.d; S.acOpen = false; S.acal = { y: +d.d.slice(0, 4), m: +d.d.slice(5, 7) - 1 }; tab('att'); };
+  A.acpick = d => { S.date = d.d; S.acal = { y: +d.d.slice(0, 4), m: +d.d.slice(5, 7) - 1 }; render(); };
+})();
+
+
+
+/* =====================================================================
+   BALSAM — ADVANCED UI LAYER (v3)
+   Dark / Auto mode · accent colours · global search (Ctrl/⌘+K) · admin insight charts ·
+   student streak, XP & badges · floating glass tab bar · staggered motion · count-up numbers · ripples
+   This layer wraps the existing render pipeline; all existing screens and actions keep working.
+   ===================================================================== */
+(function () {
+  Object.assign(IC, {
+    moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+    sun: '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+    flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+    auto: '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>'
+  });
+
+  /* ---------- look & feel state ---------- */
+  const ACC = {
+    default: [null, null, 'Theme default', 'linear-gradient(135deg,#2454E8,#6D4AE8)'],
+    royal: ['#2454E8', '#4E7BFF', 'Royal', 'linear-gradient(135deg,#2454E8,#4E7BFF)'],
+    violet: ['#6D4AE8', '#9B7BFF', 'Violet', 'linear-gradient(135deg,#6D4AE8,#9B7BFF)'],
+    emerald: ['#0F9D74', '#3CC79A', 'Emerald', 'linear-gradient(135deg,#0F9D74,#3CC79A)'],
+    sunset: ['#F26A10', '#FF9A52', 'Sunset', 'linear-gradient(135deg,#F26A10,#FF9A52)'],
+    rose: ['#E0426B', '#FF7A9C', 'Rose', 'linear-gradient(135deg,#E0426B,#FF7A9C)'],
+    ocean: ['#0E8FA8', '#3DC0D9', 'Ocean', 'linear-gradient(135deg,#0E8FA8,#3DC0D9)']
+  };
+  S.mode = LS.get('balsam_mode') || 'light';
+  S.accent = ACC[LS.get('balsam_accent')] ? LS.get('balsam_accent') : 'default';
+  const mq = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+  const eff = () => S.mode === 'auto' ? (mq && mq.matches ? 'dark' : 'light') : S.mode;
+  if (mq && mq.addEventListener) mq.addEventListener('change', () => { if (S.mode === 'auto') render(); });
+
+  function applyLook() {
+    const app = $('#app'), m = eff();
+    app.dataset.mode = m; document.documentElement.dataset.mode = m;
+    if (m === 'dark') app.dataset.dark = '1';
+    const a = ACC[S.accent];
+    if (a && a[0]) { app.style.setProperty('--accent', a[0]); app.style.setProperty('--accent2', a[1]); app.style.setProperty('--tint', 'color-mix(in srgb,' + a[0] + ' 13%,var(--card))'); }
+    else ['--accent', '--accent2', '--tint'].forEach(p => app.style.removeProperty(p));
+    const tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = m === 'dark' ? '#0A0F1E' : (S.theme === 'clean' ? '#ffffff' : '#0F1B4D');
+  }
+
+  /* ---------- CSS ---------- */
+  const css = document.createElement('style');
+  css.textContent = `
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:10px}
+.big,.bigG,.bigO,.kpi b,.stat3 b,.h2-k b,.h2-st b,.mx-stat b,.mx-sc b,.hm-nums b{font-variant-numeric:tabular-nums}
+/* dark mode */
+html[data-mode=dark] body{background:#05080F}
+#app[data-mode=dark]{--bg:#0A0F1E;--card:#121A30;--ink:#E9EDFA;--mut:#8E9BBD;--line:#222C4B;--tint:color-mix(in srgb,var(--accent) 18%,#121A30);--field:#0E1529;--tabbg:#121A30;--okbg:#0E2F26;--warnbg:#33260F;--badbg:#341519;--violetbg:#231C47;--skybg:#0C2B37;--navy-h:#E9EDFA;--sh:0 4px 18px rgba(0,0,0,.35);--hdr-btn:#1B2543;color-scheme:dark}
+#app[data-mode=dark][data-theme=clean]{--bg:#0A0F1E;--hdr:#121A30;--hdr-ink:#E9EDFA;--hdr-mut:#8E9BBD;--hdr-btn:#1B2543;--field:#0E1529}
+#app[data-mode=dark] .logobar{background:var(--card)}
+#app[data-mode=dark] .logobar .hbtn{background:var(--field);color:var(--ink)}
+#app[data-mode=dark] .chipu,#app[data-mode=dark] .helpc,#app[data-mode=dark] .dlb,#app[data-mode=dark] .btn.outline,#app[data-mode=dark] .xtra .hdr-search{background:var(--card)}
+#app[data-mode=dark] .btn.outline{color:var(--ink);border-color:var(--line)}
+#app[data-mode=dark][data-theme=clean] .hero{background:var(--card);color:var(--ink)}
+#app[data-mode=dark][data-theme=clean] .login{background:linear-gradient(180deg,#0A0F1E,#121A30);color:var(--ink)}
+#app[data-mode=dark][data-theme=clean] .splash{background:#0A0F1E}
+#app[data-mode=dark] .lcard{background:var(--card);color:var(--ink)}
+#app[data-mode=dark] .lcard .seg{background:var(--field)}
+#app[data-mode=dark] .lcard .field input{background:var(--field)}
+#app[data-mode=dark][data-theme=clean] .demo button{background:var(--card);border-color:var(--line)}
+#app[data-mode=dark] .fh{color:var(--ink)}
+#app[data-mode=dark] .ac-d.off,#app[data-mode=dark] .a2-wd.off b{color:#46506E}
+/* brand-coloured shadows follow the accent */
+.btn{box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 28%,transparent)}
+.btn.sec,.btn.ghost,.btn.danger,.btn.outline{box-shadow:none}
+.seg button.on{box-shadow:0 3px 8px color-mix(in srgb,var(--accent) 30%,transparent)}
+.fab{box-shadow:0 10px 24px color-mix(in srgb,var(--accent) 40%,transparent)}
+/* floating glass tab bar */
+.tabs{margin:0 12px calc(10px + var(--hb,0px) + env(safe-area-inset-bottom,0px));padding:6px;border:1px solid var(--line);border-radius:26px;box-shadow:0 12px 34px rgba(15,27,77,.16);background:color-mix(in srgb,var(--tabbg) 86%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4)}
+#app[data-mode=dark] .tabs{box-shadow:0 12px 34px rgba(0,0,0,.5)}
+.fab{bottom:calc(98px + var(--hb,0px))}.fab.pg{bottom:calc(22px + var(--hb,0px))}
+#toasts{bottom:calc(104px + var(--hb,0px))}
+.toast{backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12)}
+.toast.ok:before{content:"✓  "}.toast.bad:before{content:"!  "}
+/* staggered entrance on navigation only */
+@keyframes bRise{from{opacity:0;transform:translateY(14px)}}
+.view.push>*,.view.fade>*{animation:bRise .42s cubic-bezier(.2,.8,.2,1) both}
+.view.push>:nth-child(2),.view.fade>:nth-child(2){animation-delay:.04s}.view.push>:nth-child(3),.view.fade>:nth-child(3){animation-delay:.08s}
+.view.push>:nth-child(4),.view.fade>:nth-child(4){animation-delay:.12s}.view.push>:nth-child(5),.view.fade>:nth-child(5){animation-delay:.16s}
+.view.push>:nth-child(6),.view.fade>:nth-child(6){animation-delay:.2s}.view.push>:nth-child(7),.view.fade>:nth-child(7){animation-delay:.24s}
+.view.push>:nth-child(n+8),.view.fade>:nth-child(n+8){animation-delay:.28s}
+@media(prefers-reduced-motion:reduce){.view>*{animation:none!important}.rip{display:none}}
+.card{transition:transform .15s,box-shadow .2s}
+@media(hover:hover){.card.tap:hover,.tile:hover,.kpi:hover{box-shadow:0 10px 26px rgba(15,27,77,.14);transform:translateY(-2px)}}
+/* ripple */
+.btn,.chip,.tile,.item,.kpi{position:relative;overflow:hidden}
+.rip{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:currentColor;opacity:.18;transform:scale(0);animation:rip .55s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(24);opacity:0}}
+/* header fits a search button */
+.logobar{gap:8px;padding-left:14px;padding-right:14px}.chipu b{max-width:52px}.chipu small{display:none}
+/* insights */
+.in-card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh);padding:14px;margin-bottom:12px}
+.in-h{display:flex;align-items:flex-start;gap:10px}.in-h b{display:block;font-size:14px}.in-h span{font-size:11.5px;color:var(--mut)}
+.in-h .in-n{margin-left:auto;font-size:22px;font-weight:800;color:var(--accent);letter-spacing:-.4px}
+.in-svg{width:100%;height:auto;display:block;margin-top:6px}
+.in-ax{display:flex;justify-content:space-between;font-size:10.5px;color:var(--mut);font-weight:600;margin-top:2px}
+.in-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.in-two .in-card{margin-bottom:12px;padding:12px}
+.in-two b{display:block;font-size:13px;margin-bottom:8px}
+.in-don{display:flex;flex-direction:column;align-items:center;gap:6px}.in-don span{font-size:11px;color:var(--mut);font-weight:600;text-align:center}
+.in-bar{margin-bottom:9px}.in-bar div{display:flex;justify-content:space-between;font-size:11px;font-weight:600;margin-bottom:3px}.in-bar span{color:var(--mut)}
+.in-bar i{display:block;height:7px;border-radius:6px;background:var(--line);overflow:hidden}.in-bar i u{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+/* student gamification */
+.gm-card{background:linear-gradient(135deg,#1A2E7E,var(--accent));color:#fff;border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 12px 26px color-mix(in srgb,var(--accent) 30%,transparent);position:relative;overflow:hidden}
+.gm-card:after{content:"";position:absolute;right:-30px;top:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.09)}
+.gm-top{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.gm-fl{width:48px;height:48px;border-radius:16px;background:rgba(255,255,255,.18);display:grid;place-items:center;color:#FFD08A;flex:none}.gm-fl svg{width:26px;height:26px;fill:#FFB34D;stroke:#FFD08A}
+.gm-top b{display:block;font-size:19px;letter-spacing:-.3px}.gm-top span{font-size:12px;opacity:.82}
+.gm-lv{margin-left:auto;background:rgba(255,255,255,.18);border-radius:12px;padding:6px 12px;font-weight:800;font-size:13px;text-align:center;flex:none}.gm-lv small{display:block;font-size:9.5px;font-weight:600;opacity:.8}
+.gm-xp{margin:14px 0 4px;position:relative;z-index:1}.gm-xp .bar-t{background:rgba(255,255,255,.22)}.gm-xp .bar-t i{background:#fff}
+.gm-xp div.l{display:flex;justify-content:space-between;font-size:11px;opacity:.85;margin-top:5px;font-weight:600}
+.gm-bd{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px;position:relative;z-index:1}
+.gm-b{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:8.5px;font-weight:700;text-align:center;line-height:1.15;opacity:.4;filter:grayscale(1)}
+.gm-b.on{opacity:1;filter:none}.gm-b i{width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.2);display:grid;place-items:center}.gm-b.on i{background:#fff;color:var(--accent)}
+/* look picker */
+.lk-sw{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.lk-sw button{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--mut)}
+.lk-sw i{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;border:3px solid transparent;box-shadow:0 0 0 1px var(--line)}
+.lk-sw button.on i{border-color:var(--card);box-shadow:0 0 0 2px var(--accent)}.lk-sw button.on{color:var(--ink)}
+.lk-md{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.lk-md button{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);font-weight:700;font-size:13px;color:var(--mut)}
+.lk-md button.on{border-color:var(--accent);color:var(--accent);background:var(--tint)}
+`;
+  document.head.appendChild(css);
+
+  /* ---------- render wrapper: apply look + count-up ---------- */
+  const _render = render;
+  render = function () {
+    const had = S.anim; _render(); applyLook(); if (had) countUp();
+  };
+  function countUp() {
+    $$('.kpi b,.stat3 b,.big,.bigG,.bigO,.mx-stat b,.mx-sc b,.hm-nums b,.h2-st b,.h2-k b').forEach(el => {
+      if (el.children.length) return;
+      const txt = el.textContent.trim(), m = /^(₹?)([\d,]+)(%?)$/.exec(txt); if (!m) return;
+      const end = +m[2].replace(/,/g, ''); if (!end || end > 1e7) return;
+      const loc = !!m[1] || txt.includes(','), t0 = performance.now();
+      const step = t => { const p = Math.min(1, (t - t0) / 650), v = Math.round(end * (1 - Math.pow(1 - p, 3))); if (!el.isConnected) return; el.textContent = p < 1 ? m[1] + (loc ? v.toLocaleString('en-IN') : v) + m[3] : txt; if (p < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    });
+  }
+
+  /* ---------- ripple + haptics ---------- */
+  document.addEventListener('pointerdown', e => {
+    const el = e.target.closest('.btn,.chip,.tile,.item,.kpi'); if (!el || el.disabled) return;
+    const r = el.getBoundingClientRect(), sc = el.offsetWidth ? r.width / el.offsetWidth : 1, s = document.createElement('span');
+    s.className = 'rip'; s.style.left = (e.clientX - r.left) / sc + 'px'; s.style.top = (e.clientY - r.top) / sc + 'px'; el.appendChild(s); setTimeout(() => s.remove(), 600);
+  }, { passive: true });
+  document.addEventListener('click', e => { if (navigator.vibrate && e.target.closest('[data-a=mark],[data-a=allpresent],[data-a=login],[data-a=paysave]')) navigator.vibrate(10); });
+
+  /* ---------- header: add search button ---------- */
+  const _lb = logoBar;
+  logoBar = function () {
+    return _lb().replace('<button class="hbtn" data-a="go"', () => `<button class="hbtn" data-a="gsearch" aria-label="Search">${ic('search')}</button><button class="hbtn" data-a="go"`);
+  };
+
+  /* ---------- account sheet: dark-mode switch ---------- */
+  const _acct = A.acct;
+  A.acct = function () {
+    _acct();
+    const row = `<div class="card flush" style="margin-bottom:12px"><div class="item"><span class="ico o">${ic(eff() === 'dark' ? 'moon' : 'sun')}</span><span class="grow"><b>Dark mode</b><div class="mut">Easy on the eyes at night</div></span><label class="sw"><input type="checkbox" ${eff() === 'dark' ? 'checked' : ''} data-onchange="darkchk"><i></i></label></div></div>`;
+    S.sheet = S.sheet.replace('<button class="btn danger" data-a="logout">', () => row + '<button class="btn danger" data-a="logout">'); render();
+  };
+  A.darkchk = (d, el) => { S.mode = el.checked ? 'dark' : 'light'; LS.set('balsam_mode', S.mode); S.sheet = null; render(); toast(el.checked ? 'Dark mode on' : 'Light mode on', 'ok'); };
+  A.mode = d => { S.mode = d.v; LS.set('balsam_mode', d.v); render(); };
+  A.accent = d => { S.accent = d.v; LS.set('balsam_accent', d.v); render(); toast('Colour: ' + ACC[d.v][2], 'ok'); };
+
+  /* ---------- appearance screen additions ---------- */
+  const _ap = V.appearance;
+  V.appearance = function () {
+    const v = _ap();
+    v.body += sec('Colour mode') + `<div class="lk-md">${[['light', 'sun', 'Light'], ['dark', 'moon', 'Dark'], ['auto', 'auto', 'Auto']].map(m => `<button class="${S.mode === m[0] ? 'on' : ''}" data-a="mode" data-v="${m[0]}">${ic(m[1], 'l')}${m[2]}</button>`).join('')}</div>` +
+      sec('Accent colour') + `<div class="card"><div class="lk-sw">${Object.keys(ACC).map(k => `<button class="${S.accent === k ? 'on' : ''}" data-a="accent" data-v="${k}"><i style="background:${ACC[k][3]}">${S.accent === k ? ic('tick', 's') : ''}</i>${ACC[k][2]}</button>`).join('')}</div></div>`;
+    return v;
+  };
+
+  /* ---------- global search / command palette ---------- */
+  const ADM_ACTS = [['Take attendance', 'cal', 'g', 'att', 'Mark today\'s register'], ['Collect fee', 'rupee', 'o', 'pay', 'Record a payment'], ['Add student', 'plus', '', 'addstu', 'New admission'], ['Send message', 'mega', 'v', 'msg', 'Notify students'], ['Reports', 'chart', '', 'rep', 'Attendance, progress, fees'], ['Courses', 'book', '', 'courses', 'Course catalogue'], ['Learning materials', 'folder', 'o', 'mats', 'Notes and links'], ['Assignments & projects', 'clip', 'v', 'work', 'Review submissions'], ['Assessments', 'check', 'k', 'tests', 'Schedule and marks'], ['Completion & certificates', 'award', 'g', 'comp', 'Progress and issue'], ['Placement', 'brief', 'v', 'place', 'Resumes and interviews'], ['Import / export', 'swap', 'v', 'data', 'CSV transfer'], ['Appearance', 'palette', 'o', 'look', 'Dark mode, colours'], ['Settings', 'gear', '', 'set', 'Account and data']];
+  const STU_ACTS = () => { const s = me(), a = [['Notifications', 'bell', 'r', 'snotif', 'Alerts from the institute'], ['My profile', 'user', '', 'sme', 'Details and course'], ['Appearance', 'palette', 'o', 'look', 'Dark mode, colours']];
+    if (s.stage !== 'new') a.unshift(['Attendance', 'cal', 'g', 'sattend', 'Your calendar'], ['Assignments', 'clip', 'o', 'sassign', 'To do and graded'], ['Assessments', 'check', 'k', 'stest', 'Tests and results'], ['Final project', 'target', 'v', 'sproj', 'Submit and track'], ['Materials', 'folder', '', 'smat', 'Notes and links'], ['Fees', 'rupee', 'r', 'sfees', 'Balance and receipts'], ['Certificate', 'award', 'g', 'scert', 'Status and download'], ['Course completion', 'layers', 'g', 'scomp', 'Requirements']);
+    if (s.placement_enabled) a.push(['Placement', 'brief', 'v', 'splace', 'Resume and interviews']); return a; };
+  function gsResults(q) {
+    q = (q || '').trim().toLowerCase(); const adm = S.role === 'admin', d = D(), s = me();
+    const row = (i, t, ti, sub, k, p) => `<button class="mx-row" data-a="gsgo" data-k="${k}" data-p="${esc(p == null ? '' : p)}"><span class="ci ${t}">${ic(i)}</span><span class="t"><b class="trunc">${esc(ti)}</b><span class="trunc">${esc(sub || '')}</span></span>${ic('next', 's')}</button>`;
+    const list = (h, a) => a.length ? `<div class="mx-h">${h}<i>${a.length}</i></div><div class="mx-list">${a.join('')}</div>` : '';
+    let acts = (adm ? ADM_ACTS : STU_ACTS()).filter(x => !q || (x[0] + ' ' + x[4]).toLowerCase().includes(q)); if (!q) acts = acts.slice(0, 6);
+    let out = list(q ? 'Go to' : 'Suggestions', acts.map(x => row(x[1], x[2], x[0], x[4], x[3])));
+    if (q) {
+      if (adm) {
+        out = list('Students', d.students.filter(x => (x.full_name + ' ' + x.registration_number + ' ' + x.enr.course_name + ' ' + x.mobile).toLowerCase().includes(q)).slice(0, 6).map(x => row('user', '', x.full_name, x.registration_number + ' · ' + x.enr.course_name, 'stu', x.registration_number))) + out +
+          list('Courses', d.courses.filter(c => c.course_name.toLowerCase().includes(q)).slice(0, 4).map(c => row('book', '', c.course_name, c.course_code + ' · ' + c.duration_weeks + ' weeks', 'course', c.course_id))) +
+          list('Materials', d.materials.filter(m => m.title.toLowerCase().includes(q)).slice(0, 4).map(m => row('folder', 'o', m.title, m.type, 'mat', m.material_id)));
+      } else if (s) {
+        out += list('Assignments', tasksOf(s).filter(t => t.title.toLowerCase().includes(q)).slice(0, 4).map(t => row('clip', 'o', t.title, t.status + ' · due ' + fmtS(t.due_date), 'task', t.task_id))) +
+          list('Materials', matsOf(s).filter(m => m.title.toLowerCase().includes(q)).slice(0, 4).map(m => row('folder', '', m.title, m.type, 'mat', m.material_id)));
+      }
+      if (!/mx-row/.test(out)) out = `<div class="empty"><div class="ico">${ic('search', 'l')}</div><h3>No results</h3><p>Try a different word.</p></div>`;
+    }
+    return out;
+  }
+  A.gsearch = () => {
+    if (!S.role) return;
+    openSheet(`<label class="search" style="margin-bottom:10px">${ic('search', 's')}<input id="gs-in" placeholder="${S.role === 'admin' ? 'Search students, courses, actions…' : 'Search tasks, materials, screens…'}" autocomplete="off"></label><div id="gs-res">${gsResults('')}</div>`);
+    setTimeout(() => { const i = $('#gs-in'); if (i) i.focus(); }, 80);
+  };
+  document.addEventListener('input', e => { if (e.target.id === 'gs-in') { const r = $('#gs-res'); if (r) r.innerHTML = gsResults(e.target.value); } });
+  A.gsgo = d => {
+    S.sheet = null; const k = d.k, p = d.p, T = (t, key, val) => { if (key) S.seg[key] = val; tab(t); };
+    switch (k) {
+      case 'stu': S.stack = []; S.tab = 'students'; go('a_student', { reg: p }); break;
+      case 'course': go('a_course', { id: p }); break;
+      case 'att': A.attopen({ d: today() }); break;
+      case 'pay': render(); A.payform({}); break;
+      case 'addstu': go('a_student_form'); break;
+      case 'msg': go('a_notif', { tab: 'Compose' }); break;
+      case 'rep': go('a_reports'); break; case 'courses': go('a_courses'); break; case 'mats': go('a_materials'); break;
+      case 'work': go('a_work'); break; case 'tests': S.seg.wk = 'Assessments'; go('a_work'); break; case 'comp': go('a_complete'); break;
+      case 'place': go('a_place'); break; case 'data': go('a_data'); break; case 'set': go('a_settings'); break; case 'look': go('appearance'); break;
+      case 'mat': S.role === 'admin' ? (render(), A.matview({ id: p })) : A.matopen({ id: p }); break;
+      case 'task': go('s_task', { id: p }); break;
+      case 'sattend': T('learn', 'lr', 'Attendance'); break; case 'smat': T('learn', 'lr', 'Materials'); break;
+      case 'sassign': T('tasks', 'tk', 'Assignments'); break; case 'stest': T('tasks', 'tk', 'Assessments'); break; case 'sproj': T('tasks', 'tk', 'Project'); break;
+      case 'sfees': T('fees'); break; case 'sme': T('me'); break; case 'scert': go('s_cert'); break; case 'scomp': go('s_complete'); break;
+      case 'snotif': go('s_notif'); break; case 'splace': go('s_place'); break;
+      default: render();
+    }
+  };
+  addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && S.role) { e.preventDefault(); A.gsearch(); }
+    else if (e.key === 'Escape' && S.sheet) closeSheet();
+  });
+
+  /* ---------- admin home: insight charts ---------- */
+  function insights() {
+    const d = D(), T = today(), act = activeStu(), pts = [];
+    for (let j = 13; j >= 0; j--) { const k = addDays(T, -j); if (isHoliday(k)) { pts.push(null); continue; } const m = act.filter(s => scheduled(s, k) && s.attendance[k]); pts.push(m.length ? Math.round(m.filter(s => s.attendance[k] === 'Present').length / m.length * 100) : null); }
+    const vals = pts.filter(v => v != null), avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+    const W = 300, H = 84, X = i => 8 + i * (284 / 13), Y = v => H - 6 - (v / 100) * (H - 18);
+    let path = '', first = null, last = null, dots = '';
+    pts.forEach((v, i) => { if (v == null) return; const x = X(i), y = Y(v); path += (path ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1) + ' '; if (first == null) first = x; last = x; dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${i === 13 ? 3.6 : 2}" style="fill:var(--accent)"/>`; });
+    const area = path ? path + 'L' + last.toFixed(1) + ' ' + H + ' L' + first.toFixed(1) + ' ' + H + ' Z' : '';
+    const svg = `<svg class="in-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Attendance trend, last 14 days"><defs><linearGradient id="ing" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.3"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/></linearGradient></defs><line x1="0" x2="${W}" y1="${Y(75)}" y2="${Y(75)}" stroke="rgba(130,140,170,.45)" stroke-dasharray="3 4"/><text x="2" y="${Y(75) - 3}" font-size="8" fill="rgba(130,140,170,.9)">75%</text>${path ? `<path d="${area}" fill="url(#ing)"/><path d="${path}" fill="none" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" style="stroke:var(--accent)"/>${dots}` : ''}</svg>`;
+    const col = d.students.reduce((a, s) => a + paidSum(s), 0), tot = d.students.reduce((a, s) => a + Number(s.enr.net_fee || 0), 0), pc = tot ? Math.round(col / tot * 100) : 0;
+    const cc = {}; d.students.forEach(s => cc[s.enr.course_name] = (cc[s.enr.course_name] || 0) + 1);
+    const top = Object.entries(cc).sort((a, b) => b[1] - a[1]).slice(0, 5), mx = top.length ? top[0][1] : 1;
+    return sec('Insights') + `<div class="in-card"><div class="in-h"><div><b>Attendance trend</b><span>Last 14 days · class days only</span></div><div class="in-n">${avg}%</div></div>${svg}<div class="in-ax"><span>${fmtS(addDays(T, -13))}</span><span>Today</span></div></div>` +
+      `<div class="in-two"><div class="in-card"><b>Fee collection</b><div class="in-don">${ring(pc, 76, '#12986B', 'rgba(130,140,170,.25)', 'var(--ink)')}<span>${inr(col)} of ${inr(tot)}</span></div></div><div class="in-card"><b>By course</b>${top.map(([n, c]) => `<div class="in-bar"><div><b style="font-size:11px;margin:0" class="trunc">${esc(n)}</b><span>${c}</span></div><i><u style="width:${Math.round(c / mx * 100)}%"></u></i></div>`).join('') || '<div class="mut sm">No data</div>'}</div></div>`;
+  }
+  const _ah = V.a_home;
+  V.a_home = function () {
+    const v = _ah(), mk = '<h2 class="sec">Today\'s classes';
+    v.body = v.body.includes(mk) ? v.body.replace(mk, () => insights() + mk) : v.body + insights(); return v;
+  };
+
+  /* ---------- student home: streak, XP and badges ---------- */
+  function streakOf(s) {
+    const T = today(); let n = 0;
+    for (let j = 0; j < 150; j++) { const k = addDays(T, -j); if (k < s.enr.course_start_date) break; if (isHoliday(k) || !isWorkday(s, k)) continue; const v = s.attendance[k]; if (!v) { if (j === 0) continue; break; } if (v === 'Present') n++; else if (v === 'Leave') continue; else break; }
+    return n;
+  }
+  function gmHtml(s) {
+    const a = attStats(s), tk = tasksOf(s), ts = testsOf(s), pj = s.project, st = streakOf(s), T = today();
+    const rec = []; for (let j = 1; j < 90 && rec.length < 5; j++) { const k = addDays(T, -j); if (isHoliday(k) || !isWorkday(s, k) || k < s.enr.course_start_date) continue; if (s.attendance[k]) rec.push(s.attendance[k]); }
+    const perfect = rec.length === 5 && rec.every(v => v === 'Present');
+    const gradedTasks = tk.filter(t => t.status === 'Completed').length, doneTests = ts.filter(t => t.status === 'Completed').length;
+    const xp = a.P * 10 + gradedTasks * 50 + doneTests * 40 + (pj && pj.status === 'Evaluated' ? 150 : 0), lv = Math.floor(xp / 300) + 1, into = xp % 300;
+    const B = [['flame', '7-day streak', st >= 7], ['cal', 'Perfect week', perfect], ['star', '90% club', a.t >= 10 && a.pct >= 90], ['clip', 'Graded A', tk.some(t => /^A/.test(t.grade || ''))], ['check', 'Test ace', ts.some(t => t.status === 'Completed' && t.marks !== '' && t.marks / t.max_marks >= .85)], ['target', 'Project star', !!(pj && pj.status === 'Evaluated' && +pj.evaluation_score >= 85)], ['rupee', 'Fees clear', balance(s) === 0 && paidSum(s) > 0]];
+    return `<div class="gm-card"><div class="gm-top"><span class="gm-fl">${ic('flame')}</span><div><b>${st} day${st === 1 ? '' : 's'} streak</b><span>${st ? 'Keep showing up to grow it' : 'Attend your next class to start one'}</span></div><div class="gm-lv"><small>LEVEL</small>${lv}</div></div><div class="gm-xp"><div class="bar-t"><i style="width:${Math.round(into / 3)}%"></i></div><div class="l"><span>${xp} XP</span><span>${300 - into} XP to level ${lv + 1}</span></div></div><div class="gm-bd">${B.map(b => `<div class="gm-b ${b[2] ? 'on' : ''}" title="${b[1]}${b[2] ? ' — earned' : ' — locked'}"><i>${ic(b[0], 's')}</i>${b[1]}</div>`).join('')}</div></div>`;
+  }
+  const _sh = V.s_home;
+  V.s_home = function () {
+    const v = _sh(), s = me(), mk = '<h2 class="sec">Quick access';
+    /* streak card removed */ void mk;
+    return v;
+  };
+
+  /* first paint with the saved look */
+  applyLook();
+})();
+
+
+/* ===== v4: Pay-style Fees + Professional-network style Profile ===== */
+(function () {
+  IC.pin = '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>';
+  const st = document.createElement('style');
+  st.textContent = `
+.pf-hero{text-align:center;padding:22px 16px 18px}
+.pf-hero .lbl{font-size:13px;color:var(--mut);font-weight:600}
+.pf-hero .amt{font-size:40px;font-weight:800;letter-spacing:-1px;color:var(--ink);margin:4px 0 8px}
+.pf-hero .amt.due{color:var(--ink)}
+.pf-hero .meta{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--mut)}
+.pf-prog{margin-top:16px;text-align:left}
+.pf-prog .r{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:6px}
+.pf-prog .r b{color:var(--ink)}
+.pf-acts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 6px}
+.pf-act{display:flex;flex-direction:column;align-items:center;gap:7px;padding:6px 0;font-size:12px;font-weight:600;color:var(--ink);background:none;border:0;cursor:pointer}
+.pf-act i{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--tint);color:var(--accent);transition:transform .15s}
+.pf-act:active i{transform:scale(.92)}
+.pf-act.main i{background:var(--accent);color:#fff;box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 35%,transparent)}
+.pf-act i svg{width:22px;height:22px}
+.pf-mon{font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;padding:14px 4px 6px}
+.pf-tx{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line)}
+.pf-tx:last-child{border-bottom:0}
+.pf-tx .ci{width:42px;height:42px;border-radius:50%;background:var(--okbg);color:var(--ok);display:grid;place-items:center;flex:none}
+.pf-tx .ci svg{width:20px;height:20px}
+.pf-tx .t b{display:block;font-size:15px}
+.pf-tx .t span{font-size:12px;color:var(--mut)}
+.pf-tx .a{text-align:right;font-weight:700;font-size:15px}
+.pf-tx .a span{display:block;font-size:11px;color:var(--ok);font-weight:600}
+.pf-sum{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;border-bottom:1px solid var(--line)}
+.pf-sum:last-child{border:0;font-weight:800}
+.pf-sum span{color:var(--mut)}
+.in-card{padding:0;overflow:hidden}
+.in-cover{height:84px;background:linear-gradient(120deg,var(--accent),var(--accent2))}
+.in-body{padding:0 16px 16px;position:relative}
+.in-av{width:88px;height:88px;border-radius:50%;border:4px solid var(--card);margin-top:-44px;font-size:28px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:grid;place-items:center;font-weight:800}
+.in-name{font-size:21px;font-weight:800;margin-top:8px;letter-spacing:-.3px}
+.in-head{font-size:14px;color:var(--ink);margin-top:2px}
+.in-sub{font-size:12.5px;color:var(--mut);margin-top:4px}
+.in-btns{display:flex;gap:8px;margin-top:14px}
+.in-btn{flex:1;border-radius:999px;padding:9px 12px;font-weight:700;font-size:14px;border:1.5px solid var(--accent);color:var(--accent);background:none;cursor:pointer}
+.in-btn.p{background:var(--accent);color:#fff}
+.in-stats{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.in-stats div{padding:14px 4px;border-right:1px solid var(--line)}
+.in-stats div:last-child{border:0}
+.in-stats b{display:block;font-size:20px;font-weight:800;color:var(--ink)}
+.in-stats span{font-size:11.5px;color:var(--mut)}
+.in-h{font-size:17px;font-weight:800;margin:0 0 12px}
+.in-row{display:flex;gap:12px;padding:10px 0;align-items:flex-start}
+.in-row .ic{width:40px;height:40px;border-radius:10px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.in-row .ic svg{width:19px;height:19px}
+.in-row b{display:block;font-size:14.5px}
+.in-row span.m{font-size:13px;color:var(--mut);word-break:break-word}
+`;
+  document.head.appendChild(st);
+
+  const mon = d => { try { return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }); } catch (e) { return ''; } };
+
+  V.s_fees = () => {
+    const s = me(), e = s.enr, b = balance(s), paid = paidSum(s), net = Number(e.net_fee || 0), pc = e.progress_percent;
+    const claimed = (D().payreqs || []).some(q => q.reg === s.registration_number);
+    const tx = s.payments.slice().reverse(); let last = '', list = '';
+    tx.forEach(x => {
+      const m = mon(x.payment_date); if (m !== last) { list += `<div class="pf-mon">${m}</div>`; last = m; }
+      list += `<div class="pf-tx"><span class="ci">${ic('tick')}</span><div class="grow t"><b>Fee payment</b><span>${fmtD(x.payment_date)} · ${esc(x.payment_mode)} · ${x.receipt_number}</span></div><div class="a">${inr(x.amount_paid)}<span>Paid</span></div><button class="dlb" data-a="rcptpdf" data-reg="${s.registration_number}" data-r="${x.receipt_number}" aria-label="Download receipt">${ic('dl')}</button></div>`;
+    });
+    return {
+      t: 'Fees', sub: 'Payments and invoices', right: bellBtn(),
+      body: `<div class="card pf-hero"><div class="lbl">${b ? 'Amount due' : 'Fees status'}</div><div class="amt">${b ? inr(b) : 'All paid'}</div>
+      <div class="meta">${b ? pill('Payment pending', 'warn') : pill('Fully paid', 'ok')}${b && e.next_due_date ? `<span>Due ${fmtD(e.next_due_date)}</span>` : ''}</div>
+      <div class="pf-prog"><div class="r"><span>Paid <b>${inr(paid)}</b></span><span>Total <b>${inr(net)}</b></span></div>${bar(net ? paid / net * 100 : 0, 'var(--ok)')}</div></div>
+      <div class="pf-acts">${b ? `<button class="pf-act main" data-a="paynow"><i>${ic('rupee')}</i>Pay now</button>` : `<button class="pf-act" disabled style="opacity:.45"><i>${ic('rupee')}</i>Pay now</button>`}
+        <button class="pf-act" data-a="invoice" data-reg="${s.registration_number}"><i>${ic('dl')}</i>Invoice</button>
+        <button class="pf-act" data-a="go" data-v="s_complete"><i>${ic('layers')}</i>Progress ${pc}%</button>
+        <button class="pf-act" data-a="help"><i>${ic('help')}</i>Help</button></div>
+      ${claimed ? `<div class="note" style="margin:6px 0 0">You told the institute you paid. They will confirm and record it soon.</div>` : ''}
+      <div class="card" style="margin-top:12px"><div class="in-h">Fee summary</div><div class="pf-sum"><span>Course fee</span><b>${inr(net)}</b></div><div class="pf-sum"><span>Paid so far</span><b style="color:var(--ok)">${inr(paid)}</b></div><div class="pf-sum"><span>Balance</span><b>${inr(b)}</b></div></div>
+      <div class="card" style="margin-top:12px"><div class="in-h" style="margin-bottom:0">Transactions</div>${tx.length ? list : '<div class="mut" style="padding:12px 0">No payments yet. Your receipts will be listed here.</div>'}</div>`
+    };
+  };
+
+  V.s_me = () => {
+    const s = me(), R = reqs(s), met = R.filter(r => r[1]).length, onb = s.stage === 'new', a = attStats(s), e = s.enr;
+    const row = (i, k, v) => v ? `<div class="in-row"><span class="ic">${ic(i)}</span><div><b>${esc(v)}</b><span class="m">${k}</span></div></div>` : '';
+    return {
+      t: 'Profile', right: bellBtn(),
+      body: `<div class="card in-card"><div class="in-cover"></div><div class="in-body"><div class="in-av">${ini(s.full_name)}</div>
+        <div class="in-name">${esc(s.full_name)}</div><div class="in-head">${esc(e.course_name)} student at Balsam Creative Technology</div>
+        <div class="in-sub">${s.registration_number}${s.admission_number ? ' · ' + s.admission_number : ''} · Puducherry</div>
+        <div style="margin-top:10px">${pill(stateOf(s))}</div>
+        ${onb ? '' : `<div class="in-btns"><button class="in-btn p" data-a="go" data-v="s_cert">Certificate</button><button class="in-btn" data-a="go" data-v="s_complete">Completion</button></div>`}</div>
+        <div class="in-stats" style="border-top:1px solid var(--line)"><div><b>${e.progress_percent}%</b><span>Progress</span></div><div><b>${a.t ? a.pct + '%' : '–'}</b><span>Attendance</span></div><div><b>${met}/${R.length}</b><span>Requirements</span></div></div></div>
+      <div class="card" style="margin-top:12px"><div class="in-h">Course</div>
+        ${row('layers', 'Course', e.course_name)}${row('user', 'Faculty', e.faculty_name)}${row('cal', 'Session', e.slot_days + ', ' + slotText(s))}${row('clock', 'Duration', e.duration_months + ' months')}</div>
+      <div class="card" style="margin-top:12px"><div class="in-h">Contact info</div>
+        ${row('phone', 'Mobile', s.mobile)}${row('mail', 'Email', s.email)}${row('cal', 'Date of birth', s.dob ? fmtD(s.dob) : '')}${row('user', 'Gender', s.gender)}${row('pin', 'Address', s.address)}</div>` +
+        (onb ? '' : `<div class="card flush list" style="margin-top:12px">${item('layers', 'g', 'Course completion', completion(s)[0] + ' · ' + met + ' of ' + R.length + ' requirements', 'data-a="go" data-v="s_complete"')}${item('award', 'o', 'Certificate', certLabel(s.certificate.status), 'data-a="go" data-v="s_cert"')}${s.placement_enabled ? item('brief', 'v', 'Placement', 'Resume, portfolio and interviews', 'data-a="go" data-v="s_place"') : ''}${item('bell', 'r', 'Notifications', unreadOf(s) ? unreadOf(s) + ' unread' : 'All read', 'data-a="go" data-v="s_notif"')}</div>`) +
+        `<div class="card flush list" style="margin-top:12px">${item('palette', 'o', 'Appearance', 'Theme, dark mode and accent colour', 'data-a="go" data-v="appearance"')}${item('help', '', 'Need help?', 'Contact the institute admin desk', 'data-a="help"')}</div><button class="btn danger" data-a="logout">${ic('out', 's')} Sign out</button>`
+    };
+  };
+})();
 
 /* ---------- boot ---------- */
 (function boot() {
