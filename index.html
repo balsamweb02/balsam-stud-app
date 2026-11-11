@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#0F1B4D">
+<meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Balsam – Student Portal App</title>
@@ -234,6 +234,224 @@ body{font-size:15px}
 .mk{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}
 .mk button{display:flex;align-items:center;justify-content:center;gap:6px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--field);font-weight:700;font-size:13px;color:var(--mut)}
 .mk button.P.on{background:var(--ok);border-color:var(--ok);color:#fff}.mk button.A.on{background:var(--bad);border-color:var(--bad);color:#fff}.mk button.L.on{background:var(--orange);border-color:var(--orange);color:#fff}
+
+/* ===== Admin: BBC-style calm layout (flat navy header, flat nav, grouped lists) ===== */
+#app[data-bbc]:not([data-mode=dark]){--bg:#E4ECF7;--hdr:#0B2B5E;--hdr-ink:#fff;--hdr-mut:rgba(255,255,255,.78);--hdr-btn:rgba(255,255,255,.14);--hdr-r:0;--accent:#0B2B5E;--accent2:#2454E8;--tint:#E8F1FC;--line:#C6D5E9;--sh:0 3px 10px rgba(11,45,92,.08);--field:#F1F6FD;--navy-h:#0B2B5E}
+#app[data-bbc] #status{color:#fff!important}
+#app[data-bbc] .hdr{box-shadow:0 6px 18px rgba(11,45,92,.28);border-bottom:0}
+#app[data-bbc] .hdr .avatar{background:rgba(255,255,255,.18);color:#fff}
+#app[data-bbc] .hbtn u{background:#FF4A1C;border-color:#0B2B5E}
+#app[data-bbc] .tabs{margin:0;border-radius:0;border-width:1px 0 0;box-shadow:0 -4px 16px rgba(11,45,92,.08);background:var(--tabbg);-webkit-backdrop-filter:none;backdrop-filter:none}
+#app[data-bbc] .fab{bottom:calc(84px + var(--hb,0px))}#app[data-bbc] .fab.pg{bottom:calc(22px + var(--hb,0px))}
+#app[data-bbc] .card{border-color:var(--line)}
+details.dd{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);margin:0 0 12px;overflow:hidden}
+details.dd>summary{list-style:none;padding:14px;font-weight:700;display:flex;align-items:center;cursor:pointer;color:var(--accent)}
+details.dd>summary::-webkit-details-marker{display:none}
+details.dd>summary:after{content:"";margin-left:auto;width:8px;height:8px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg) translateY(-2px);transition:transform .2s}
+details.dd[open]>summary:after{transform:rotate(-135deg) translateY(-2px)}
+details.dd .dd-b{padding:0 14px 14px}
+details.dd .dd-l{border:0;box-shadow:none;border-radius:0;margin:0}
+
+#app[data-bbc] .hdr h1,#app[data-bbc] .hdr small{color:#fff}
+#app[data-bbc] .hdr small{opacity:.8}
+#app[data-bbc] .hdr .hbtn{background:rgba(255,255,255,.16);color:#fff}
+#app[data-bbc] .hdr .hbtn svg{stroke:#fff}
+#app[data-bbc] .hdr{padding-bottom:18px}
+#app[data-bbc] .h2-q .c{width:50px;height:50px}
+#app[data-bbc] .h2-card{border-radius:18px}
+#app[data-bbc] .hdr button.avatar{display:grid;place-items:center;font-weight:700}
+
+details.dd .in-card{padding:14px!important;overflow:visible;border-radius:16px;box-shadow:none}
+details.dd .in-two .in-card{padding:12px!important}
+details.dd .in-card svg{max-width:100%;display:block}
+#app[data-bbc] .a2-bar{bottom:-24px;background:var(--bg);border-top:1px solid var(--line);padding-top:10px}
+
+.splash img{border-radius:0!important}
+#app[data-bbc] .splash{background:#fff}
+
+/* ===== Balsam clean look (matches reference dashboard): light page, blue accents, orange actions ===== */
+#app[data-theme=clean]{--bg:#F5F7FC;--tint:#E8EFFD;--line:#E3E8F2;--accent:#2454E8;--sh:0 2px 10px rgba(15,27,77,.06)}
+#app[data-theme=clean] .tabs{margin:0 12px calc(10px + var(--hb,0px) + env(safe-area-inset-bottom,0px))}
+#app[data-theme=clean] .btn.orange{background:#F26A10;color:#fff;box-shadow:0 8px 18px rgba(242,106,16,.28)}
+#app[data-theme=clean] .btn.outline{background:#fff;border:1.5px solid var(--line);color:var(--navy-h,#0F1B4D)}
+#app[data-theme=clean] .bigO{color:#F26A10}#app[data-theme=clean] .bigG{color:#12986B}
+
+/* ===== Richer look: blue hero headers on inner screens, accent section titles, colourful lists ===== */
+#app[data-theme=clean] .hdr{background:linear-gradient(135deg,#1E3FB8 0%,#2F6BFF 100%);border-bottom:0;border-radius:0 0 24px 24px;box-shadow:0 8px 20px rgba(36,84,232,.25);--hdr-ink:#fff;--hdr-mut:rgba(255,255,255,.82);--hdr-btn:rgba(255,255,255,.18)}
+#app[data-theme=clean] .hdr h1{color:#fff}
+#app[data-theme=clean] .hdr .hbtn{color:#fff}
+#app[data-theme=clean] .hdr .hdr-search{background:rgba(255,255,255,.18)}
+#app[data-sub="1"] #status{color:#fff!important}
+h2.sec:before{content:"";width:4px;height:15px;border-radius:2px;background:#F26A10;flex:none}
+#app select:not(.field select){appearance:none;-webkit-appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232454E8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;border:1px solid var(--line);border-radius:12px;padding:10px 34px 10px 12px;font-weight:600;min-height:42px;margin:0 0 12px;box-shadow:var(--sh)}
+.card.list .item:nth-child(4n+2) .ico:not(.g):not(.o):not(.v):not(.r):not(.c){background:var(--warnbg);color:var(--orange)}
+.card.list .item:nth-child(4n+3) .ico:not(.g):not(.o):not(.v):not(.r):not(.c){background:var(--violetbg);color:var(--violet)}
+.card.list .item:nth-child(4n+4) .ico:not(.g):not(.o):not(.v):not(.r):not(.c){background:var(--okbg);color:var(--ok)}
+.card.list{border-top:3px solid #2454E8}
+#app[data-theme=clean] .hero:has(> .grow > .big){background:linear-gradient(135deg,#2454E8,#4E7BFF);color:#fff;border:0;box-shadow:0 10px 24px rgba(36,84,232,.28)}
+#app[data-theme=clean] .hero:has(> .grow > .big) .mut{color:rgba(255,255,255,.85)}
+#app[data-theme=clean] .hero:has(> .grow > .big) .big{color:#fff}
+#app[data-theme=clean] .hero:has(> .grow > .big) .ico{background:rgba(255,255,255,.2);color:#fff}
+.kpi,.h2-k button{border-top:3px solid #2454E8}.h2-k button:nth-child(2),.kpis .kpi:nth-child(2){border-top-color:#F26A10}.h2-k button:nth-child(3){border-top-color:#6D4AE8}.h2-k button:nth-child(4){border-top-color:#12986B}
+
+/* ===== App-style visuals: Google Pay icon grid, LinkedIn/WhatsApp flat lists, borderless cards, pill buttons ===== */
+.card,.kpi,.h2-k button,.h2-card,.in-card,.alert,.fu-c{border:0!important;box-shadow:0 1px 3px rgba(15,27,77,.07),0 6px 18px rgba(15,27,77,.05)!important;border-radius:20px}
+.card.list,.kpi,.h2-k button{border-top:0!important}
+.tiles{background:#fff;border-radius:22px;padding:18px 6px 8px;gap:4px 0;box-shadow:0 1px 3px rgba(15,27,77,.07),0 6px 18px rgba(15,27,77,.05)}
+.tile{background:none!important;border:0!important;box-shadow:none!important;padding:0 2px 12px;gap:7px;font-size:12px;color:var(--ink)}
+.tile .ico{width:56px;height:56px;border-radius:50%;box-shadow:0 4px 10px rgba(15,27,77,.08)}
+.tile .ico svg{width:24px;height:24px}
+.tile small{margin-top:-3px}
+.tile:active .ico{transform:scale(.92)}
+.list>.item{border-bottom:0!important;position:relative}
+.list>.item:not(:last-child):after{content:"";position:absolute;left:70px;right:14px;bottom:0;height:1px;background:var(--line)}
+.item .ico{border-radius:50%}
+.btn{border-radius:999px}
+.btn.outline,.btn.sec{background:#fff;border:1.5px solid #CFD9F2;color:var(--accent);box-shadow:none}
+.btn.orange{background:linear-gradient(135deg,#FF8A3D,#F26A10)}
+.chip{border-radius:999px;border:1px solid #CFD9F2;background:#fff;box-shadow:none}
+.chip.on,.chips .on{background:var(--accent);border-color:var(--accent);color:#fff}
+.pill{border-radius:999px}
+.fab{border-radius:999px;box-shadow:0 10px 24px rgba(36,84,232,.4)}
+.h2-q .c{box-shadow:0 4px 10px rgba(15,27,77,.08)}
+.dlb{border:0;background:var(--tint);border-radius:50%}
+
+/* ===== Reference-style UI: navy wave header, glass cards, 2x2 stats, bordered quick-action grid, navy buttons ===== */
+#app[data-role]{--bg:#EEF3FF}
+#app[data-role] .view{background:linear-gradient(180deg,#E6EEFF 0%,#F4F7FF 45%,#F8FAFF 100%);padding-top:30px}
+#app[data-theme=clean] .hdr,#app[data-theme=clean] .logobar{background:#0F1B4D;border:0;border-radius:0;box-shadow:none;position:relative;z-index:4;--hdr-ink:#fff;--hdr-mut:rgba(255,255,255,.78);--hdr-btn:rgba(255,255,255,.14)}
+#app[data-theme=clean] .hdr:after,#app[data-theme=clean] .logobar:after{content:"";position:absolute;left:0;right:0;top:calc(100% - 1px);height:24px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 26' preserveAspectRatio='none'%3E%3Cpath d='M0 0H400V6C340 26 270 4 200 13C130 22 60 28 0 8Z' fill='%230F1B4D'/%3E%3C/svg%3E") center/100% 100% no-repeat;pointer-events:none}
+#app[data-theme=clean] .hdr{padding-bottom:14px}
+#app[data-theme=clean] .hdr h1{color:#fff}
+#app[data-role] #status{color:#fff!important}
+#app[data-theme=clean] .logobar .lg img{background:#fff;border-radius:12px;padding:5px 10px;height:36px!important;box-sizing:content-box}
+#app[data-theme=clean] .logobar .hbtn{background:rgba(255,255,255,.14);color:#fff}
+#app[data-theme=clean] .logobar .hbtn u{border-color:#0F1B4D}
+#app[data-theme=clean] .chipu{background:rgba(255,255,255,.14);border:0}
+#app[data-theme=clean] .chipu b{color:#fff}#app[data-theme=clean] .chipu small{color:rgba(255,255,255,.75)}
+#app[data-theme=clean] .chipu svg{stroke:#fff}
+#app[data-theme=clean] .chipu .avatar{background:#fff;color:#0F1B4D}
+.card,.kpi,.h2-k button,.h2-card,.in-card,.tiles,details.dd{background:rgba(255,255,255,.9)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.9)!important;box-shadow:0 6px 22px rgba(15,27,77,.07)!important;border-radius:20px}
+.btn{background:#0F1B4D;box-shadow:0 8px 18px rgba(15,27,77,.22)}
+.btn.orange{background:linear-gradient(135deg,#FF8A3D,#F26A10)}
+.btn.ok{background:#12986B}.btn.danger{background:#fff;color:#D5443A;border:1.5px solid #F3C9C6;box-shadow:none}
+.btn.outline,.btn.sec{background:#fff;color:#0F1B4D;border:1.5px solid #CFD9F2}
+.chip.on,.chips .on{background:#0F1B4D;border-color:#0F1B4D}
+.fab{background:#0F1B4D;box-shadow:0 10px 24px rgba(15,27,77,.35)}
+h2.sec:before{background:#2454E8}
+.ph h1{color:#0F1B4D}
+.nx-k{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.nx-k button{background:rgba(255,255,255,.92);border:1px solid #fff;border-radius:18px;box-shadow:0 6px 18px rgba(15,27,77,.08);padding:14px;text-align:left}
+.nx-k .ni{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;margin-bottom:10px;background:#E8EFFD;color:#2454E8}
+.nx-k .o{background:#FCF1E0;color:#F26A10}.nx-k .g{background:#E4F5EC;color:#12986B}.nx-k .v{background:#EEEAFE;color:#6D4AE8}
+.nx-k small{display:block;font-size:12.5px;color:#46526E;font-weight:600}.nx-k b{display:block;font-size:26px;font-weight:800;color:#0F1B4D;line-height:1.15;letter-spacing:-.5px}
+.nx-q{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:rgba(255,255,255,.55);border:1px solid #fff;border-radius:22px;padding:14px;margin-bottom:16px}
+.nx-q button{background:#fff;border:1px solid #DCE5F8;border-radius:14px;padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;font-size:11.5px;font-weight:600;color:#0F1B4D;line-height:1.2}
+.nx-q button svg{width:22px;height:22px;stroke:#2454E8}
+.nx-q button:active{transform:scale(.95)}
+
+.stp{display:flex;align-items:flex-start;margin:2px 2px 16px}.stp .s{flex:none;text-align:center;font-size:11px;font-weight:600;color:#6B7794;width:70px}
+.stp .s i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;margin:0 auto 4px;background:#fff;border:2px solid #CFD9F2;font-style:normal;font-weight:700;color:#6B7794}
+.stp .s.on i,.stp .s.dn i{background:#2454E8;border-color:#2454E8;color:#fff}.stp .s.on{color:#2454E8}
+.stp .ln{flex:1;height:2px;background:#CFD9F2;margin-top:16px}.stp .ln.on{background:#2454E8}
+.wz-p{display:none}.wz-p.on{display:block}
+.rv{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #E3E8F2;font-size:14px}.rv:last-child{border:0}.rv b{color:#0F1B4D}
+.nx-ban{display:flex;gap:12px;align-items:center;background:#FBE5E3;border-radius:18px;padding:14px;margin-bottom:14px}
+.nx-ban .bi{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#D5443A;flex:none}.nx-ban b{display:block;color:#0F1B4D}.nx-ban small{color:#7A3B37;font-size:12.5px}
+.nx-hello{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#E3ECFF,#F1F5FF);border-radius:22px;padding:14px 6px 0 16px;margin-bottom:14px;overflow:hidden}
+.nx-hello .grow{padding-bottom:14px}.nx-hello b{display:block;font-size:15px;color:#0F1B4D}.nx-hello small{color:#46526E;font-size:12.5px}.nx-hello svg{flex:none;width:118px;height:92px}
+.nx-pr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}.nx-pr div{border-radius:18px;padding:14px}.nx-pr .p{background:#E4F5EC}.nx-pr .r{background:#FCF1E0}
+.nx-pr span{font-size:12.5px;font-weight:600;color:#46526E;display:block}.nx-pr b{font-size:22px;font-weight:800;color:#0F1B4D}
+
+.card.tap>.row>.ico,.card.tap>.row>span.ico{border-radius:50%;width:44px;height:44px;flex:none}
+.card.tap[style*="border-left"]{border-left:0!important;position:relative}
+.card.tap[style*="border-left"]:before{content:"";position:absolute;right:16px;bottom:16px;width:9px;height:9px;border-radius:50%;background:#F26A10}
+.cp-h{display:flex;gap:14px;align-items:center;margin-bottom:12px}.cp-h .avatar{width:62px;height:62px;font-size:20px}
+.cp-h b{font-size:17px;color:#0F1B4D;display:block}.cp-h small{color:#46526E}
+.cp-p{display:flex;justify-content:space-between;font-weight:700;color:#0F1B4D;margin:4px 0 8px}.cp-p span:last-child{font-size:18px}
+
+.in-cover{display:none}
+.in-body{text-align:center}
+.in-av{margin:22px auto 10px!important;width:86px!important;height:86px!important;font-size:28px!important;background:linear-gradient(135deg,#0F1B4D,#2454E8)!important;color:#fff!important;border:4px solid #fff;box-shadow:0 8px 20px rgba(15,27,77,.2)}
+.in-btns{justify-content:center}
+.nx-pw{text-align:center;color:#6B7794;font-size:12px;margin:16px 0 4px}
+
+#app[data-theme=clean] .hero:has(> .grow > .big){background:linear-gradient(135deg,#2454E8,#4E7BFF)!important;border:0!important}
+#app[data-theme=clean] .hero:has(> .grow > .big) *{color:#fff}
+#app[data-theme=clean] .hero:has(> .grow > .big) .mut{color:rgba(255,255,255,.85)}
+.card.hero b,.card.hero .mut{color:inherit}
+.nx-ban.ok{background:#E4F5EC}.nx-ban.ok .bi{color:#12986B}
+
+/* ===== New layouts: course tiles, services grid, fee actions, spaced cards, sticky action bar ===== */
+.nx-cg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.nx-cg button{text-align:left;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 6px 18px rgba(15,27,77,.08);padding:0}
+.nx-cg .tp{height:64px;display:flex;align-items:flex-end;padding:0 14px;position:relative}
+.nx-cg .tp i{position:absolute;right:12px;top:10px;font-style:normal;font-size:11px;font-weight:700;color:#fff;background:rgba(255,255,255,.22);padding:3px 9px;border-radius:99px}
+.nx-cg .cc{width:46px;height:46px;border-radius:50%;background:#fff;display:grid;place-items:center;margin-bottom:-23px;box-shadow:0 4px 10px rgba(15,27,77,.15);color:#2454E8}
+.nx-cg .bd{padding:30px 14px 14px}.nx-cg b{display:block;font-size:14px;color:#0F1B4D;line-height:1.25}.nx-cg small{display:block;color:#6B7794;font-size:12px;margin-top:3px}
+.nx-cg .ft{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;font-weight:700;color:#0F1B4D}
+.nx-cg .dot{width:8px;height:8px;border-radius:50%;background:#12986B;display:inline-block;margin-right:5px}
+.nx-sc{display:flex;gap:10px;overflow-x:auto;margin:0 -16px 14px;padding:2px 16px 6px;scrollbar-width:none}.nx-sc::-webkit-scrollbar{display:none}
+.nx-sc button{flex:none;width:150px;text-align:left;background:#fff;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(15,27,77,.08)}
+.nx-sc .c{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;margin-bottom:10px}
+.nx-sc b{display:block;font-size:24px;color:#0F1B4D;line-height:1.1}.nx-sc small{color:#46526E;font-size:12px;font-weight:600}
+.nx-gs{background:#fff;border-radius:22px;padding:14px 8px 6px;margin-bottom:14px;box-shadow:0 6px 18px rgba(15,27,77,.07)}
+.nx-gs h4{margin:0 8px 12px;font-size:13px;color:#6B7794;letter-spacing:.4px;text-transform:uppercase}
+.nx-gs .g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 0}
+.nx-gs .g button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 2px 12px;font-size:11.5px;font-weight:600;color:#0F1B4D;text-align:center;line-height:1.2;position:relative}
+.nx-gs .g .c{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;box-shadow:0 4px 10px rgba(15,27,77,.08)}
+.nx-gs .g u{position:absolute;top:-2px;right:calc(50% - 32px);background:#F26A10;color:#fff;font-size:10px;font-weight:700;text-decoration:none;border-radius:99px;padding:1px 6px}
+.nx-pf{display:flex;align-items:center;gap:12px;background:#fff;border-radius:22px;padding:14px;margin-bottom:14px;box-shadow:0 6px 18px rgba(15,27,77,.07)}
+.nx-pf .avatar{width:48px;height:48px}.nx-pf b{display:block;color:#0F1B4D}.nx-pf small{color:#6B7794}
+.t1{background:#E8EFFD;color:#2454E8}.t2{background:#FCF1E0;color:#F26A10}.t3{background:#EEEAFE;color:#6D4AE8}.t4{background:#E4F5EC;color:#12986B}.t5{background:#FBE5E3;color:#D5443A}
+.nx-fs{display:flex;align-items:center;gap:12px;margin-bottom:12px}.nx-fs .avatar{width:46px;height:46px}.nx-fs b{display:block;color:#0F1B4D}.nx-fs small{color:#6B7794}
+.nx-act{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+.nx-act button{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#0F1B4D}
+.nx-act .c{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#2454E8;box-shadow:0 4px 12px rgba(15,27,77,.12)}
+.nx-act .p .c{background:#0F1B4D;color:#fff;box-shadow:0 8px 18px rgba(15,27,77,.3)}
+.nx-ft{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px}.nx-ft div{background:#fff;border-radius:16px;padding:10px 12px;box-shadow:0 4px 12px rgba(15,27,77,.06)}
+.nx-ft span{display:block;font-size:11px;color:#6B7794;font-weight:600}.nx-ft b{font-size:15px;color:#0F1B4D}
+.mx-list{background:none!important;box-shadow:none!important;border:0!important;padding:0!important;backdrop-filter:none!important}
+.mx-list>.mx-row{background:#fff;border-radius:18px;margin-bottom:10px;box-shadow:0 4px 14px rgba(15,27,77,.07);border:0!important}
+.mx-sc2 .pipe,.mx-sc2 .pipel{display:none}
+.nx-sticky{position:sticky;bottom:-6px;display:grid;gap:8px;padding:18px 0 6px;background:linear-gradient(180deg,rgba(238,243,255,0),#EEF3FF 38%);z-index:3}
+.nx-sticky .btn{margin:0}
+.nx-lnk{display:inline-flex;align-items:center;gap:6px;background:#fff;border-radius:99px;padding:8px 14px;font-size:12.5px;font-weight:700;color:#2454E8;box-shadow:0 4px 12px rgba(15,27,77,.08);margin-bottom:12px}
+
+/* ===== Native-app chrome: white logo on navy, docked tab bar, top toasts, press feedback ===== */
+#app[data-theme=clean] .logobar .lg img{background:none!important;padding:0!important;border-radius:0;height:30px!important;filter:brightness(0) invert(1);box-sizing:border-box}
+#app[data-theme=clean] .logobar{padding-top:calc(10px + var(--sb,0px) + env(safe-area-inset-top,0px));padding-bottom:12px}
+#app[data-theme=clean] .tabs{margin:0!important;border-radius:22px 22px 0 0!important;border:0!important;background:#fff!important;box-shadow:0 -6px 24px rgba(15,27,77,.12)!important;padding:8px 10px calc(10px + var(--hb,0px) + env(safe-area-inset-bottom,0px))!important}
+#app[data-theme=clean] .tabs button.on span.tb,#app[data-theme=clean] .tabs button.on .tb{background:#E8EFFD;border-radius:999px}
+#app[data-theme=clean] .tabs button.on:before{display:none}
+#toasts{bottom:auto!important;top:calc(86px + var(--ht,0px))!important}
+button,.tile,.nx-q button,.nx-act button,.nx-gs .g button,.nx-cg button,.nx-sc button{transition:transform .12s ease,box-shadow .12s ease;-webkit-tap-highlight-color:transparent}
+button:active{transform:scale(.97)}
+.view{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+
+/* ===== Compact + clearly bordered (replaces the glass look) ===== */
+.view{zoom:.9}
+.card,.kpi,.h2-k button,.h2-card,.in-card,details.dd,.alert,.nx-k button,.nx-gs,.nx-pf,.nx-cg button,.nx-sc button,.mx-list>.mx-row,.nx-ft div,.nx-pr div,.mx-sc>div,.mx-sc2,.nx-q button{background:#fff!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border:1px solid #D3DDF0!important;box-shadow:0 1px 2px rgba(15,27,77,.05)!important;border-radius:14px!important}
+.nx-pr .p{background:#EAF7F0!important;border-color:#C9E9D8!important}.nx-pr .r{background:#FDF3E3!important;border-color:#F3DDB7!important}
+.alert{border-radius:14px!important}
+.card.hero:has(.big),#app[data-theme=clean] .hero:has(> .grow > .big){border:0!important}
+.nx-hello{display:none!important}
+.tiles{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;gap:10px!important;border-radius:0!important}
+.tile{background:#fff!important;border:1px solid #D3DDF0!important;border-radius:14px!important;padding:12px 4px 10px!important;gap:6px!important;box-shadow:0 1px 2px rgba(15,27,77,.05)!important}
+.tile .ico{width:38px!important;height:38px!important;border-radius:12px!important;box-shadow:none!important}
+.tile .ico svg{width:20px!important;height:20px!important}
+.nx-gs .g .c,.nx-act .c{box-shadow:none}
+.nx-gs .g .c{width:44px;height:44px}
+.list>.item:not(:last-child):after{left:60px}
+.big{font-size:30px!important;line-height:1.1}
+.hdr h1,.ph h1{font-size:20px}
+h2.sec{font-size:14px;margin:16px 0 8px}
+
+.nx-pr{gap:10px;margin-bottom:10px}.nx-pr div{padding:9px 12px!important}.nx-pr span{font-size:11.5px}.nx-pr b{font-size:17px!important}
+.fx-c{padding:12px!important;margin-bottom:10px}.fx-c .t{font-size:12.5px;font-weight:700;color:#46526E}
+.fx-c .a{font-size:24px;font-weight:800;color:#F26A10;line-height:1.1}.fx-c .p{font-size:20px;font-weight:800;color:#12986B}
+.fx-c .r{display:flex;justify-content:space-between;align-items:center;gap:8px}.fx-c .d{font-size:13px;color:#46526E;margin:8px 0 10px}.fx-c .d b{color:#0F1B4D}
+.fx-c .btn{min-height:40px;font-size:14px;padding:9px 12px}
 </style>
 </head>
 <body>
@@ -596,7 +814,7 @@ const cur = () => S.stack.length ? S.stack[S.stack.length - 1] : { v: S.role[0] 
 function session() { if (S.role) LS.set('balsam_session', JSON.stringify({ role: S.role, reg: S.reg })); else LS.del('balsam_session'); }
 
 function render() {
-  const app = $('#app'), root = $('#root'); app.dataset.theme = S.theme;
+  const app = $('#app'), root = $('#root'); app.dataset.theme = S.theme; app.dataset.role = S.role || ''; app.dataset.sub = S.stack.length ? '1' : '';
   const old = $('.view', root), key = S.role ? JSON.stringify(cur()) + S.tab : 'login', sy = old && app.dataset.key === key ? old.scrollTop : 0;
   const af = document.activeElement, fid = af && af.id && /^(q-|f-)/.test(af.id) && root.contains(af) ? af.id : null, pos = fid && af.selectionStart != null ? af.selectionStart : null;
   let html, v = null;
@@ -626,7 +844,7 @@ A.acct = () => { const adm = S.role === 'admin', s = me(); openSheet(`<div class
 A.acctgo = d => { S.sheet = null; if (d.t) tab(d.t); else if (d.v === 'help') { render(); A.help(); } else go(d.v); };
 function hdrHtml(v, rootScr) {
   if (v.hdr) return v.hdr;
-  return `<header class="hdr"><div class="hdr-top">${!rootScr ? `<button class="hbtn" data-a="back" aria-label="Back">${ic('back')}</button>` : ''}<div class="grow"><h1 class="trunc">${v.t}</h1>${v.sub ? `<small class="trunc">${v.sub}</small>` : ''}</div>${v.right || ''}</div>${v.extra ? `<div class="hdr-extra">${v.extra}</div>` : ''}</header>`;
+  return `<header class="hdr"><div class="hdr-top">${!rootScr ? `<button class="hbtn" data-a="back" aria-label="Back">${ic('back')}</button>` : `<button class="avatar" data-a="acct" aria-label="Account">${S.role === 'admin' ? 'AD' : ini(me().full_name)}</button>`}<div class="grow"><h1 class="trunc">${v.t}</h1>${v.sub ? `<small class="trunc">${v.sub}</small>` : ''}</div>${rootScr ? `<button class="hbtn" data-a="gsearch" aria-label="Search">${ic('search')}</button>` : ''}${v.right || ''}</div>${v.extra ? `<div class="hdr-extra">${v.extra}</div>` : ''}</header>`;
 }
 function tabBar() {
   const s = me(), onb = s && s.stage === 'new';
@@ -721,6 +939,7 @@ function fileLink(f, label) { return f && f.name ? (f.data ? `<a href="${f.data}
 function savePdf(blob, name) { download(blob, name); toast('Downloaded ' + name, 'ok'); }
 function bellBtn() {
   if (S.theme === 'clean' && !S.stack.length) return '';
+  
   let n = 0; if (S.role === 'student') n = unreadOf(me()); else n = adminAlerts().length;
   return `<button class="hbtn" data-a="go" data-v="${S.role === 'admin' ? 'a_notif' : 's_notif'}" aria-label="Notifications">${ic('bell')}${n ? `<u>${n}</u>` : ''}</button>`;
 }
@@ -840,8 +1059,7 @@ V.a_home = () => {
       <button class="kpi" data-a="go" data-v="a_work"><span class="ico v">${ic('clip')}</span><div><b>${rev}</b><small>Pending reviews</small></div></button></div>` +
       sec('Needs attention', al.length > 3 ? `<button data-a="go" data-v="a_notif">View all (${al.length})</button>` : '') + (al.length ? al.slice(0, 3).map(alertCard).join('') : `<div class="note ok">All clear — nothing needs your attention.</div>`) +
       sec('Quick actions') + `<div class="tiles">${tile('cal', 'g', 'Mark attendance', 'tab', 'data-t="att"')}${tile('plus', '', 'Add student', 'go', 'data-v="a_student_form"')}${tile('rupee', 'o', 'Collect fee', 'payform')}${tile('clip', 'v', 'Assign task', 'go', 'data-v="a_task_form"')}${tile('check', 'c', 'Schedule test', 'go', 'data-v="a_test_form"')}${tile('mega', 'r', 'Send notice', 'go', 'data-v="a_notif" data-tab="Compose"')}</div>` +
-      sec('Attendance — last 7 days') + `<div class="card">${weekChart()}</div>` +
-      sec('Recent activity') + `<div class="card flush list">${activityFeed() || '<div class="empty">No activity yet</div>'}</div>`
+      `<details class="dd"><summary>Attendance — last 7 days</summary><div class="dd-b">${weekChart()}</div></details><details class="dd"><summary>Recent activity</summary><div class="card flush list dd-l">${activityFeed() || '<div class="empty">No activity yet</div>'}</div></details>`
   };
 };
 
@@ -1071,7 +1289,7 @@ A.feesave = d => { const s = stu(d.reg); if (fv('nf') === '' || +fv('nf') < 0) r
 V.a_more = () => {
   const d = D(), rev = d.tasks.filter(t => t.status === 'Submitted').length + d.students.filter(s => s.project && s.project.status === 'Submitted').length;
   const g = [['book', '', 'Courses', d.courses.length + ' courses', 'a_courses'], ['folder', 'o', 'Learning materials', d.materials.length + ' shared', 'a_materials'], ['clip', 'v', 'Assignments &amp; projects', rev ? rev + ' to review' : 'All reviewed', 'a_work'], ['check', 'c', 'Assessments', d.assessments.filter(a => a.status === 'Scheduled').length + ' scheduled', 'a_tests'], ['layers', 'g', 'Completion &amp; certificates', 'Progress, certificates', 'a_complete'], ['brief', 'o', 'Placement', d.students.filter(s => s.placement_enabled).length + ' enabled', 'a_place'], ['bell', 'r', 'Notification center', adminAlerts().length + ' alerts', 'a_notif'], ['chart', '', 'Reports', 'Attendance, progress, fees', 'a_reports'], ['swap', 'v', 'Data transfer', 'Import / export CSV', 'a_data'], ['palette', 'o', 'Appearance', 'Switch design theme', 'appearance'], ['gear', '', 'Settings', 'Account &amp; data', 'a_settings']];
-  return { t: 'More', sub: 'All modules in one place', right: bellBtn(), body: `<div class="card flush list">${g.map(x => item(x[0], x[1], x[2], x[3], `data-a="go" data-v="${x[4]}"`)).join('')}</div><button class="btn danger" data-a="logout">${ic('out', 's')} Sign out</button>` };
+  return { t: 'More', sub: 'All modules in one place', right: bellBtn(), body: `${[['Academics',0,5],['Placement &amp; alerts',5,7],['Reports &amp; settings',7,99]].map(r => sec(r[0]) + '<div class="card flush list">' + g.slice(r[1],r[2]).map(x => item(x[0], x[1], x[2], x[3], `data-a="go" data-v="${x[4]}"`)).join('') + '</div>').join('')}<button class="btn danger" data-a="logout">${ic('out', 's')} Sign out</button>` };
 };
 
 /* ---------- courses ---------- */
@@ -1202,14 +1420,14 @@ V.a_complete_stu = p => {
   const s = stu(p.reg), e = s.enr, R = reqs(s), met = R.filter(r => r[1]).length, c = completion(s);
   return {
     t: esc(s.full_name), sub: 'Course completion', body: `<div class="card hero">${ring(e.progress_percent, 92)}<div class="grow"><b style="font-size:16px">${c[0]}</b><div class="mut">${esc(e.course_name)}</div><div class="mut">Certificate: ${certLabel(s.certificate.status)}</div></div></div>` +
-      sec('Update progress') + `<div class="card"><div class="row"><b class="grow">Progress</b><b id="pv" style="color:var(--accent)">${e.progress_percent}%</b></div><input type="range" id="f-pg" min="0" max="100" step="5" value="${e.progress_percent}" style="width:100%;margin:12px 0;accent-color:var(--accent)" oninput="document.getElementById('pv').textContent=this.value+'%'">${F.ta('pt', 'Topics covered / remarks', e.progress_remarks, 'e.g. HTML, CSS, JavaScript DOM…')}<button class="btn" data-a="progsave" data-reg="${s.registration_number}">Save progress</button></div>` +
-      sec('Requirements · ' + met + ' of ' + R.length) + `<div class="card flush list">${R.map(r => `<div class="item"><span class="ico sm2 ${r[1] ? 'g' : 'o'}">${ic(r[1] ? 'tick' : 'clock', 's')}</span><span class="grow"><b>${r[0]}</b><div class="mut">${esc(r[2])}</div></span></div>`).join('')}</div>` +
+      `<details class="dd"><summary>Update progress</summary><div class="card dd-l"><div class="row"><b class="grow">Progress</b><b id="pv" style="color:var(--accent)">${e.progress_percent}%</b></div><input type="range" id="f-pg" min="0" max="100" step="5" value="${e.progress_percent}" style="width:100%;margin:12px 0;accent-color:var(--accent)" oninput="document.getElementById('pv').textContent=this.value+'%'">${F.ta('pt', 'Topics covered / remarks', e.progress_remarks, 'e.g. HTML, CSS, JavaScript DOM…')}<button class="btn" data-a="progsave" data-reg="${s.registration_number}">Save progress</button></div></details>` +
+      `<details class="dd" open><summary>Requirements · ${met} of ${R.length}</summary><div class="card flush list dd-l">${R.map(r => `<div class="item"><span class="ico sm2 ${r[1] ? 'g' : 'o'}">${ic(r[1] ? 'tick' : 'clock', 's')}</span><span class="grow"><b>${r[0]}</b><div class="mut">${esc(r[2])}</div></span></div>`).join('')}</div></details>` +
       (e.enrollment_status === 'Completed' ? `<div class="note ok">Course marked completed.</div>` : `<button class="btn ok" data-a="markdone" data-reg="${s.registration_number}">${ic('award', 's')} Mark course completed</button>`)
   };
 };
 A.progsave = d => { const s = stu(d.reg), v = +$('#f-pg').value; s.enr.progress_percent = v; s.enr.progress_remarks = fv('pt'); save(); notify({ to: s.registration_number, notification_type: 'Bulk Message', title: 'Course progress updated', message: 'You are now at ' + v + '% of ' + s.enr.course_name + '.' }); toast('Progress saved', 'ok'); render(); };
 A.markdone = d => { const s = stu(d.reg), R = reqs(s), miss = R.filter(r => !r[1]); if (miss.length) return confirmSheet('Requirements not met', 'Still open: ' + miss.map(m => m[0]).join(', ') + '. Mark completed anyway?', 'markdone2', { reg: d.reg }, 'Mark completed', false); A.markdone2(d); };
-A.markdone2 = d => { const s = stu(d.reg); s.enr.enrollment_status = 'Completed'; s.enr.progress_percent = 100; s.overall_status = 'Completed'; if (s.certificate.status === 'Pending') s.certificate.status = 'Started'; save(); notify({ to: s.registration_number, notification_type: 'Bulk Message', title: 'Course completed 🎉', message: 'Congratulations on completing ' + s.enr.course_name + '! Your certificate is being prepared.' }); S.sheet = null; toast('Course marked completed', 'ok'); render(); };
+A.markdone2 = d => { const s = stu(d.reg); if (s.completion) s.completion.course_status = 'Completed'; s.enr.enrollment_status = 'Completed'; s.enr.progress_percent = 100; s.overall_status = 'Completed'; if (s.certificate.status === 'Pending') s.certificate.status = 'Started'; save(); notify({ to: s.registration_number, notification_type: 'Bulk Message', title: 'Course completed 🎉', message: 'Congratulations on completing ' + s.enr.course_name + '! Your certificate is being prepared.' }); S.sheet = null; toast('Course marked completed', 'ok'); render(); };
 
 /* ---------- placement ---------- */
 V.a_place = () => {
@@ -1381,7 +1599,7 @@ A.matopen = d => { const m = D().materials.find(x => x.material_id == d.id); if 
 
 /* ---------- tasks ---------- */
 V.s_tasks = () => {
-  const s = me(), k = sg('tk', ['Assignments', 'Assessments', 'Project']); let b = seg('tk', ['Assignments', 'Assessments', 'Project']);
+  const s = me(), k = sg('tk', ['Assignments', 'Project', 'Assessments']); let b = seg('tk', ['Assignments', 'Project', 'Assessments']);
   if (k === 'Assignments') {
     const L = tasksOf(s), todo = L.filter(t => t.status === 'Pending' || t.status === 'Revision Required'), sub = L.filter(t => t.status === 'Submitted'), done = L.filter(t => t.status === 'Completed');
     const card = t => { const od = taskOverdue(t); return `<button class="card tap" data-a="go" data-v="s_task" data-id="${t.task_id}" style="padding:12px"><div class="row"><span class="ico ${t.status === 'Completed' ? 'g' : t.status === 'Submitted' ? 'v' : od ? 'r' : 'o'}">${ic('clip')}</span><div class="grow"><div class="row"><b class="grow trunc">${esc(t.title)}</b>${pill(od ? 'Overdue' : t.status === 'Completed' ? 'Grade ' + (t.grade || '–') : t.status, od ? 'bad' : t.status === 'Completed' ? 'ok' : null)}</div><div class="mut trunc">${t.task_type} · ${t.status === 'Completed' || t.status === 'Submitted' ? 'submitted ' + fmtS(t.submitted_at) : 'due ' + rel(t.due_date)}</div></div></div></button>`; };
@@ -1390,7 +1608,7 @@ V.s_tasks = () => {
     const L = testsOf(s).sort((a, b2) => a.scheduled_date < b2.scheduled_date ? 1 : -1);
     b += L.length ? L.map(t => `<button class="card tap" data-a="go" data-v="s_test" data-id="${t.schedule_id}" style="padding:12px"><div class="row"><span class="ico ${t.status === 'Completed' ? 'g' : ''}">${ic('check')}</span><div class="grow"><div class="row"><b class="grow trunc">${esc(t.title)}</b>${t.status === 'Completed' ? pill(t.marks + '/' + t.max_marks, 'ok') : pill(t.status)}</div><div class="mut trunc">${t.assessment_type} · ${fmtS(t.scheduled_date)}, ${t12(t.scheduled_time)} · ${t.mode}</div></div></div></button>`).join('') : empty('No assessments', 'Scheduled tests and results appear here.', 'check');
   } else b += projectCard(s);
-  return { t: 'Tasks', sub: 'Assignments, assessments and project', right: bellBtn(), body: b };
+  return { t: 'Tasks', sub: 'Assignments, project and assessments', right: bellBtn(), body: b };
 };
 const PJ = ['Pending', 'Submitted', 'Under Review', 'Evaluated'];
 function projectCard(s) {
@@ -1428,7 +1646,7 @@ V.s_test = p => {
 A.subtest = d => { const a = D().assessments.find(x => x.schedule_id == d.id); readFile('af', f => { if (!f) return toast('Choose a file first.', 'bad'); a.submission_file = f; save(); toast('Uploaded', 'ok'); render(); }); };
 
 /* ---------- fees ---------- */
-V.s_fees = () => {
+V.s_fees_img = () => {
   const s = me(), e = s.enr, b = balance(s), pc = e.progress_percent, claimed = (D().payreqs || []).some(q => q.reg === s.registration_number);
   return {
     t: 'My Fees', sub: 'Track your fee status, course progress and upcoming payment.',
@@ -1610,7 +1828,7 @@ A.portsave = () => { const s = me(); if (!fv('pu')) return toast('Paste your por
 
   /* ---------------- ASSIGNMENTS / TESTS / PROJECTS ---------------- */
   V.a_work = () => {
-    const tabs = ['Assignments', 'Assessments', 'Projects'], tabv = sg('wk', tabs), d = D(), T = today();
+    const tabs = ['Assignments', 'Projects', 'Assessments'], tabv = sg('wk', tabs), d = D(), T = today();
     const cn = r => (stu(r) || { enr: { course_name: 'Other' } }).enr.course_name, nm = r => (stu(r) || { full_name: r }).full_name;
     const build = {
       Assignments: () => d.tasks.map(t => { const od = taskOverdue(t); let b = 'wait', tone = od ? 'r' : 'o', pl = pill(od ? 'Overdue' : t.status, od ? 'bad' : null);
@@ -1633,7 +1851,7 @@ A.portsave = () => { const s = me(); if (!fv('pu')) return toast('Paste your por
     const secs = ['act', 'wait', 'done'].map(k => { const L = base.filter(i => i.b === k).sort((x, y) => k === 'done' ? (x.sort < y.sort ? 1 : -1) : (x.sort < y.sort ? -1 : 1)); return L.length ? H(LAB[k], L.length) + `<div class="mx-list">${L.map(row).join('')}</div>` : ''; }).join('');
     const fab = { Assignments: { a: 'go', d: 'data-v="a_task_form"', l: 'New', i: 'plus' }, Assessments: { a: 'go', d: 'data-v="a_test_form"', l: 'Schedule', i: 'plus' }, Projects: { a: 'go', d: 'data-v="a_proj_form"', l: 'Assign', i: 'plus' } }[tabv];
     return {
-      t: 'Academics', sub: 'Assignments, tests &amp; projects', fab,
+      t: 'Academics', sub: 'Assignments, projects &amp; assessments', fab,
       body: tabsBar('wk', tabs, badges) + `<div class="mx-sc"><div class="${n('act') ? 'hot' : ''}"><b>${n('act')}</b><span>To review</span></div><div><b>${n('wait')}</b><span>${tabv === 'Assessments' ? 'Upcoming' : 'Pending'}</span></div><div><b style="color:var(--ok)">${n('done')}</b><span>Done</span></div></div>` +
         `<div class="tools"><label class="search tl">${ic('search', 's')}<input id="q-wq" data-q="wq" value="${esc(S.q.wq || '')}" placeholder="Search title or student" autocomplete="off"></label><select class="wsel" data-onchange="wflt" aria-label="Course">${courses.map(c => `<option ${c === cf ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div>` +
         (secs || empty('Nothing here', 'Tap the + button to add one.', 'clip'))
@@ -2195,7 +2413,9 @@ html[data-mode=dark] body{background:#05080F}
   const _ah = V.a_home;
   V.a_home = function () {
     const v = _ah(), mk = '<h2 class="sec">Today\'s classes';
-    v.body = v.body.includes(mk) ? v.body.replace(mk, () => insights() + mk) : v.body + insights(); return v;
+    const ins = '<details class="dd"><summary>Insights &amp; trends</summary><div class="dd-b">' + insights().replace(/^<h2 class="sec">Insights<\/h2>/, '') + '</div></details>';
+    v.body = v.body.includes(mk) ? v.body.replace(mk, () => mk) + ins : v.body + ins;
+    v.hdr = '<header class="hdr"><div class="hdr-top"><button class="avatar" data-a="acct" aria-label="Account">AD</button><div class="grow"><small style="margin:0">' + greet() + '</small><h1>Hello, Admin</h1></div>' + bellBtn() + '</div><div class="hdr-extra"><small style="margin:0">' + new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' }) + '</small></div></header>'; return v;
   };
 
   /* ---------- student home: streak, XP and badges ---------- */
@@ -2326,6 +2546,404 @@ html[data-mode=dark] body{background:#05080F}
   };
 })();
 
+/* =====================================================================
+   MODULE A — Admission & Fee Management: installment plans, automated follow-ups,
+              student in-dashboard reminders, activity log
+   MODULE B — Module 7: Course Completion & Project Assessment (Student Completion Dashboard)
+   Data (all inside the one shared store, same shape as the DB design):
+     student.plan        { total, reg_amount, n, admission_date, installments:[{no,amount,due_date}] }
+     db.followups[]      { id, reg, inst_no, offset, trigger, title, desc, status, remarks, done_at, done_by }
+     db.act_log[]        { at, staff, kind:'fee'|'comp', reg, text }
+     student.completion  { course_status, last_day, assessment..., marks..., feedback..., reviews... }
+   Installment status is DERIVED from the payment history (registration first, then installments in
+   order), so recording a payment automatically marks installments Paid and stops their reminders.
+   ===================================================================== */
+(function () {
+  const OFFS = [10, 7, 5, 3, 2];
+  const FU = {
+    10: ['Check course progress', 'Check the student\'s course progress, verify subject coverage and collect faculty feedback about the student\'s performance and progress.'],
+    7: ['Collect student feedback', 'Collect the student\'s feedback about the course and learning experience, and remind the student about the upcoming installment due date.'],
+    5: ['Share WhatsApp fee reminder', 'Share the predefined WhatsApp fee reminder template with the student.'],
+    3: ['Fee follow-up', 'Follow up with the student through WhatsApp or phone.'],
+    2: ['Personal reminder', 'Personally remind the student about the pending installment.']
+  };
+  const staff = () => D().admin.full_name;
+  const hm = t => new Date(t).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  const stamp = t => fmtTs(t) + ', ' + hm(t);
+  const ord = n => n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]);
+  function actLog(kind, reg, text) { const d = D(); (d.act_log = d.act_log || []).unshift({ at: Date.now(), staff: staff(), kind, reg, text }); d.act_log = d.act_log.slice(0, 600); }
+
+  const css = document.createElement('style');
+  css.textContent = `
+.fp-inst{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 12px 2px;margin-bottom:10px;box-shadow:var(--sh)}
+.fp-inst h4{font-size:13px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.fp-inst h4 i{font-style:normal;background:var(--tint);color:var(--accent);border-radius:99px;padding:2px 10px;font-size:11px}
+.fp-sum{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid var(--line)}.fp-sum:last-child{border:0}.fp-sum span{color:var(--mut)}
+.lg-r{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}.lg-r:last-child{border:0}
+.lg-r .d{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px;flex:none}.lg-r small{display:block;color:var(--mut);font-size:11.5px;margin-top:1px}
+.cl-ln{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}.cl-ln:last-child{border:0}.cl-ln b{font-size:13.5px;font-weight:600}
+.adm-only{display:inline-flex;align-items:center;gap:4px;background:var(--badbg);color:var(--bad);font-size:10.5px;font-weight:700;border-radius:99px;padding:2px 9px;margin-left:8px;vertical-align:middle}
+`;
+  document.head.appendChild(css);
+
+  /* ------------------------------------------------------------------ plan maths */
+  function alloc(s) {
+    const p = s.plan; if (!p) return [];
+    const pays = s.payments.slice().sort((a, b) => a.payment_date < b.payment_date ? -1 : a.payment_date > b.payment_date ? 1 : 0), T = today();
+    let pool = paidSum(s) - Number(p.reg_amount || 0), thr = Number(p.reg_amount || 0);
+    return p.installments.map(i => {
+      const amt = Number(i.amount), got = Math.max(0, Math.min(amt, pool)); pool -= amt; thr += amt;
+      const left = amt - got; let on = ''; let cum = 0;
+      for (const x of pays) { cum += Number(x.amount_paid); if (cum >= thr) { on = x.payment_date; break; } }
+      return { no: i.no, amount: amt, due_date: i.due_date, got, left, status: left <= 0 ? 'Paid' : (i.due_date < T ? 'Overdue' : (got > 0 ? 'Partial' : 'Pending')), paid_on: left <= 0 ? on : '' };
+    });
+  }
+  const nextInst = s => alloc(s).find(i => i.left > 0);
+  function split(total, reg, n) { const bal = Math.max(0, total - reg), per = Math.floor(bal / n); return Array.from({ length: n }, (_, i) => i === 0 ? bal - per * (n - 1) : per); }
+  function seedPlan(s) {
+    const total = Number(s.enr.net_fee), reg = total > 5000 ? 2000 : 0, bal = total - reg, paid = paidSum(s);
+    let a1 = paid - reg; if (!(a1 > 0 && a1 < bal)) a1 = Math.round(bal / 2); const a2 = bal - a1;
+    const adm = s.admission_date || s.enr.course_start_date || today(), nd = s.enr.next_due_date;
+    s.plan = { total, reg_amount: reg, n: 2, admission_date: adm, created_at: Date.now(), updated_by: 'System',
+      installments: [{ no: 1, amount: a1, due_date: adm }, { no: 2, amount: a2, due_date: (nd && nd > adm) ? nd : addDays(adm, 30) }] };
+  }
+
+  /* ------------------------------------------------------------------ course-completion model */
+  function comp(s) {
+    if (!s.completion) s.completion = { course_status: 'Pending', last_day: '', project_submission: '', assessment_status: 'Not Done', reschedule_date: '', reschedule_reason: '', internal_marks: '', external_marks: '', max_marks: 100, marks_visible: false, oral_feedback: 'Not Done', feedback_notes: '', concerns: '', google_review: 'Not Done', justdial_review: 'Not Done' };
+    return s.completion;
+  }
+  function endDate(s) {
+    const c = comp(s); if (c.last_day) return c.last_day;
+    const d = new Date(s.enr.course_start_date + 'T00:00:00'); d.setMonth(d.getMonth() + Number(s.enr.duration_months || 0)); d.setDate(d.getDate() - 1); return iso(d);
+  }
+  const asmtDate = s => comp(s).reschedule_date || endDate(s);
+  function checklist(s) {
+    const c = comp(s), pj = s.project, has = v => v !== '' && v != null;
+    const projDone = c.project_submission === 'Done' || (c.project_submission !== 'Not Done' && !!pj && ['Submitted', 'Under Review', 'Evaluated'].includes(pj.status));
+    return [
+      ['Course Completion', c.course_status === 'Completed', 'Done', 'Not Done'],
+      ['Project Submission', projDone, 'Done', 'Not Done'],
+      ['Project Presentation & Assessment', c.assessment_status === 'Done', 'Done', 'Not Done'],
+      ['Internal Marks Updated', has(c.internal_marks), 'Done', 'Not Done'],
+      ['External Assessment Marks Updated', has(c.external_marks), 'Done', 'Not Done'],
+      ['Oral Feedback Collected', c.oral_feedback === 'Done', 'Done', 'Not Done'],
+      ['Student Concerns Recorded', !!String(c.concerns || '').trim(), 'Yes', 'No'],
+      ['Google Review', c.google_review === 'Done', 'Done', 'Not Done'],
+      ['Justdial Review', c.justdial_review === 'Done', 'Done', 'Not Done']];
+  }
+  function cinfo(s) {
+    const c = comp(s), last = endDate(s), items = checklist(s), req = items.filter((x, i) => i !== 6), done = req.filter(x => x[1]).length;
+    return { s, c, last, left: diff(today(), last), items, done, total: req.length, full: done === req.length };
+  }
+  const cList = () => D().students.filter(s => s.stage === 'active' && s.overall_status !== 'Dropped').map(cinfo);
+
+  /* ------------------------------------------------------------------ reconcile: followups, due dates, student notices */
+  function reconcile() {
+    const d = D(), T = today(); let ch = false; d.followups = d.followups || [];
+    if (!d.plansSeeded) { d.plansSeeded = true; d.students.forEach(s => { if (!s.plan && Number(s.enr.net_fee) > 0) seedPlan(s); }); ch = true; }
+    if (!d.compSeeded) {
+      d.compSeeded = true; const h = d.students.find(s => s.registration_number === 'REG002');
+      if (h) Object.assign(comp(h), { course_status: 'Completed', last_day: addDays(T, -3), assessment_status: 'Done', internal_marks: 86, external_marks: 91, oral_feedback: 'Done', feedback_notes: 'Happy with faculty support and the live dashboard project.', google_review: 'Done', justdial_review: 'Not Done' });
+      ch = true;
+    }
+    d.students.forEach(s => {
+      if (s.enr.enrollment_status === 'Completed' && comp(s).course_status === 'Pending') { comp(s).course_status = 'Completed'; ch = true; } /* FIX: old completion flow -> new completion record */
+      if (!s.plan) return; const reg = s.registration_number; let L = alloc(s), nx = L.find(i => i.left > 0);
+      /* FIX: net fee edited elsewhere -> re-split the unpaid part of the plan so balance and installments agree */
+      const nf = Number(s.enr.net_fee);
+      if (nf > 0 && Number(s.plan.total) !== nf) {
+        const paidAmt = L.filter(i => i.left <= 0).reduce((a, i) => a + i.amount, 0), unpaid = L.filter(i => i.left > 0), rest = Math.max(0, nf - Number(s.plan.reg_amount || 0) - paidAmt);
+        if (unpaid.length) { const parts = split(rest, 0, unpaid.length); unpaid.forEach((u, k) => { s.plan.installments.find(x => x.no === u.no).amount = parts[k]; }); }
+        else if (rest > 0) { const last = s.plan.installments[s.plan.installments.length - 1]; s.plan.installments.push({ no: last.no + 1, amount: rest, due_date: addDays(last.due_date, 30) }); s.plan.n = s.plan.installments.length; }
+        s.plan.total = nf; ch = true; L = alloc(s); nx = L.find(i => i.left > 0);
+      }
+      /* FIX: next due date typed manually (payment sheet, fee sheet, student form) -> store it on the next unpaid installment */
+      const curND = s.enr.next_due_date;
+      if (nx && curND && s.enr.nd_auto !== undefined && curND !== s.enr.nd_auto && curND !== nx.due_date) {
+        const pi = s.plan.installments, k0 = pi.findIndex(x => x.no === nx.no); pi[k0].due_date = curND;
+        for (let k = k0 + 1; k < pi.length; k++) if (pi[k].due_date <= pi[k - 1].due_date) pi[k].due_date = addDays(pi[k - 1].due_date, 30);
+        ch = true; L = alloc(s); nx = L.find(i => i.left > 0);
+        actLog('fee', reg, 'Next due date set manually to ' + fmtD(curND));
+      }
+      const nd = nx ? nx.due_date : '';
+      if (s.enr.next_due_date !== nd) { s.enr.next_due_date = nd; ch = true; }
+      if (s.enr.nd_auto !== nd) { s.enr.nd_auto = nd; ch = true; }
+      d.followups.forEach(f => {
+        if (f.reg !== reg || f.status !== 'Pending') return;
+        const inst = L.find(i => i.no === f.inst_no);
+        if (!inst || inst.left <= 0) { f.status = 'Cancelled'; f.done_at = Date.now(); f.done_by = 'System'; f.remarks = (f.remarks ? f.remarks + ' · ' : '') + 'Auto-closed: installment paid'; ch = true; }
+        else { const t = addDays(inst.due_date, -f.offset); if (t !== f.trigger) { f.trigger = t; ch = true; } }
+      });
+      d.notifications.forEach(n => { if (n.key && n.key.indexOf('fee:' + reg + ':') === 0 && !n.resolved) { const no = +n.key.split(':')[2], inst = L.find(i => i.no === no); if (inst && inst.left <= 0) { n.resolved = true; n.resolved_at = Date.now(); n.readBy = (n.readBy || []).includes(reg) ? n.readBy : (n.readBy || []).concat(reg); ch = true; } } });
+      const adm0 = s.plan.admission_date || s.admission_date || '', followable = nx && nx.due_date > adm0; /* FIX: installment 1 is payable at admission, reminders start from the next one */
+      if (followable && s.overall_status !== 'Dropped') {
+        const overdue0 = nx.due_date < T;
+        OFFS.forEach(o => { if (overdue0 && o !== 2) return; /* FIX: overdue -> one follow-up, not five at once */ if (!d.followups.some(f => f.reg === reg && f.inst_no === nx.no && f.offset === o)) { d.followups.push({ id: nid('followup'), reg, inst_no: nx.no, offset: o, trigger: addDays(nx.due_date, -o), title: FU[o][0], desc: FU[o][1], status: 'Pending', remarks: '', done_at: '', done_by: '' }); ch = true; } });
+        [5, 3].forEach(o => {
+          const key = 'fee:' + reg + ':' + nx.no + ':' + o;
+          if (T >= addDays(nx.due_date, -o) && !d.notifications.some(n => n.key === key)) {
+            notify({ to: reg, key, notification_type: 'Fee Reminder', title: (o === 5 ? 'Fee reminder' : 'Fee follow-up') + ' · Installment ' + nx.no + ' of ' + s.plan.n, message: 'Installment ' + nx.no + ': ' + inr(nx.left) + ' payable by ' + fmtD(nx.due_date) + '.\nPlease pay at the front desk or by UPI. This reminder stops once the institute records your payment.' }); ch = true;
+          }
+        });
+      }
+    });
+    if (ch) save();
+  }
+  const _r2 = render;
+  render = function () { try { reconcile(); } catch (e) { console.error(e); } _r2(); };
+
+  /* ------------------------------------------------------------------ admin alerts */
+  const _aa = adminAlerts;
+  adminAlerts = function () {
+    const out = _aa(), d = D(), T = today(), push = (tone, i, t, desc, go) => out.push({ tone, i, t, d: desc, go, p: {} });
+    const due = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T);
+    if (due.length) { const n = new Set(due.map(f => f.reg)).size, od = d.students.some(s => s.plan && alloc(s).some(i => i.status === 'Overdue')); push(od ? 'r' : 'o', 'bell', due.length + ' fee follow-up' + (due.length > 1 ? 's' : '') + ' pending', n + ' student' + (n > 1 ? 's' : '') + ' · tap to open the follow-up dashboard', 'a_followups'); }
+    const np = d.students.filter(s => !s.plan && Number(s.enr.net_fee) > 0 && s.overall_status !== 'Dropped').length;
+    if (np) push('b', 'rupee', np + ' student' + (np > 1 ? 's have' : ' has') + ' no installment plan', 'Set the installments and due dates so reminders can run', 'a_fees');
+    const ci = cList(), act = ci.filter(i => i.c.course_status === 'Pending' && i.left <= 0), clo = ci.filter(i => i.c.course_status === 'Completed' && !i.full);
+    if (act.length) push('o', 'award', act.length + ' course' + (act.length > 1 ? 's' : '') + ' at last day', 'Update completion status and run the assessment', 'a_cdash');
+    if (clo.length) push('b', 'check', clo.length + ' completion checklist' + (clo.length > 1 ? 's' : '') + ' open', 'Marks, feedback or online reviews still pending', 'a_cdash');
+    const w = { r: 0, o: 1, b: 2, g: 3 }; return out.sort((a, b) => w[a.tone] - w[b.tone]);
+  };
+
+  /* ------------------------------------------------------------------ small ui helpers */
+  const linkCard = (tone, icon, t, sub, view) => `<button class="alert ${tone}" data-a="go" data-v="${view}"><span class="ico ${tone === 'b' ? '' : tone}">${ic(icon)}</span><span class="grow"><b>${t}</b><span class="mut">${sub}</span></span>${ic('next', 's')}</button>`;
+  const fuDue = () => (D().followups || []).filter(f => f.status === 'Pending' && f.trigger <= today());
+  const instPill = i => pill(i.status, { Paid: 'ok', Overdue: 'bad', Partial: 'warn', Pending: 'warn' }[i.status]);
+
+  /* ================================================================== FEES: PLAN FORM */
+  function fpFill(x, k) {
+    const n = x.n, am = x.am, old = x.inst || [], bal = Math.max(0, x.total - x.reg), amts = split(x.total, x.reg, n);
+    if (k !== 'adm') x.am = [];
+    x.inst = Array.from({ length: n }, (_, i) => ({
+      amount: (k === 'adm' && am[i] && old[i]) ? old[i].amount : amts[i],
+      due: (x.dm[i] && old[i]) ? old[i].due : addDays(x.adm, 30 * i)
+    }));
+    x.dm = x.dm.slice(0, n); void bal;
+  }
+  function fpMake(total, reg, n, adm) { const x = { total, reg, n, adm, inst: [], am: [], dm: [], recv: false }; fpFill(x, 'all'); return x; }
+  function fpInstHtml(x) {
+    return x.inst.map((it, i) => `<div class="fp-inst"><h4>${i === 0 ? 'Admission installment (1st)' : ord(i + 1) + ' installment'}<i>${i === 0 ? 'Payable at admission' : '+' + 30 * i + ' days'}</i></h4><div class="g2">${F.t('fpa' + i, 'Amount (₹)', it.amount, { type: 'number', attr: 'data-fp="amt" data-i="' + i + '" min="0"' })}${F.t('fpd' + i, 'Due date', it.due, { type: 'date', attr: 'data-fp="due" data-i="' + i + '"' })}</div></div>`).join('');
+  }
+  function fpChkHtml(x) {
+    const bal = Math.max(0, x.total - x.reg), sum = x.inst.reduce((a, i) => a + Number(i.amount || 0), 0), df = bal - sum;
+    return df === 0 ? `<div class="note ok">Installments add up to the balance (${inr(bal)}).</div>` : `<div class="note bad">Installments total ${inr(sum)} but the balance is ${inr(bal)} (${df > 0 ? inr(df) + ' short' : inr(-df) + ' extra'}). Adjust an amount.</div>`;
+  }
+  V.a_fee_plan = p => {
+    const s = stu(p.reg); if (!s) return { t: 'Installment plan', body: empty('Not found', '') };
+    const key = 'fp' + p.reg; S.fpKey = key;
+    if (!S.draft[key]) {
+      if (s.plan) { const pl = s.plan; S.draft[key] = { total: pl.total, reg: pl.reg_amount, n: pl.n, adm: pl.admission_date, inst: pl.installments.map(i => ({ amount: i.amount, due: i.due_date })), am: pl.installments.map(() => true), dm: pl.installments.map(() => true), recv: false }; }
+      else { const x = fpMake(Number(s.enr.net_fee) || 25000, 2000, 2, s.admission_date || today()); x.recv = s.payments.length === 0; S.draft[key] = x; }
+    }
+    const x = S.draft[key], bal = Math.max(0, x.total - x.reg), hasReg = s.payments.some(q => q.remarks === 'Registration'), recvDefault = x.recv && !hasReg;
+    return {
+      t: 'Fee installment plan', sub: esc(s.full_name) + ' · ' + esc(s.enr.course_name),
+      body: `<div class="note">Enter the fee structure — installments are divided automatically. You can edit any amount or due date.</div>` +
+        F.t('fpt', 'Total course amount (₹) *', x.total, { type: 'number', attr: 'data-fp="total" min="0"' }) +
+        `<div class="g2">${F.t('fpr', 'Registration amount (₹)', x.reg, { type: 'number', attr: 'data-fp="reg" min="0"' })}${F.s('fpn', 'No. of installments', Array.from({ length: 12 }, (_, i) => i + 1), x.n, 'data-fp="n"')}</div>` +
+        `<div class="card row"><span class="grow"><b>Balance amount</b><div class="mut">Total − registration · calculated automatically</div></span><b id="fp-bal" style="font-size:21px;color:var(--accent)">${inr(bal)}</b></div>` +
+        F.t('fpadm', 'Admission date * (joining date)', x.adm, { type: 'date', attr: 'data-fp="adm"' }) +
+        sec('Installments') + `<div id="fp-inst">${fpInstHtml(x)}</div><div id="fp-chk">${fpChkHtml(x)}</div>` +
+        (hasReg ? '' : `<div class="card"><label class="row" style="gap:10px"><input type="checkbox" id="f-frecv" ${recvDefault ? 'checked' : ''}><span class="grow"><b>Registration fee received now</b><div class="mut">Adds a ₹ receipt to the payment history</div></span></label><div style="margin-top:10px">${F.s('fmode', 'Payment mode', ['Cash', 'UPI', 'Card', 'Net Banking', 'Cheque'], 'UPI')}</div></div>`) +
+        `<div class="note">Next installments are due 30 days apart by default. Reminders run automatically from each due date.</div><div class="btns"><button class="btn sec" data-a="fpcancel" data-reg="${p.reg}">Cancel</button><button class="btn" data-a="fpsave" data-reg="${p.reg}">${ic('tick', 's')} Save plan</button></div>`
+    };
+  };
+  A.fpopen = d => go('a_fee_plan', { reg: d.reg });
+  A.fpcancel = d => { delete S.draft['fp' + d.reg]; back(); };
+  function fpHandle(t) {
+    const x = S.draft[S.fpKey]; if (!x) return; const k = t.dataset.fp;
+    if (k === 'amt') { const i = +t.dataset.i; x.inst[i].amount = Number(t.value) || 0; x.am[i] = true; const c = $('#fp-chk'); if (c) c.innerHTML = fpChkHtml(x); return; }
+    if (k === 'due') { const i = +t.dataset.i; x.inst[i].due = t.value; x.dm[i] = true; return; }
+    x.total = Number(fv('fpt')) || 0; x.reg = Number(fv('fpr')) || 0; x.n = Math.max(1, Math.min(12, +fv('fpn') || 1));
+    const a = fv('fpadm'); if (!a) return; x.adm = a;
+    if (k !== 'adm') x.am = []; if (k === 'adm') x.dm = []; fpFill(x, k);
+    const b = $('#fp-bal'), c = $('#fp-inst'), m = $('#fp-chk'); if (b) b.textContent = inr(Math.max(0, x.total - x.reg)); if (c) c.innerHTML = fpInstHtml(x); if (m) m.innerHTML = fpChkHtml(x);
+  }
+  document.addEventListener('input', e => { const t = e.target; if (t.dataset && t.dataset.fp && t.tagName !== 'SELECT') fpHandle(t); });
+  document.addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.fp && t.tagName === 'SELECT') fpHandle(t); });
+  A.fpsave = d => {
+    const s = stu(d.reg), x = S.draft['fp' + d.reg]; if (!x) return;
+    const bal = x.total - x.reg, sum = x.inst.reduce((a, i) => a + Number(i.amount || 0), 0);
+    if (!(x.total > 0)) return toast('Enter the total course amount.', 'bad');
+    if (x.reg < 0 || x.reg >= x.total) return toast('Registration amount must be less than the total.', 'bad');
+    if (!x.adm) return toast('Choose the admission date.', 'bad');
+    if (x.inst.some(i => !i.due)) return toast('Every installment needs a due date.', 'bad');
+    if (x.inst.some((i, k) => k && i.due < x.inst[k - 1].due)) return toast('Due dates must be in order.', 'bad');
+    if (x.inst.some(i => !(Number(i.amount) >= 0))) return toast('Check the installment amounts.', 'bad');
+    if (sum !== bal) return toast('Installments (' + inr(sum) + ') must equal the balance (' + inr(bal) + ').', 'bad');
+    const dd = D(), edit = !!s.plan;
+    s.plan = { total: x.total, reg_amount: x.reg, n: x.n, admission_date: x.adm, created_at: (s.plan && s.plan.created_at) || Date.now(), updated_by: staff(), installments: x.inst.map((i, k) => ({ no: k + 1, amount: Number(i.amount), due_date: i.due })) };
+    s.enr.net_fee = x.total; s.admission_date = x.adm;
+    const rc = $('#f-frecv'); if (rc && rc.checked && x.reg > 0) { s.payments.push({ receipt_number: 'PAY-' + ('00000' + nid('pay')).slice(-5), payment_date: today(), amount_paid: x.reg, payment_mode: fv('fmode') || 'Cash', reference: '', remarks: 'Registration' }); actLog('fee', s.registration_number, 'Registration fee ' + inr(x.reg) + ' received'); }
+    dd.followups = (dd.followups || []).filter(f => !(f.reg === s.registration_number && f.status === 'Pending'));
+    actLog('fee', s.registration_number, (edit ? 'Installment plan updated: ' : 'Installment plan created: ') + inr(x.total) + ' in ' + x.n + ' installment' + (x.n > 1 ? 's' : '') + ', registration ' + inr(x.reg));
+    delete S.draft['fp' + d.reg]; save(); toast('Installment plan saved', 'ok'); back();
+  };
+
+  /* ================================================================== FEES: student fee screen additions */
+  const planCard = s => {
+    if (!s.plan) return `<h2 class="sec">Installment plan</h2><div class="card"><div class="mut" style="margin-bottom:12px">No installment plan yet. Set the structure to start automatic follow-ups.</div><button class="btn" data-a="fpopen" data-reg="${s.registration_number}">${ic('plus', 's')} Set up installments</button></div>`;
+    const p = s.plan, L = alloc(s);
+    return `<h2 class="sec">Installment plan<button data-a="fpopen" data-reg="${s.registration_number}">Edit</button></h2><div class="card"><div class="fp-sum"><span>Total course fee</span><b>${inr(p.total)}</b></div><div class="fp-sum"><span>Registration fee</span><b>${inr(p.reg_amount)}</b></div><div class="fp-sum"><span>Balance fee</span><b>${inr(p.total - p.reg_amount)}</b></div><div class="sepl"></div>${L.map((i, k) => `<div class="cl-ln"><span class="ico sm2 ${i.status === 'Paid' ? 'g' : i.status === 'Overdue' ? 'r' : 'o'}">${ic(i.status === 'Paid' ? 'tick' : 'clock', 's')}</span><span class="grow"><b>${k === 0 ? 'Admission installment (1st)' : ord(i.no) + ' installment'}</b><div class="mut">${inr(i.amount)} · due ${fmtD(i.due_date)}${i.status === 'Paid' && i.paid_on ? ' · paid ' + fmtS(i.paid_on) : i.status === 'Partial' ? ' · ' + inr(i.left) + ' left' : ''}</div></span>${instPill(i)}</div>`).join('')}</div>`;
+  };
+  const stuFuLog = s => {
+    const reg = s.registration_number, fus = (D().followups || []).filter(f => f.reg === reg && f.status !== 'Cancelled').sort((a, b) => a.trigger < b.trigger ? -1 : 1), log = (D().act_log || []).filter(l => l.kind === 'fee' && l.reg === reg).slice(0, 12);
+    return (fus.length ? sec('Follow-ups') + `<div class="card flush list">${fus.map(f => `<button class="item" data-a="fuopen" data-id="${f.id}"><span class="ico sm2 ${f.status === 'Completed' ? 'g' : f.trigger <= today() ? 'o' : ''}">${ic(f.status === 'Completed' ? 'tick' : 'bell', 's')}</span><span class="grow"><b class="trunc">${esc(f.title)}</b><div class="mut">${f.offset} days before · ${fmtS(f.trigger)}</div></span>${pill(f.status, f.status === 'Completed' ? 'ok' : f.trigger <= today() ? 'warn' : 'n')}</button>`).join('')}</div>` : '') +
+      sec('Activity log') + `<div class="card">${log.length ? log.map(l => `<div class="lg-r"><span class="d"></span><div><b style="font-weight:600">${esc(l.text)}</b><small>${stamp(l.at)} · ${esc(l.staff)}</small></div></div>`).join('') : '<div class="mut">No activity yet.</div>'}</div>`;
+  };
+  const _fs = V.a_fee_stu;
+  V.a_fee_stu = p => {
+    const v = _fs(p), s = stu(p.reg); if (!s) return v; const mk = '<h2 class="sec">Payment history';
+    v.body = v.body.includes(mk) ? v.body.replace(mk, () => planCard(s) + mk) : v.body + planCard(s);
+    v.body += stuFuLog(s); return v;
+  };
+  const _fees = V.a_fees;
+  V.a_fees = () => {
+    const v = _fees(), n = fuDue().length, tot = (D().followups || []).filter(f => f.status === 'Pending').length;
+    v.body = linkCard(n ? 'o' : 'b', 'bell', 'Fee follow-ups', n ? n + ' due now · ' + tot + ' scheduled' : 'Nothing due now · ' + tot + ' scheduled', 'a_followups') + v.body; return v;
+  };
+  const _sd = V.a_student_done;
+  V.a_student_done = p => { const v = _sd(p); v.body += `<button class="btn sec" style="margin-top:10px" data-a="fpopen" data-reg="${p.reg}">${ic('rupee', 's')} Set up fee installments</button>`; return v; };
+  const _ps = A.paysave;
+  A.paysave = function () {
+    const s = stu(fv('pstu')), n0 = s ? s.payments.length : 0, b4 = s ? alloc(s).filter(i => i.left <= 0).length : 0; _ps();
+    if (s && s.payments.length > n0) {
+      const p = s.payments[s.payments.length - 1]; actLog('fee', s.registration_number, 'Payment ' + inr(p.amount_paid) + ' recorded via ' + p.payment_mode + ' (' + p.receipt_number + ')');
+      const aft = alloc(s).filter(i => i.left <= 0).length; if (aft > b4) actLog('fee', s.registration_number, 'Installment ' + aft + ' marked Paid · reminders stopped');
+      reconcile(); save();
+    }
+  };
+
+  /* ================================================================== FOLLOW-UP DASHBOARD */
+  V.a_followups = () => {
+    const d = D(), T = today(), k = sg('fu', ['Due now', 'Upcoming', 'Done', 'Activity']), q = (S.q.fu || '').toLowerCase(), all = (d.followups || []).filter(f => stu(f.reg));
+    const nm = f => stu(f.reg).full_name.toLowerCase(), instOf = f => alloc(stu(f.reg)).find(i => i.no === f.inst_no) || {};
+    const dueNow = all.filter(f => f.status === 'Pending' && f.trigger <= T), up = all.filter(f => f.status === 'Pending' && f.trigger > T), done = all.filter(f => f.status !== 'Pending');
+    const mkRow = f => { const s = stu(f.reg), inst = instOf(f);
+      const when = f.status === 'Pending' ? (f.trigger < T ? 'Since ' + fmtS(f.trigger) : f.trigger === T ? 'Today' : 'On ' + fmtS(f.trigger)) : f.status === 'Completed' ? 'Done ' + fmtS(iso(new Date(f.done_at))) : 'Auto-closed';
+      return `<button class="mx-row" data-a="fuopen" data-id="${f.id}"><span class="ci ${f.status !== 'Pending' ? 'g' : f.offset <= 3 ? 'r' : f.offset === 5 ? 'o' : ''}">${ic(f.status === 'Pending' ? 'bell' : 'tick')}</span><span class="t"><b class="trunc">${esc(f.title)}</b><span class="trunc">${esc(s.full_name)} · Inst ${f.inst_no} · ${f.status === 'Pending' ? inr(inst.left || 0) + ' due ' + fmtS(inst.due_date) : esc(f.done_by || '')}</span></span><span class="rt">${pill(f.offset + ' days before', f.status === 'Pending' ? (f.offset <= 3 ? 'bad' : f.offset === 5 ? 'warn' : '') : 'n')}<small>${when}</small></span></button>`; };
+    const filt = a => a.filter(f => !q || nm(f).includes(q));
+    let body = seg('fu', ['Due now', 'Upcoming', 'Done', 'Activity']) + `<div class="mx-sc"><div class="${dueNow.length ? 'hot' : ''}"><b>${dueNow.length}</b><span>Due now</span></div><div><b>${up.length}</b><span>Upcoming</span></div><div><b style="color:var(--ok)">${done.filter(f => f.status === 'Completed').length}</b><span>Completed</span></div></div>` + searchBox('fu', 'Search student');
+    if (k === 'Activity') {
+      const L = (d.act_log || []).filter(l => l.kind === 'fee' && (!q || ((stu(l.reg) || {}).full_name || '').toLowerCase().includes(q))).slice(0, 60);
+      body += L.length ? `<div class="card">${L.map(l => `<div class="lg-r"><span class="d"></span><div><b style="font-weight:600">${esc(l.text)}</b><small>${esc((stu(l.reg) || {}).full_name || l.reg)} · ${stamp(l.at)} · ${esc(l.staff)}</small></div></div>`).join('')}</div>` : empty('No activity yet', 'Fee actions are recorded here with date, time and staff name.', 'hist');
+    } else {
+      const src = k === 'Due now' ? dueNow : k === 'Upcoming' ? up : done;
+      const L = filt(src).sort((a, b) => k === 'Done' ? (b.done_at - a.done_at) : (instOf(a).due_date || '') < (instOf(b).due_date || '') ? -1 : (instOf(a).due_date === instOf(b).due_date ? b.offset - a.offset : 1));
+      body += L.length ? `<div class="mx-list">${L.map(mkRow).join('')}</div>` : empty(k === 'Due now' ? 'All caught up' : 'Nothing here', k === 'Due now' ? 'No follow-ups are due right now.' : 'Follow-ups appear here automatically.', 'bell');
+    }
+    return { t: 'Fee follow-ups', sub: 'Reminders triggered by installment due dates', right: bellBtn(), body };
+  };
+  const waNum = m => { const x = String(m || '').replace(/\D/g, ''); return x.length === 10 ? '91' + x : x; };
+  A.fuopen = d => {
+    const f = (D().followups || []).find(x => x.id == d.id); if (!f) return; const s = stu(f.reg); if (!s) return; const inst = alloc(s).find(i => i.no === f.inst_no) || {}, pl = s.plan || { n: '' };
+    const msg = 'Dear ' + s.full_name.split(' ')[0] + ', this is a friendly reminder from Balsam Creative Technology. Installment ' + f.inst_no + ' of ' + inr(inst.left || inst.amount) + ' for ' + s.enr.course_name + ' is due on ' + fmtD(inst.due_date) + '. Kindly pay at the institute or by UPI. Thank you.';
+    openSheet(`<h3>${esc(f.title)}</h3><p class="sub">${esc(s.full_name)} · ${esc(s.enr.course_name)}</p><div class="rcpt"><div class="r"><span>Installment</span><b>${f.inst_no} of ${pl.n}</b></div><div class="r"><span>Amount payable</span><b>${inr(inst.left || 0)}</b></div><div class="r"><span>Due date</span><b>${fmtD(inst.due_date)}</b></div><div class="r"><span>Follow-up</span><b>${f.offset} days before</b></div><div class="r"><span>Status</span><b>${f.status}</b></div></div><div class="note" style="margin-top:12px">${esc(f.desc)}</div>` +
+      (f.status !== 'Pending' ? `<div class="mut sm" style="margin-bottom:10px">${f.status === 'Completed' ? 'Completed ' + stamp(f.done_at) + ' by ' + esc(f.done_by) : 'Closed automatically — installment paid'}</div>` : '') +
+      `<div class="btns" style="margin:0 0 12px"><a class="btn sec sm" style="flex:1" href="tel:${esc(s.mobile)}">${ic('phone', 's')} Call</a><a class="btn sec sm" style="flex:1" target="_blank" rel="noopener" href="https://wa.me/${waNum(s.mobile)}?text=${encodeURIComponent(msg)}">${ic('send', 's')} WhatsApp</a><button class="btn sec sm" style="flex:1" data-a="copy" data-t="${esc(msg)}">${ic('copy', 's')} Copy</button></div>` +
+      F.ta('furem', 'Follow-up remarks', f.remarks, 'What did the student say? Any promise date?') +
+      `<div class="btns"><button class="btn sec" data-a="furem" data-id="${f.id}">Save remarks</button>${f.status === 'Pending' ? `<button class="btn ok" data-a="fudone" data-id="${f.id}">${ic('tick', 's')} Mark completed</button>` : `<button class="btn" data-a="close">Close</button>`}</div>`);
+  };
+  A.furem = d => { const f = D().followups.find(x => x.id == d.id), r = fv('furem'); if (r !== f.remarks) { f.remarks = r; actLog('fee', f.reg, 'Remarks added on "' + f.title + '"' + (r ? ': ' + r.slice(0, 80) : '')); save(); } S.sheet = null; toast('Remarks saved', 'ok'); render(); };
+  A.fudone = d => { const f = D().followups.find(x => x.id == d.id); f.status = 'Completed'; f.done_at = Date.now(); f.done_by = staff(); f.remarks = fv('furem'); actLog('fee', f.reg, 'Follow-up completed: ' + f.title + ' (' + f.offset + ' days before)' + (f.remarks ? ' — ' + f.remarks.slice(0, 80) : '')); save(); S.sheet = null; toast('Follow-up completed', 'ok'); render(); };
+
+  /* ================================================================== STUDENT SIDE: banner + schedule */
+  const stuBanner = s => {
+    if (!s.plan) return ''; const nx = nextInst(s); if (!nx) return ''; const dd = diff(today(), nx.due_date); if (dd > 5) return ''; const od = dd < 0;
+    return `<button class="alert ${od ? 'r' : 'o'}" data-a="tab" data-t="fees"><span class="ico ${od ? 'r' : 'o'}">${ic('rupee')}</span><span class="grow"><b>Fee reminder · Installment ${nx.no} of ${s.plan.n}</b><span class="mut">${inr(nx.left)} payable by ${fmtD(nx.due_date)} · ${od ? Math.abs(dd) + ' day' + (Math.abs(dd) > 1 ? 's' : '') + ' overdue' : dd === 0 ? 'due today' : 'due in ' + dd + ' day' + (dd > 1 ? 's' : '')}</span></span>${ic('next', 's')}</button>`;
+  };
+  const _sh2 = V.s_home;
+  V.s_home = () => { const v = _sh2(), s = me(); const bn = stuBanner(s); if (bn) v.body = v.body.replace(/<button class="alert [^"]*" data-a="tab" data-t="fees">(?:(?!<\/button>)[\s\S])*?pay at the front desk(?:(?!<\/button>)[\s\S])*?<\/button>/, ''); v.body = bn + v.body; return v; };
+  const _sf = V.s_fees;
+  V.s_fees = () => {
+    const v = V.s_fees_img(), s = me(); if (!s.plan) { v.body = stuBanner(s) + v.body; return v; }
+    const L = alloc(s), sched = `<div class="card" style="margin-top:12px"><div class="in-h">Installment schedule</div>${s.plan.reg_amount > 0 ? `<div class="cl-ln"><span class="ico sm2 g">${ic('tick', 's')}</span><span class="grow"><b>Registration fee</b><div class="mut">${inr(s.plan.reg_amount)}</div></span>${pill('Paid', 'ok')}</div>` : ''}${L.map((i, k) => `<div class="cl-ln"><span class="ico sm2 ${i.status === 'Paid' ? 'g' : i.status === 'Overdue' ? 'r' : 'o'}">${ic(i.status === 'Paid' ? 'tick' : 'clock', 's')}</span><span class="grow"><b>${k === 0 ? 'Admission installment (1st)' : ord(i.no) + ' installment'}</b><div class="mut">${inr(i.amount)} · due ${fmtD(i.due_date)}${i.status === 'Paid' && i.paid_on ? ' · paid ' + fmtS(i.paid_on) : i.status === 'Partial' ? ' · ' + inr(i.left) + ' left' : ''}</div></span>${instPill(i)}</div>`).join('')}</div>`, mk = '<div class="card"><div class="fh">Payment History</div>';
+    v.body = stuBanner(s) + (v.body.includes(mk) ? v.body.replace(mk, () => sched + mk) : v.body + sched); return v;
+  };
+
+  /* ================================================================== MODULE 7: STUDENT COMPLETION DASHBOARD */
+  const cdLink = () => { const ci = cList(), n = ci.filter(i => i.c.course_status === 'Pending' && i.left <= 0).length, o = ci.filter(i => i.c.course_status === 'Completed' && !i.full).length; return linkCard(n ? 'o' : 'b', 'award', 'Student Completion Dashboard', (n ? n + ' at last day · ' : '') + o + ' checklist' + (o === 1 ? '' : 's') + ' open · assessment, feedback &amp; reviews', 'a_cdash'); };
+  ['a_work', 'a_complete'].forEach(k => { const o = V[k]; V[k] = p => { const v = o(p); v.body = cdLink() + v.body; return v; }; });
+  const _mo = V.a_more;
+  V.a_more = () => { const v = _mo(); v.body = linkCard('b', 'bell', 'Fee follow-ups', fuDue().length + ' due now · installment reminders', 'a_followups') + cdLink() + v.body; return v; };
+
+  const CF = {
+    'All': () => true,
+    'Ending soon': i => i.c.course_status === 'Pending' && i.left > 0 && i.left <= 14,
+    'Action needed': i => i.c.course_status === 'Pending' && i.left <= 0,
+    'Assessment': i => i.c.assessment_status !== 'Done' && (i.c.course_status === 'Completed' || i.left <= 0),
+    'Feedback': i => i.c.course_status === 'Completed' && i.c.oral_feedback !== 'Done',
+    'Reviews': i => i.c.course_status === 'Completed' && (i.c.google_review !== 'Done' || i.c.justdial_review !== 'Done'),
+    'Complete': i => i.full
+  };
+  V.a_cdash = () => {
+    const L = cList(), keys = Object.keys(CF), cnt = {}; keys.forEach(k => cnt[k] = L.filter(CF[k]).length);
+    const f = flt('cdf', keys), q = (S.q.cd || '').toLowerCase(), list = L.filter(i => CF[f](i) && (!q || (i.s.full_name + i.s.enr.course_name).toLowerCase().includes(q))).sort((a, b) => a.left - b.left);
+    return {
+      t: 'Completion dashboard', sub: 'Course closure, assessment, feedback &amp; reviews', right: bellBtn(),
+      body: `<div class="mx-sc" style="grid-template-columns:repeat(4,1fr)"><div class="${cnt['Action needed'] ? 'hot' : ''}"><b>${cnt['Action needed']}</b><span>At last day</span></div><div><b>${cnt['Assessment']}</b><span>Assessment</span></div><div><b>${cnt['Feedback']}</b><span>Feedback</span></div><div><b>${cnt['Reviews']}</b><span>Reviews</span></div></div>` + searchBox('cd', 'Search student or course') + chips('cdf', keys, cnt) +
+        (list.length ? list.map(i => { const s = i.s, c = i.c, st = c.course_status;
+          return `<button class="mx-sc2" style="text-align:left;width:100%" data-a="go" data-v="a_comp_stu" data-reg="${s.registration_number}"><div class="top">${ring(Math.round(i.done / i.total * 100), 56)}<div class="t"><b class="trunc">${esc(s.full_name)}</b><span class="trunc">${esc(s.enr.course_name)}</span></div>${pill(st === 'Pending' ? (i.left <= 0 ? 'Action needed' : 'In progress') : st, st === 'Completed' ? 'ok' : st === 'Not Completed' ? 'bad' : i.left <= 0 ? 'warn' : '')}</div><div class="mx-mini"><span>${i.done}/${i.total} steps</span>${bar(i.done / i.total * 100, i.full ? 'var(--ok)' : '')}</div><div class="mut sm" style="margin-top:6px">Last day ${fmtD(i.last)} · ${i.left > 0 ? 'in ' + i.left + ' day' + (i.left > 1 ? 's' : '') : i.left === 0 ? 'today' : Math.abs(i.left) + ' day' + (Math.abs(i.left) > 1 ? 's' : '') + ' ago'}${c.reschedule_date ? ' · assessment on ' + fmtS(c.reschedule_date) : ''}</div></button>`; }).join('') : empty('No students here', 'Try another filter.', 'award'))
+    };
+  };
+
+  const LBL = { course_status: 'Course completion', project_submission: 'Project submission', assessment_status: 'Project presentation & assessment', oral_feedback: 'Oral feedback', google_review: 'Google review', justdial_review: 'Justdial review' };
+  A.cset = d => {
+    const s = stu(d.reg), c = comp(s); if (!LBL[d.k]) return; if (c[d.k] === d.v) return;
+    /* FIX: completion must be recorded on the last day (not before); later steps follow the order in the spec */
+    if (d.k === 'course_status' && d.v !== 'Pending' && today() < endDate(s)) return toast('Completion can be recorded only on the last day (' + fmtD(endDate(s)) + ') or later.', 'bad');
+    if (['assessment_status', 'oral_feedback', 'google_review', 'justdial_review'].includes(d.k) && d.v === 'Done' && c.course_status !== 'Completed') return toast('Mark the course as Completed first.', 'bad');
+    if (d.k === 'oral_feedback' && d.v === 'Done' && c.assessment_status !== 'Done') return toast('Complete the project assessment before oral feedback.', 'bad');
+    c[d.k] = d.v;
+    if (d.k === 'course_status') { /* FIX: keep the old enrollment status in sync with the new completion status */
+      if (d.v === 'Completed') { s.enr.enrollment_status = 'Completed'; s.enr.progress_percent = 100; s.overall_status = 'Completed'; if (s.certificate && s.certificate.status === 'Pending') s.certificate.status = 'Started'; }
+      else if (s.enr.enrollment_status === 'Completed') { s.enr.enrollment_status = 'Ongoing'; s.overall_status = 'Active'; }
+    } if (d.k === 'assessment_status' && d.v === 'Done') { c.reschedule_reason = c.reschedule_reason; }
+    actLog('comp', d.reg, LBL[d.k] + ' set to ' + d.v); save(); render();
+  };
+  A.cmarks = d => {
+    const s = stu(d.reg), c = comp(s), i = fv('cmi'), e = fv('cme'), mx = Number(fv('cmx')) || 100;
+    if ((i !== '' && (+i < 0 || +i > mx)) || (e !== '' && (+e < 0 || +e > mx))) return toast('Marks must be between 0 and ' + mx + '.', 'bad');
+    c.internal_marks = i === '' ? '' : +i; c.external_marks = e === '' ? '' : +e; c.max_marks = mx; c.marks_visible = $('#f-cvis').checked;
+    actLog('comp', d.reg, 'Marks updated — internal ' + (c.internal_marks === '' ? '–' : c.internal_marks) + ', external ' + (c.external_marks === '' ? '–' : c.external_marks) + ' / ' + mx + (c.marks_visible ? ' (shown to student)' : ' (admin only)')); save(); toast('Marks saved', 'ok'); render();
+  };
+  A.cnote = d => { const s = stu(d.reg), c = comp(s), v = fv('c-' + d.k); c[d.k] = v; actLog('comp', d.reg, (d.k === 'concerns' ? 'Concerns / admin notes' : 'Oral feedback notes') + ' updated'); save(); toast('Saved', 'ok'); render(); };
+  A.clast = d => { const s = stu(d.reg); openSheet(`<h3>Course last day</h3><p class="sub">${esc(s.full_name)} · calculated from start date and duration</p>${F.t('cld', 'Last day of course', endDate(s), { type: 'date' })}<div class="btns"><button class="btn sec" data-a="close">Cancel</button><button class="btn" data-a="clast2" data-reg="${d.reg}">Save</button></div>`); };
+  A.clast2 = d => { const s = stu(d.reg); if (!fv('cld')) return toast('Choose a date.', 'bad'); comp(s).last_day = fv('cld'); actLog('comp', d.reg, 'Course last day set to ' + fmtD(fv('cld'))); save(); S.sheet = null; toast('Last day updated', 'ok'); render(); };
+  A.cres = d => { const s = stu(d.reg), c = comp(s); openSheet(`<h3>Schedule assessment</h3><p class="sub">Use this when the project is not ready on the last day. The new date is stored with the student's record.</p>${F.t('crd', 'New presentation & assessment date *', c.reschedule_date || addDays(today(), 3), { type: 'date' })}${F.ta('crr', 'Reason', c.reschedule_reason, 'e.g. Project still being completed')}<div class="btns"><button class="btn sec" data-a="close">Cancel</button><button class="btn" data-a="cres2" data-reg="${d.reg}">Save date</button></div>`); };
+  A.cres2 = d => { const s = stu(d.reg), c = comp(s); if (!fv('crd')) return toast('Choose a date.', 'bad'); c.reschedule_date = fv('crd'); c.reschedule_reason = fv('crr'); c.assessment_status = 'Not Done'; actLog('comp', d.reg, 'Assessment rescheduled to ' + fmtD(fv('crd')) + (fv('crr') ? ' — ' + fv('crr') : '')); save(); S.sheet = null; toast('Assessment rescheduled', 'ok'); render(); };
+  A.cresclr = d => { const c = comp(stu(d.reg)); c.reschedule_date = ''; c.reschedule_reason = ''; actLog('comp', d.reg, 'Assessment moved back to the last day'); save(); render(); };
+
+  V.a_comp_stu = p => {
+    const s = stu(p.reg); if (!s) return { t: 'Completion', body: empty('Not found', '') };
+    const c = comp(s), I = cinfo(s), r = s.registration_number, pj = s.project, projEff = I.items[1][1] ? 'Done' : 'Not Done';
+    const tg = (k, cur, opts) => `<div class="seg" style="margin:10px 0 0">${opts.map(o => `<button class="${cur === o ? 'on' : ''}" data-a="cset" data-reg="${r}" data-k="${k}" data-v="${o}">${o}</button>`).join('')}</div>`;
+    const log = (D().act_log || []).filter(l => l.kind === 'comp' && l.reg === r).slice(0, 15);
+    const lastTxt = I.left > 0 ? 'in ' + I.left + ' day' + (I.left > 1 ? 's' : '') : I.left === 0 ? 'today' : Math.abs(I.left) + ' day' + (Math.abs(I.left) > 1 ? 's' : '') + ' ago';
+    return {
+      t: esc(s.full_name), sub: 'Course completion · ' + esc(s.enr.course_name),
+      body: `<div class="card"><div class="row">${ring(Math.round(I.done / I.total * 100), 66)}<div class="grow"><b>${I.done} of ${I.total} steps done</b><div class="mut">${I.full ? 'All required steps are complete' : 'Last day ' + fmtD(I.last) + ' · ' + lastTxt}</div></div></div><div class="sepl"></div>${I.items.map(i => `<div class="cl-ln"><span class="ico sm2 ${i[1] ? 'g' : 'o'}">${ic(i[1] ? 'tick' : 'clock', 's')}</span><span class="grow"><b>${i[0]}</b></span>${pill(i[1] ? i[2] : i[3], i[1] ? 'ok' : 'warn')}</div>`).join('')}</div>` +
+        `<div class="card"><div class="row"><b class="grow fh" style="margin:0">1 · Course completion</b>${pill(c.course_status, c.course_status === 'Completed' ? 'ok' : c.course_status === 'Not Completed' ? 'bad' : 'n')}</div><div class="mut" style="margin-top:4px">Last day: <b>${fmtD(I.last)}</b> (${lastTxt}) · completion formalities are done on this day. <button class="b" style="color:var(--accent)" data-a="clast" data-reg="${r}">Change</button></div>${tg('course_status', c.course_status, ['Completed', 'Not Completed'])}</div>` +
+        `<div class="card"><b class="fh" style="display:block">2 · Project &amp; assessment</b><div class="kv"><div><div class="mut">Presentation &amp; assessment on</div><b>${fmtD(asmtDate(s))}</b></div><div><div class="mut">Student project</div><b>${pj ? esc(pj.status) : 'Not assigned'}</b></div></div>${c.reschedule_date ? `<div class="note warn" style="margin:12px 0 0"><b>Revised date.</b> ${esc(c.reschedule_reason || 'Rescheduled')} · <button class="b" style="color:var(--warn)" data-a="cresclr" data-reg="${r}">Move back to last day</button></div>` : ''}<div class="mut" style="margin-top:12px">Project submission</div>${tg('project_submission', projEff, ['Done', 'Not Done'])}<div class="mut" style="margin-top:12px">Presentation &amp; assessment</div>${tg('assessment_status', c.assessment_status, ['Done', 'Not Done'])}<button class="btn sec sm" style="margin-top:12px" data-a="cres" data-reg="${r}">${ic('cal', 's')} ${c.reschedule_date ? 'Change assessment date' : 'Project not ready? Schedule a separate date'}</button></div>` +
+        `<div class="card"><b class="fh" style="display:block">3 · Assessment marks<span class="adm-only">${ic('lock', 'xs')} Admin only</span></b><div class="g2">${F.t('cmi', 'Faculty internal marks', c.internal_marks, { type: 'number', attr: 'min="0"' })}${F.t('cme', 'External assessment marks', c.external_marks, { type: 'number', attr: 'min="0"' })}</div>${F.t('cmx', 'Out of', c.max_marks, { type: 'number', attr: 'min="1"' })}<label class="row" style="gap:10px;margin:2px 0 12px"><input type="checkbox" id="f-cvis" ${c.marks_visible ? 'checked' : ''}><span class="grow"><b>Authorize student to see these marks</b><div class="mut">Off by default — students never see marks unless you allow it.</div></span></label><button class="btn" data-a="cmarks" data-reg="${r}">${ic('tick', 's')} Save marks</button></div>` +
+        `<div class="card"><div class="row"><b class="grow fh" style="margin:0">4 · Student oral feedback</b>${pill(c.oral_feedback, c.oral_feedback === 'Done' ? 'ok' : 'warn')}</div><div class="mut" style="margin-top:4px">Overall experience · faculty teaching &amp; support · learning experience · project development &amp; presentation.</div>${tg('oral_feedback', c.oral_feedback, ['Done', 'Not Done'])}<div style="margin-top:12px">${F.ta('c-feedback_notes', 'Feedback notes (admin only)', c.feedback_notes, 'What the student said about the course, faculty and project…')}</div><button class="btn sec sm" data-a="cnote" data-reg="${r}" data-k="feedback_notes">Save feedback notes</button></div>` +
+        `<div class="card"><b class="fh" style="display:block">5 · Student concerns &amp; admin notes<span class="adm-only">${ic('lock', 'xs')} Admin &amp; management only</span></b><div class="mut" style="margin-bottom:10px">Concerns, course or faculty issues, project difficulties and other observations. Never visible to students or faculty.</div>${F.ta('c-concerns', 'Notes', c.concerns, 'Record anything important…')}<button class="btn sec sm" data-a="cnote" data-reg="${r}" data-k="concerns">Save notes</button></div>` +
+        `<div class="card"><b class="fh" style="display:block">6 · Online reviews</b><div class="row"><span class="grow"><b>Google Business Profile review</b></span>${pill(c.google_review, c.google_review === 'Done' ? 'ok' : 'warn')}</div>${tg('google_review', c.google_review, ['Done', 'Not Done'])}<div class="sepl"></div><div class="row"><span class="grow"><b>Justdial review</b></span>${pill(c.justdial_review, c.justdial_review === 'Done' ? 'ok' : 'warn')}</div>${tg('justdial_review', c.justdial_review, ['Done', 'Not Done'])}</div>` +
+        sec('Activity log') + `<div class="card">${log.length ? log.map(l => `<div class="lg-r"><span class="d"></span><div><b style="font-weight:600">${esc(l.text)}</b><small>${stamp(l.at)} · ${esc(l.staff)}</small></div></div>`).join('') : '<div class="mut">No activity yet. Every update is recorded with date, time and staff name.</div>'}</div>`
+    };
+  };
+
+  /* student sees marks only when the admin explicitly authorizes it */
+  const _scp = V.s_complete;
+  V.s_complete = () => {
+    const v = _scp(), s = me(), c = s.completion;
+    if (c && c.marks_visible && (c.internal_marks !== '' || c.external_marks !== '')) v.body += sec('Assessment marks') + `<div class="card"><div class="kv">${c.internal_marks !== '' ? kv('Internal', c.internal_marks + ' / ' + c.max_marks) : ''}${c.external_marks !== '' ? kv('External', c.external_marks + ' / ' + c.max_marks) : ''}</div></div>`;
+    return v;
+  };
+})();
+
 /* ---------- boot ---------- */
 (function boot() {
   try {
@@ -2339,5 +2957,470 @@ html[data-mode=dark] body{background:#05080F}
 })();
 
 </script>
+
+<script>
+(function () {
+  const ah = V.a_home;
+  V.a_home = function () {
+    const v = ah(), d = D(), act = d.students.filter(x => x.is_active !== false);
+    const pend = d.students.reduce((a, x) => a + balance(x), 0);
+    const pr = act.length ? Math.round(act.reduce((a, x) => a + Number(x.enr.progress_percent || 0), 0) / act.length) : 0;
+    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= today()).length;
+    const lakh = pend >= 1e5 ? '\u20B9' + (pend / 1e5).toFixed(1).replace(/\.0$/, '') + 'L' : inr(pend);
+    const k = (i, c, l, n, a) => `<button ${a}><span class="ni ${c}">${ic(i)}</span><small>${l}</small><b>${n}</b></button>`;
+    const q = (i, l, a) => `<button ${a}>${ic(i)}<span>${l}</span></button>`;
+    v.greet = { t: 'Welcome Back, Admin \uD83D\uDC4B', s: "Here's what's happening today" };
+    v.body = `<div class="nx-k">${k('users', '', 'Total Students', d.students.length, 'data-a="tab" data-t="students"')}${k('rupee', 'o', 'Pending Fees', lakh, 'data-a="tab" data-t="fees"')}${k('check', 'g', 'Course Completion', pr + '%', 'data-a="go" data-v="a_cdash"')}${k('bell', 'v', 'Follow-ups', fu, 'data-a="go" data-v="a_followups"')}</div>` +
+      `<h2 class="sec">Quick Actions</h2><div class="nx-q">${q('plus', 'Add Student', 'data-a="go" data-v="a_student_form"')}${q('rupee', 'Fee Setup', 'data-a="tab" data-t="fees"')}${q('bell', 'Follow-ups', 'data-a="go" data-v="a_followups"')}${q('award', 'Completion Tracker', 'data-a="go" data-v="a_cdash"')}${q('chart', 'Reports', 'data-a="go" data-v="a_reports"')}${q('gear', 'Settings', 'data-a="go" data-v="a_settings"')}</div>` +
+      v.body.replace(/<div class="h2-q">[\s\S]*?<\/button><\/div>/, '').replace(/<div class="h2-k">[\s\S]*?<\/button><\/div>/, '');
+    return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+
+<script>
+(function () {
+  /* ---- Fee Structure: 3-step wizard (Fee Details > Installments > Review) ---- */
+  const fp0 = V.a_fee_plan;
+  const ord = n => n + (['th', 'st', 'nd', 'rd'][(n % 100 - 20) % 10] || ['th', 'st', 'nd', 'rd'][n % 100] || 'th');
+  const fmtD = d => { const t = new Date(d + 'T00:00:00'); return isNaN(t) ? '-' : t.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); };
+  V.a_fee_plan = function (p) {
+    const v = fp0(p); if (!v.body || !stu(p.reg)) return v;
+    const st = S.fpStepReg === p.reg && S.fpStep ? S.fpStep : 1, b = v.body, x = S.draft['fp' + p.reg] || {};
+    const i1 = b.indexOf('<h2 class="sec">Installments</h2>'), i3 = b.indexOf('<div class="note">Next installments'), i2 = b.indexOf('<div class="card"><label class="row"');
+    if (i1 < 0 || i3 < 0) return v;
+    const a = i2 >= 0 ? i2 : i3, bal = Math.max(0, (x.total || 0) - (x.reg || 0));
+    const stp = `<div class="stp">${['Fee Details', 'Installments', 'Review'].map((n, k) => `${k ? `<span class="ln ${st > k ? 'on' : ''}"></span>` : ''}<div class="s ${st === k + 1 ? 'on' : st > k + 1 ? 'dn' : ''}"><i>${st > k + 1 ? '\u2713' : k + 1}</i>${n}</div>`).join('')}</div>`;
+    const rev = `<div class="card"><h3 style="margin:0 0 6px">Fee summary</h3><div class="rv"><span>Total course fee</span><b>${inr(x.total || 0)}</b></div><div class="rv"><span>Registration fee</span><b>${inr(x.reg || 0)}</b></div><div class="rv"><span>Balance</span><b>${inr(bal)}</b></div>${(x.inst || []).map((it, k) => `<div class="rv"><span>${k === 0 ? 'Admission installment (1st)' : ord(k + 1) + ' installment'}<br><small class="mut">Due ${fmtD(it.due)}</small></span><b>${inr(it.amount)}</b></div>`).join('')}</div>`;
+    const nav = st === 1 ? `<button class="btn sec" data-a="fpcancel" data-reg="${p.reg}">Cancel</button><button class="btn" data-a="fpstep" data-n="2" data-reg="${p.reg}">Next \u2192</button>`
+      : st === 2 ? `<button class="btn sec" data-a="fpstep" data-n="1" data-reg="${p.reg}">Back</button><button class="btn" data-a="fpstep" data-n="3" data-reg="${p.reg}">Next \u2192</button>`
+      : `<button class="btn sec" data-a="fpstep" data-n="2" data-reg="${p.reg}">Back</button><button class="btn" data-a="fpsave" data-reg="${p.reg}">${ic('tick', 's')} Save plan</button>`;
+    v.body = stp + `<div class="wz-p ${st === 1 ? 'on' : ''}">${b.slice(0, i1)}</div><div class="wz-p ${st === 2 ? 'on' : ''}">${b.slice(i1, a)}</div><div class="wz-p ${st === 3 ? 'on' : ''}">${rev}${b.slice(a, i3)}${b.slice(i3).split('<div class="btns">')[0]}</div><div class="btns">${nav}</div>`;
+    return v;
+  };
+  A.fpstep = d => {
+    if (+d.n > 1) { const x = S.draft['fp' + d.reg]; if (x && !(x.total > 0)) return toast('Enter the total course amount.', 'bad'); if (x && +d.n === 3) { const bal = x.total - x.reg, sum = x.inst.reduce((q, i) => q + Number(i.amount || 0), 0); if (sum !== bal) return toast('Installments must add up to ' + inr(bal) + '.', 'bad'); } }
+    S.fpStep = +d.n; S.fpStepReg = d.reg; render();
+  };
+  const fo = A.fpopen; A.fpopen = d => { S.fpStep = 1; S.fpStepReg = d.reg; fo(d); };
+  const fc = A.fpcancel; A.fpcancel = d => { S.fpStep = 1; fc(d); };
+  const fs = A.fpsave; A.fpsave = d => { S.fpStep = 1; fs(d); };
+
+  /* ---- Follow-ups: Action Required banner ---- */
+  const fu0 = V.a_followups;
+  V.a_followups = function () {
+    const v = fu0(), T = today(), regs = new Set((D().followups || []).filter(f => f.status === 'Pending' && f.trigger <= T && stu(f.reg)).map(f => f.reg));
+    if (regs.size) v.body = `<div class="nx-ban"><span class="bi">${ic('clock')}</span><div><b>Action Required Today</b><small>${regs.size} student${regs.size > 1 ? 's need' : ' needs'} follow-up</small></div></div>` + v.body;
+    return v;
+  };
+
+  /* ---- Student home: hello card with illustration ---- */
+  const svg = `<svg viewBox="0 0 120 92" xmlns="http://www.w3.org/2000/svg"><ellipse cx="60" cy="90" rx="54" ry="5" fill="#C9D8FA"/><path d="M34 90V70c0-12 10-20 26-20s26 8 26 20v20z" fill="#8B6CF0"/><circle cx="60" cy="34" r="15" fill="#F6C7A4"/><path d="M45 32c0-14 8-20 17-20 10 0 15 7 14 20-4-8-9-10-15-10s-12 3-16 10z" fill="#1B2557"/><rect x="38" y="62" width="44" height="24" rx="3" fill="#2454E8"/><rect x="42" y="66" width="36" height="16" rx="2" fill="#DCE7FF"/><rect x="34" y="86" width="52" height="4" rx="2" fill="#0F1B4D"/></svg>`;
+  const sh = V.s_home;
+  V.s_home = function () {
+    const v = sh(), s = me(); if (!s) return v;
+    v.body = `<div class="nx-hello"><div class="grow"><b>Keep learning, keep growing!</b><small>${esc(s.enr.course_name)}</small></div>${svg}</div>` + v.body; return v;
+  };
+
+  /* ---- Student fees: Paid / Remaining tiles ---- */
+  const sf = V.s_fees;
+  V.s_fees = function () {
+    const v = sf(), s = me(); if (!s) return v;
+    const tiles = `<div class="nx-pr"><div class="p"><span>Paid</span><b>${inr(paidSum(s))}</b></div><div class="r"><span>Remaining</span><b>${inr(balance(s))}</b></div></div>`;
+    const k = v.body.indexOf('<div class="card"><div class="fh">Course Progress');
+    v.body = k > -1 ? v.body.slice(0, k) + tiles + v.body.slice(k) : tiles + v.body; return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+
+<script>
+(function () {
+  const cs = V.a_complete_stu;
+  V.a_complete_stu = function (p) {
+    const v = cs(p), s = stu(p.reg); if (!s || !v.body) return v;
+    const k = v.body.indexOf('<details class="dd">'); if (k < 0) return v;
+    const e = s.enr, c = completion(s);
+    const head = `<div class="card"><div class="cp-h"><span class="avatar">${ini(s.full_name)}</span><div class="grow"><b>${esc(s.full_name)}</b><small>${esc(e.course_name)}</small></div>${pill(c[0], c[1])}</div><div class="cp-p"><span>Course Progress</span><span>${e.progress_percent}%</span></div>${bar(e.progress_percent, e.progress_percent >= 70 ? '#12986B' : '')}<div class="mut" style="margin-top:8px">Certificate: ${certLabel(s.certificate.status)}</div></div>`;
+    v.body = head + v.body.slice(k).replace('class="btn ok" data-a="markdone"', 'class="btn" data-a="markdone"').replace('Mark course completed', 'Update Status \u2192 Mark completed');
+    return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+
+<script>
+(function () {
+  const sm = V.s_me;
+  V.s_me = function () {
+    const v = sm(), s = me(); if (!s || !v.body) return v;
+    let b = v.body.replace(/(<div class="in-name">[^<]*<\/div>)/, '$1' + (s.email ? '<div class="in-sub">' + esc(s.email) + '</div>' : ''));
+    if (s.stage !== 'new') {
+      const mark = '<div class="card flush list" style="margin-top:12px">';
+      b = b.replace(mark, () => mark + item('layers', '', 'My Courses', esc(s.enr.course_name), 'data-a="tab" data-t="learn"') + item('rupee', 'o', 'Fee History', 'Payments &amp; receipts', 'data-a="tab" data-t="fees"'));
+    }
+    const ci = b.indexOf('<div class="card" style="margin-top:12px"><div class="in-h">Course</div>'), mi = b.indexOf('<div class="card flush list" style="margin-top:12px">'), bi = b.indexOf('<button class="btn danger"');
+    if (ci > -1 && mi > ci && bi > mi) b = b.slice(0, ci) + b.slice(mi, bi) + b.slice(ci, mi) + b.slice(bi);
+    v.body = b + '<div class="nx-pw">Powered by Balsam Creative Technology</div>'; return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+
+<script>
+(function () {
+  const an = V.a_notif;
+  V.a_notif = function (p) {
+    const v = an(p); if (S.seg.nc && S.seg.nc !== 'Attention') return v;
+    const al = adminAlerts(); if (!al.length || !v.body) return v;
+    const grp = a => a.i === 'rupee' ? 'Fees' : (a.i === 'warn' || /attendance/i.test(a.t)) ? 'Attendance' : ['clip', 'target', 'check', 'brief', 'award'].includes(a.i) ? 'To review' : 'Students';
+    const all = ['Fees', 'Attendance', 'To review', 'Students'], cnt = { All: al.length }; all.forEach(g => cnt[g] = al.filter(a => grp(a) === g).length);
+    const opts = ['All'].concat(all.filter(g => cnt[g])), f = flt('ncf', opts), urgent = al.filter(a => a.tone === 'r').length;
+    const attr = a => a.go === 'a_att' ? 'data-a="tab" data-t="att"' : `data-a="go" data-v="${a.go}" ${Object.entries(a.p || {}).map(([k, x]) => `data-${k}="${esc(x)}"`).join(' ')}`;
+    const row = a => item(a.i, a.tone === 'b' ? '' : a.tone, esc(a.t), esc(a.d), attr(a));
+    const seg0 = v.body.slice(0, v.body.indexOf('</div>') + 6);
+    const banner = `<div class="nx-ban ${urgent ? '' : 'ok'}"><span class="bi">${ic('bell')}</span><div><b>${urgent ? urgent + ' urgent item' + (urgent > 1 ? 's' : '') : al.length + ' item' + (al.length > 1 ? 's' : '') + ' to handle'}</b><small>${al.length} in total · tap a row to open it</small></div></div>`;
+    let list;
+    if (f === 'All') list = all.filter(g => cnt[g]).map(g => `<h2 class="sec">${g} · ${cnt[g]}</h2><div class="card flush list">${al.filter(a => grp(a) === g).map(row).join('')}</div>`).join('');
+    else list = `<div class="card flush list">${al.filter(a => grp(a) === f).map(row).join('')}</div>`;
+    v.body = seg0 + banner + chips('ncf', opts, cnt) + list; return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+
+<script>
+(function () {
+  const fD = d => { const t = new Date(d + 'T00:00:00'); return isNaN(t) ? '-' : t.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }); };
+  const cdl = /<button class="alert b" data-a="go" data-v="a_cdash">[\s\S]*?<\/button>/;
+  const slim = '<button class="nx-lnk" data-a="go" data-v="a_cdash">Completion dashboard \u2192</button>';
+
+  /* Courses: 2-column tile grid */
+  const tones = ['linear-gradient(135deg,#2454E8,#6B8FFF)', 'linear-gradient(135deg,#F26A10,#FFA45C)', 'linear-gradient(135deg,#6D4AE8,#A18BFF)', 'linear-gradient(135deg,#12986B,#4CC9A0)', 'linear-gradient(135deg,#0E9FC4,#5CD0EE)', 'linear-gradient(135deg,#D5443A,#FF8A80)'];
+  const co = V.a_courses;
+  V.a_courses = function () {
+    const v = co(), d = D();
+    v.body = '<div class="nx-cg">' + d.courses.map((c, i) => { const n = d.students.filter(x => x.enr.course_id === c.course_id).length; return `<button data-a="go" data-v="a_course" data-id="${c.course_id}"><div class="tp" style="background:${tones[i % tones.length]}"><i>${c.course_code}</i><span class="cc">${ic('book')}</span></div><div class="bd"><b>${esc(c.course_name)}</b><small>${c.duration_weeks} weeks</small><div class="ft"><span>${n} student${n === 1 ? '' : 's'}</span><span><span class="dot" ${c.is_active ? '' : 'style="background:#98A3BC"'}></span>${c.is_active ? 'Active' : 'Off'}</span></div></div></button>`; }).join('') + '</div>';
+    return v;
+  };
+
+  /* More: needs-you-today scroller + 4-column service grids */
+  const mo = V.a_more;
+  V.a_more = function () {
+    const v = mo(), d = D(), T = today();
+    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length, al = adminAlerts().length;
+    const pend = d.tasks.filter(t => t.status === 'Submitted').length, tst = d.assessments.filter(a => a.status === 'Scheduled' && a.scheduled_date <= T).length, prj = d.students.filter(x => x.project && x.project.status === 'Submitted').length;
+    const ready = d.students.filter(x => x.certificate.status === 'Completed').length;
+    const sc = (i, t, n, l, a) => `<button ${a}><span class="c ${t}">${ic(i)}</span><b>${n}</b><small>${l}</small></button>`;
+    const g = (t, items) => `<div class="nx-gs"><h4>${t}</h4><div class="g">${items.join('')}</div></div>`;
+    const tl = (i, t, l, a, b) => `<button ${a}>${b ? `<u>${b}</u>` : ''}<span class="c ${t}">${ic(i)}</span>${l}</button>`;
+    v.body = `<div class="nx-pf"><span class="avatar">AD</span><div class="grow"><b>${esc(d.admin.full_name)}</b><small>Balsam Creative Technology \u00B7 Admin</small></div><button class="hbtn" style="background:#E8EFFD;color:#2454E8" data-a="go" data-v="a_settings" aria-label="Settings">${ic('gear')}</button></div>` +
+      `<h2 class="sec">Needs you today</h2><div class="nx-sc">${sc('bell', 't2', fu, 'Fee follow-ups due', 'data-a="go" data-v="a_followups"')}${sc('warn', 't5', al, 'Alerts to handle', 'data-a="go" data-v="a_notif"')}${sc('clip', 't3', pend + tst + prj, 'Items to review', 'data-a="gos" data-k="wk" data-v="Assignments" data-view="a_work"')}${sc('award', 't4', ready, 'Certificates ready', 'data-a="go" data-v="a_complete"')}</div>` +
+      g('Learning', [tl('book', 't1', 'Courses', 'data-a="go" data-v="a_courses"'), tl('folder', 't2', 'Materials', 'data-a="go" data-v="a_materials"'), tl('clip', 't3', 'Assignments', 'data-a="gos" data-k="wk" data-v="Assignments" data-view="a_work"', pend), tl('check', 't4', 'Tests', 'data-a="gos" data-k="wk" data-v="Assessments" data-view="a_work"', tst), tl('target', 't5', 'Projects', 'data-a="gos" data-k="wk" data-v="Projects" data-view="a_work"', prj)]) +
+      g('Students', [tl('users', 't1', 'All students', 'data-a="tab" data-t="students"'), tl('layers', 't4', 'Completion', 'data-a="go" data-v="a_complete"'), tl('award', 't2', 'Certificates', 'data-a="go" data-v="a_complete"', ready), tl('brief', 't3', 'Placement', 'data-a="go" data-v="a_place"')]) +
+      g('Money & tools', [tl('rupee', 't2', 'Fees', 'data-a="tab" data-t="fees"'), tl('bell', 't5', 'Alerts', 'data-a="go" data-v="a_notif"', al), tl('chart', 't1', 'Reports', 'data-a="go" data-v="a_reports"'), tl('swap', 't3', 'Import & export', 'data-a="go" data-v="a_data"'), tl('palette', 't2', 'Appearance', 'data-a="go" data-v="appearance"'), tl('gear', 't1', 'Settings', 'data-a="go" data-v="a_settings"')]) +
+      `<button class="btn danger" data-a="logout">${ic('out', 's')} Sign out</button>`;
+    return v;
+  };
+
+  /* Student fee screen: profile strip, round action buttons, stat tiles */
+  const fs = V.a_fee_stu;
+  V.a_fee_stu = function (p) {
+    const v = fs(p), s = stu(p.reg); if (!s || !v.body) return v;
+    const r = p.reg, A4 = (i, l, a, c) => `<button class="${c || ''}" ${a}><span class="c">${ic(i)}</span>${l}</button>`;
+    const acts = `<div class="nx-act">${A4('plus', 'Collect', `data-a="payform" data-reg="${r}"`, 'p')}${A4('bell', 'Remind', `data-a="remind" data-reg="${r}"`)}${A4('file', 'Invoice', `data-a="invoice" data-reg="${r}"`)}${A4('edit', 'Edit plan', `data-a="fpopen" data-reg="${r}"`)}</div>`;
+    const tiles = `<div class="nx-ft"><div><span>Paid</span><b>${inr(paidSum(s))}</b></div><div><span>Balance</span><b>${inr(balance(s))}</b></div><div><span>Next due</span><b>${s.enr.next_due_date ? fD(s.enr.next_due_date) : '-'}</b></div></div>`;
+    const strip = `<div class="nx-fs"><span class="avatar">${ini(s.full_name)}</span><div><b>${esc(s.full_name)}</b><small>${esc(s.enr.course_name)} \u00B7 ${r}</small></div></div>`;
+    const re = /<div class="btns" style="margin:0 0 6px">[\s\S]*?<\/div><div class="btns" style="margin-top:8px">[\s\S]*?<\/div>/;
+    if (!re.test(v.body)) return v;
+    v.body = strip + v.body.replace(re, '') ; const k = v.body.indexOf('</div></div></div>'); 
+    const hi = v.body.indexOf('<h2 class="sec">Installment plan');
+    v.body = hi > -1 ? v.body.slice(0, hi) + acts + tiles + v.body.slice(hi) : v.body + acts + tiles; return v;
+  };
+
+  /* Academics + Completion: slim link instead of banner; spaced cards */
+  ['a_work', 'a_complete'].forEach(k => { const f = V[k]; V[k] = function (p) { const v = f(p); if (v.body && cdl.test(v.body)) v.body = v.body.replace(cdl, slim); return v; }; });
+
+  /* Project review: sticky action bar */
+  const pj = V.a_proj;
+  V.a_proj = function (p) {
+    const v = pj(p); if (!v.body) return v;
+    const doc = new DOMParser().parseFromString('<body><div id="r">' + v.body + '</div></body>', 'text/html'), r = doc.getElementById('r');
+    const bs = [...r.querySelectorAll('button.btn')].filter(b => /Save evaluation|Remove project/.test(b.textContent));
+    if (!bs.length) return v;
+    const bar = doc.createElement('div'); bar.className = 'nx-sticky'; bs[0].parentNode.insertBefore(bar, bs[0]);
+    bs.forEach(b => { b.className = b.className.replace('ok', '').trim(); bar.appendChild(b); });
+    v.body = r.innerHTML; return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+
+<script>
+(function () {
+  const sf = V.s_fees;
+  V.s_fees = function () {
+    const v = sf(); let b = v.body; if (!b) return v;
+    b = b.replace(/<button class="alert o"[^>]*>[\s\S]*?<\/button>/, '');
+    const pc = /class="bigG">(\d+)%/.exec(b), amt = /class="bigO">([^<]+)</.exec(b), dt = /<b style="font-size:20px">([^<]+)<\/b>/.exec(b), bt = /<div class="btns" style="margin-top:0">([\s\S]*?)<\/div><\/div>/.exec(b);
+    const i1 = b.indexOf('<div class="card"><div class="fh">Course Progress'), i2 = b.indexOf('<div class="card"><div class="fh">Amount Due'), i3 = b.indexOf('<div class="card" style="margin-top:12px"><div class="in-h">Installment schedule');
+    if (pc && amt && dt && bt && i1 > -1 && i2 > i1 && i3 > i2) {
+      const prog = `<div class="card fx-c"><div class="r"><span class="t">Course progress</span><span class="p">${pc[1]}%</span></div><div style="margin-top:8px">${bar(+pc[1], 'var(--ok)')}</div></div>`;
+      const due = `<div class="card fx-c"><div class="r"><div><div class="t">Amount due</div><div class="a">${amt[1]}</div></div><span class="pill warn">Payment pending</span></div><div class="d">Next payment due on <b>${dt[1]}</b></div><div class="btns" style="margin-top:0">${bt[1]}</div></div>`;
+      b = b.slice(0, i1) + prog + due + b.slice(i3);
+    }
+    v.body = b; return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+
+<script>
+(function () {
+  /* Student fee reminders: mark as Resolved once the installment is paid (kept in history) */
+  const sn = V.s_notif;
+  V.s_notif = function () {
+    const v = sn(), s = me(); if (!s || !v.body) return v;
+    (D().notifications || []).filter(n => n.resolved && (n.to === s.registration_number || n.to === 'ALL')).forEach(n => {
+      const i = v.body.indexOf('data-id="' + n.notification_id + '"'); if (i < 0) return;
+      const m = '<div style="margin-top:7px">', j = v.body.indexOf(m, i); if (j < 0) return;
+      v.body = v.body.slice(0, j) + m + '<span class="pill ok">Resolved \u00B7 paid</span> ' + v.body.slice(j + m.length);
+    });
+    return v;
+  };
+  try { reconcile; } catch (e) { }
+})();
+</script>
+
+<!-- ================= REDESIGN v2: PhonePe-style Home/More + LinkedIn-style people & profiles ================= -->
+<style id="px-style">
+#app#app{--px:#2454E8;--px2:#4E7BFF;--pxt:#EAF0FD}
+#app#app:not([data-mode=dark]){--bg:#F4F6FB;--accent:#2454E8;--accent2:#4E7BFF;--tint:#EAF0FD;--line:#E3E8F2;--navy-h:#0F1B4D}
+#app#app[data-mode=dark]{--accent:#7F9DFF;--accent2:#4E7BFF;--pxt:#1B2A55}
+#app#app .logobar,#app#app .hdr{background:var(--px);border:0;box-shadow:none;border-radius:0}
+#app#app .logobar:after,#app#app .hdr:after{display:none}
+#app#app .logobar .hbtn,#app#app .chipu{background:rgba(255,255,255,.16);color:#fff}
+#app#app .chipu .avatar{background:#fff;color:var(--px)}
+#app#app .hbtn u{border-color:var(--px)}
+#app#app:not([data-mode=dark]) .view{background:var(--bg)}
+#app#app .tabs button.on{color:var(--px)}
+#app#app .tabs button.on span.tb,#app#app .tabs button.on .tb{background:var(--pxt)}
+#app#app .btn:not(.sec):not(.danger):not(.ghost):not(.ok):not(.orange):not(.outline){background:var(--px);box-shadow:0 6px 16px rgba(95,37,159,.28)}
+#app#app .chip.on,#app#app .chips .on{background:var(--px);border-color:var(--px);color:#fff}
+#app#app .fab{background:var(--px);box-shadow:0 10px 24px rgba(95,37,159,.35)}
+#app#app h2.sec:before{background:var(--px)}
+#app#app .view:has(.px-root){padding:0 0 20px}
+#app#app .view:has(.px-root) .ph,#app#app .view:has(.px-root) .xtra{display:none}
+.px-pad{padding:14px 14px 10px}
+/* ---- PhonePe look ---- */
+.px-hero{background:linear-gradient(180deg,var(--px),var(--px2));color:#fff;padding:2px 18px 70px;border-radius:0 0 28px 28px}
+.px-hero small{display:block;font-size:13px;opacity:.85}
+.px-hero h1{font:600 24px/1.2 Poppins,Inter,sans-serif;margin:2px 0 14px;color:#fff}
+.px-search{display:flex;align-items:center;gap:10px;width:100%;height:46px;border-radius:14px;background:#fff;color:#8B879C;padding:0 14px;font-size:14px;box-shadow:0 6px 16px rgba(0,0,0,.12)}
+.px-me{display:flex;align-items:center;gap:12px}
+.px-me .avatar{width:54px;height:54px;font-size:18px;background:rgba(255,255,255,.2);color:#fff}
+.px-me b{display:block;font-size:17px}.px-me small{opacity:.85}
+.px-float{margin:-52px 16px 0;background:var(--card);border-radius:20px;padding:16px;box-shadow:0 10px 30px rgba(40,20,70,.14);position:relative}
+.px-bal .l{font-size:12px;color:var(--mut);font-weight:600}
+.px-bal .a{font-size:32px;font-weight:800;letter-spacing:-.8px;color:var(--ink);line-height:1.15}
+.px-bal .s{font-size:12.5px;color:var(--mut);margin:2px 0 10px}
+.px-btns{display:flex;gap:10px;margin-top:14px}
+.px-btns button{flex:1;height:44px;border-radius:999px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px}
+.px-btns .p{background:var(--px);color:#fff}.px-btns .o{border:1.5px solid var(--px);color:var(--px)}
+.px-sec{margin:20px 16px 0}
+.px-h{display:flex;align-items:center;font-size:15px;font-weight:800;margin:0 2px 12px;color:var(--ink)}
+.px-h button{margin-left:auto;font-size:12.5px;color:var(--px);font-weight:700}
+.px-g{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 4px;background:var(--card);border-radius:20px;padding:18px 6px 14px;box-shadow:0 2px 10px rgba(40,20,70,.06);margin-bottom:12px}
+.px-g button{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--ink);text-align:center;line-height:1.2;position:relative}
+.px-g button:active{transform:scale(.94)}
+.px-g .c{width:52px;height:52px;border-radius:50%;display:grid;place-items:center}
+.px-g .c.t0{background:#EAF0FD;color:#2454E8}
+.px-g u{position:absolute;top:-3px;right:calc(50% - 31px);background:#F26A10;color:#fff;font:700 10px/16px Inter,sans-serif;text-decoration:none;border-radius:99px;padding:0 6px;border:2px solid var(--card);box-sizing:content-box}
+.px-gh{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--mut);margin:0 6px 12px;grid-column:1/-1}
+.px-st{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.px-st button{background:var(--card);border-radius:16px;padding:12px;text-align:left;box-shadow:0 2px 10px rgba(40,20,70,.06)}
+.px-st b{display:block;font-size:20px;font-weight:800;color:var(--ink)}.px-st span{font-size:11.5px;color:var(--mut);font-weight:600}
+.px-l{background:var(--card);border-radius:20px;box-shadow:0 2px 10px rgba(40,20,70,.06);overflow:hidden}
+.px-r{display:flex;align-items:center;gap:12px;padding:13px 14px;width:100%;text-align:left}
+.px-r+.px-r{border-top:1px solid var(--line)}
+.px-r .ci{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none}
+.px-r .t{flex:1;min-width:0}.px-r .t b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.px-r .t span{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.px-r .a{text-align:right;font-weight:800;font-size:14px;flex:none}.px-r .a small{display:block;font-size:11px;font-weight:600;color:var(--mut)}
+.px-r .a.g{color:var(--ok)}
+/* ---- LinkedIn look ---- */
+.li-wrap{background:var(--card);border-radius:14px;border:1px solid var(--line);overflow:hidden;margin-bottom:12px}
+.li-row{display:flex;gap:12px;padding:14px;width:100%;text-align:left;align-items:center}
+.li-row+.li-row{border-top:1px solid var(--line)}
+.li-av{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:18px;flex:none;position:relative}
+.li-av i{position:absolute;right:0;bottom:1px;width:13px;height:13px;border-radius:50%;border:2px solid var(--card)}
+.li-t{flex:1;min-width:0}
+.li-t b{display:block;font-size:15.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.li-t .h{display:block;font-size:13px;color:var(--ink);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li-t .m{display:block;font-size:12px;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li-v{border:1.5px solid var(--px);color:var(--px);border-radius:999px;padding:5px 14px;font-size:12.5px;font-weight:700;flex:none}
+.li-prof{background:var(--card);border-radius:14px;border:1px solid var(--line);overflow:hidden;margin-bottom:12px}
+.li-cv{height:96px;background:linear-gradient(120deg,#0F1B4D,var(--px2) 60%,#6D93FF)}
+.li-body{padding:0 16px 14px}
+.li-pav{width:92px;height:92px;border-radius:50%;border:4px solid var(--card);margin-top:-46px;display:grid;place-items:center;color:#fff;font-size:30px;font-weight:800;background:linear-gradient(135deg,var(--px),var(--px2))}
+.li-nm{font-size:22px;font-weight:800;margin-top:8px;letter-spacing:-.3px;color:var(--ink)}
+.li-hd{font-size:14px;margin-top:2px;color:var(--ink)}
+.li-mt{font-size:12.5px;color:var(--mut);margin-top:4px}
+.li-pl{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.li-bt{display:flex;gap:8px;margin-top:14px}
+.li-btn{flex:1;text-align:center;border-radius:999px;padding:9px 10px;font-weight:700;font-size:14px;border:1.5px solid var(--px);color:var(--px);background:none;display:block}
+.li-btn.p{background:var(--px);color:#fff}
+.li-sts{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.li-sts div{padding:12px 4px;text-align:center;border-right:1px solid var(--line)}.li-sts div:last-child{border:0}
+.li-sts b{display:block;font-size:19px;font-weight:800;color:var(--ink)}.li-sts span{font-size:11.5px;color:var(--mut)}
+.li-card{background:var(--card);border-radius:14px;border:1px solid var(--line);padding:16px;margin-bottom:12px}
+.li-card h3{font-size:17px;font-weight:800;margin-bottom:10px;color:var(--ink)}
+.li-card p{margin:0;font-size:13.5px;color:var(--ink);line-height:1.5}
+.li-ln{display:flex;gap:12px;padding:8px 0;align-items:center}
+.li-ln .ic{width:38px;height:38px;border-radius:50%;background:var(--pxt);color:var(--px);display:grid;place-items:center;flex:none}
+.li-ln .ic svg{width:18px;height:18px}
+.li-ln b{display:block;font-size:14px;word-break:break-word}.li-ln span{font-size:12px;color:var(--mut)}
+.li-exp{display:flex;gap:12px}
+.li-exp .logo{width:48px;height:48px;border-radius:10px;background:var(--pxt);color:var(--px);display:grid;place-items:center;flex:none}
+.li-exp b{display:block;font-size:15px}.li-exp span{display:block;font-size:13px;color:var(--mut);margin-top:1px}
+.li-sk{display:flex;flex-wrap:wrap;gap:8px}.li-sk span{border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:600;color:var(--ink)}
+
+/* ===== Balsam clean blue theme: white header, light bg, blue accent, green/orange status ===== */
+#app#app:not([data-mode=dark]){--bg:#F4F6FB;--card:#fff;--accent:#2454E8;--accent2:#4E7BFF;--tint:#EAF0FD;--line:#E3E8F2;--px:#2454E8;--px2:#4E7BFF;--pxt:#EAF0FD;--navy-h:#0F1B4D;--sh:0 4px 18px rgba(15,27,77,.06)}
+#app#app .logobar,#app#app .hdr,#app#app[data-theme=clean] .logobar,#app#app[data-theme=clean] .hdr{background:#fff!important;color:#101B34;--hdr-ink:#101B34;--hdr-mut:#5F6B85;--hdr-btn:#F1F4FA;box-shadow:0 1px 0 #E3E8F2,0 8px 20px rgba(15,27,77,.04)!important;border-radius:0 0 22px 22px}
+#app#app .logobar .hbtn,#app#app .hdr .hbtn{background:#F1F4FA;color:#101B34}
+#app#app .logobar .hbtn u{border-color:#fff}
+#app#app .chipu{background:#fff;border:1px solid #E3E8F2}
+#app#app .chipu b{color:#101B34}#app#app .chipu small{color:#5F6B85}#app#app .chipu svg{stroke:#5F6B85}
+#app#app .chipu .avatar,#app#app .hdr .avatar{background:#EAF0FD;color:#2454E8}
+#app#app[data-theme=clean] .logobar .lg img{filter:none!important}
+#app#app .hdr h1,#app#app[data-theme=clean] .hdr h1{color:#0F1B4D}
+#app#app .card{border-radius:18px;border:1px solid #E6EBF4;box-shadow:0 4px 16px rgba(15,27,77,.05)}
+#app#app .tabs button.on{color:#2454E8}
+#app#app .tabs button.on .tb{background:#EAF0FD}
+#app#app .btn.orange{background:#F26A10;color:#fff;box-shadow:0 8px 18px rgba(242,106,16,.28)}
+
+/* ---- fix: light hero bands under the white header ---- */
+#app#app .px-hero{background:linear-gradient(180deg,#E6EDFD 0%,#F4F6FB 100%);color:#0F1B4D;padding-top:16px;border-radius:0}
+#app#app .px-hero small{color:#5F6B85;opacity:1}
+#app#app .px-hero h1{color:#0F1B4D}
+#app#app .px-search{border:1px solid #DCE4F5;box-shadow:0 4px 12px rgba(36,84,232,.08);color:#6B7794}
+#app#app .px-me b{color:#0F1B4D}
+#app#app .px-me small{color:#5F6B85}
+#app#app .px-me .avatar{background:#2454E8;color:#fff}
+#app#app .px-me .hbtn{background:#fff;color:#2454E8;border:1px solid #DCE4F5}
+
+#app#app .nx-act .p .c{background:#2454E8;color:#fff;box-shadow:0 8px 18px rgba(36,84,232,.32)}
+#app#app .nx-act .c{border:1px solid #E3E8F2}
+#app#app .px-me .hbtn{opacity:1}
+</style>
+<script>
+(function () {
+  const PAL = ['#2454E8', '#2454E8', '#0F9D74', '#E0426B', '#F26A10', '#0E8FA8', '#6D4AE8'];
+  const col = n => PAL[[...String(n)].reduce((a, c) => a + c.charCodeAt(0), 0) % PAL.length];
+  const short = n => n >= 1e5 ? '\u20B9' + (n / 1e5).toFixed(1).replace(/\.0$/, '') + 'L' : n >= 1e3 ? '\u20B9' + Math.round(n / 1e3) + 'K' : inr(n);
+  const attr = a => a.go === 'a_att' ? 'data-a="tab" data-t="att"' : `data-a="go" data-v="${a.go}" ${Object.entries(a.p || {}).map(([k, v]) => `data-${k}="${esc(v)}"`).join(' ')}`;
+  const gb = (i, t, l, a, b) => `<button ${a}>${b ? `<u>${b}</u>` : ''}<span class="c ${t}">${ic(i)}</span>${l}</button>`;
+  const dotc = st => ({ Active: 'var(--ok)', Onboarding: 'var(--violet)', Completed: '#2454E8', Dropped: 'var(--bad)' }[st] || 'var(--mut)');
+  const tone = t => ({ r: 't5', o: 't2', b: 't1', g: 't4' }[t] || 't1');
+
+  /* ============ ADMIN HOME (PhonePe) ============ */
+  V.a_home = () => {
+    const d = D(), T = today(), act = activeStu(), sched = act.filter(s => scheduled(s, T)), hol = (d.holidays || {})[T];
+    const marked = sched.filter(s => s.attendance[T]).length, pres = sched.filter(s => s.attendance[T] === 'Present').length;
+    const pend = d.students.reduce((a, s) => a + balance(s), 0), paid = d.students.reduce((a, s) => a + paidSum(s), 0), tot = pend + paid, pc = tot ? Math.round(paid / tot * 100) : 0;
+    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+    const rev = d.tasks.filter(t => t.status === 'Submitted').length + d.students.filter(s => s.project && s.project.status === 'Submitted').length;
+    const ready = d.students.filter(s => s.certificate.status === 'Completed').length, al = adminAlerts();
+    const attTxt = hol ? 'Holiday \u00B7 ' + esc(hol) : !sched.length ? 'No classes today' : marked < sched.length ? (marked ? marked + ' of ' + sched.length + ' marked' : 'Not taken yet') : pres + ' of ' + sched.length + ' present';
+    const pays = []; d.students.forEach(s => s.payments.forEach(p => pays.push([s, p]))); pays.sort((a, b) => a[1].payment_date < b[1].payment_date ? 1 : a[1].payment_date > b[1].payment_date ? -1 : 0);
+    const row = (i, t, ti, sub, a, r) => `<button class="px-r" ${a}><span class="ci ${t}">${ic(i)}</span><span class="t"><b>${ti}</b><span>${sub}</span></span>${r || ic('next', 's')}</button>`;
+    return {
+      t: 'Hello, Admin', sub: greet(),
+      body: `<div class="px-root"><div class="px-hero"><small>${greet()}</small><h1>Hello, Admin \uD83D\uDC4B</h1><button class="px-search" data-a="gsearch">${ic('search', 's')} Search students, fees, actions</button></div>
+      <div class="px-float px-bal"><div class="l">Fees pending</div><div class="a">${inr(pend)}</div><div class="s">${inr(paid)} collected of ${inr(tot)} \u00B7 ${pc}%</div>${bar(pc, 'var(--ok)')}
+        <div class="px-btns"><button class="p" data-a="payform">${ic('rupee', 's')} Collect fee</button><button class="o" data-a="go" data-v="a_followups">${ic('bell', 's')} Follow-ups${fu ? ' (' + fu + ')' : ''}</button></div></div>
+      <div class="px-sec"><div class="px-g"><div class="px-gh">Quick actions</div>${gb('cal', 't4', 'Attendance', 'data-a="attopen" data-d="' + T + '"')}${gb('plus', 't0', 'Add student', 'data-a="go" data-v="a_student_form"')}${gb('rupee', 't2', 'Collect fee', 'data-a="payform"')}${gb('mega', 't3', 'Message', 'data-a="go" data-v="a_notif" data-tab="Compose"')}${gb('bell', 't5', 'Follow-ups', 'data-a="go" data-v="a_followups"', fu)}${gb('award', 't4', 'Completion', 'data-a="go" data-v="a_cdash"')}${gb('chart', 't1', 'Reports', 'data-a="go" data-v="a_reports"')}${gb('grid', 't0', 'More', 'data-a="tab" data-t="more"')}</div></div>
+      <div class="px-sec" style="margin-top:2px"><div class="px-st"><button data-a="tab" data-t="students"><b>${d.students.length}</b><span>Students</span></button><button data-a="go" data-v="a_work"><b style="color:var(--violet)">${rev}</b><span>To review</span></button><button data-a="go" data-v="a_complete"><b style="color:var(--ok)">${ready}</b><span>Certs ready</span></button></div></div>
+      <div class="px-sec"><div class="px-h">Today</div><div class="px-l">${row('cal', 't4', "Today's attendance", attTxt, 'data-a="attopen" data-d="' + T + '"', sched.length && !hol ? `<span class="a">${Math.round(pres / sched.length * 100)}%<small>present</small></span>` : '')}</div></div>
+      <div class="px-sec"><div class="px-h">Needs attention${al.length > 4 ? `<button data-a="go" data-v="a_notif">View all (${al.length})</button>` : ''}</div>${al.length ? `<div class="px-l">${al.slice(0, 4).map(a => row(a.i, tone(a.tone), esc(a.t), esc(a.d), attr(a))).join('')}</div>` : `<div class="px-l"><div class="px-r"><span class="ci t4">${ic('tick')}</span><span class="t"><b>All clear</b><span>Nothing needs your attention</span></span></div></div>`}</div>
+      <div class="px-sec"><div class="px-h">Recent payments<button data-a="tab" data-t="fees">See all</button></div>${pays.length ? `<div class="px-l">${pays.slice(0, 4).map(([s, p]) => `<button class="px-r" data-a="rcpt" data-reg="${s.registration_number}" data-r="${p.receipt_number}"><span class="ci t4">${ic('rupee')}</span><span class="t"><b>${esc(s.full_name)}</b><span>${esc(p.payment_mode)} \u00B7 ${fmtS(p.payment_date)}</span></span><span class="a g">+${inr(p.amount_paid)}<small>Received</small></span></button>`).join('')}</div>` : `<div class="note">No payments yet.</div>`}</div></div>`
+    };
+  };
+
+  /* ============ ADMIN MORE (PhonePe) ============ */
+  V.a_more = () => {
+    const d = D(), T = today(), fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length, al = adminAlerts().length;
+    const pend = d.tasks.filter(t => t.status === 'Submitted').length, tst = d.assessments.filter(a => a.status === 'Scheduled' && a.scheduled_date <= T).length, prj = d.students.filter(x => x.project && x.project.status === 'Submitted').length;
+    const ready = d.students.filter(x => x.certificate.status === 'Completed').length;
+    const grp = (h, items) => `<div class="px-sec" style="margin-top:14px"><div class="px-g"><div class="px-gh">${h}</div>${items.join('')}</div></div>`;
+    return {
+      t: 'More', sub: 'All modules in one place',
+      body: `<div class="px-root"><div class="px-hero" style="padding-bottom:64px"><div class="px-me"><span class="avatar">AD</span><div class="grow"><b>${esc(d.admin.full_name)}</b><small>Balsam Creative Technology \u00B7 Admin</small></div><button class="hbtn" style="background:rgba(255,255,255,.18);color:#fff" data-a="go" data-v="a_settings" aria-label="Settings">${ic('gear')}</button></div></div>
+      <div class="px-float"><div class="px-st" style="gap:6px"><button style="box-shadow:none;padding:4px" data-a="tab" data-t="students"><b>${d.students.length}</b><span>Students</span></button><button style="box-shadow:none;padding:4px" data-a="go" data-v="a_notif"><b style="color:var(--orange)">${al}</b><span>Alerts</span></button><button style="box-shadow:none;padding:4px" data-a="go" data-v="a_followups"><b style="color:var(--violet)">${fu}</b><span>Follow-ups</span></button></div></div>` +
+        grp('Learning', [gb('book', 't1', 'Courses', 'data-a="go" data-v="a_courses"'), gb('folder', 't2', 'Materials', 'data-a="go" data-v="a_materials"'), gb('clip', 't3', 'Assignments', 'data-a="gos" data-k="wk" data-v="Assignments" data-view="a_work"', pend), gb('check', 't4', 'Tests', 'data-a="gos" data-k="wk" data-v="Assessments" data-view="a_work"', tst), gb('target', 't5', 'Projects', 'data-a="gos" data-k="wk" data-v="Projects" data-view="a_work"', prj)]) +
+        grp('Students', [gb('users', 't1', 'All students', 'data-a="tab" data-t="students"'), gb('layers', 't4', 'Completion', 'data-a="go" data-v="a_cdash"'), gb('award', 't2', 'Certificates', 'data-a="go" data-v="a_complete"', ready), gb('brief', 't3', 'Placement', 'data-a="go" data-v="a_place"')]) +
+        grp('Money &amp; tools', [gb('rupee', 't2', 'Fees', 'data-a="tab" data-t="fees"'), gb('bell', 't5', 'Alerts', 'data-a="go" data-v="a_notif"', al), gb('chart', 't1', 'Reports', 'data-a="go" data-v="a_reports"'), gb('swap', 't3', 'Import &amp; export', 'data-a="go" data-v="a_data"'), gb('palette', 't2', 'Appearance', 'data-a="go" data-v="appearance"'), gb('gear', 't0', 'Settings', 'data-a="go" data-v="a_settings"')]) +
+        `<div class="px-sec"><button class="btn danger" data-a="logout">${ic('out', 's')} Sign out</button></div></div>`
+    };
+  };
+
+  /* ============ ADMIN STUDENTS (LinkedIn people list) ============ */
+  V.a_students = () => {
+    const d = D(), q = (S.q.stu || '').toLowerCase(), F2 = ['All', 'Active', 'Onboarding', 'Completed', 'Dropped'], cnt = {};
+    F2.forEach(f => cnt[f] = f === 'All' ? d.students.length : d.students.filter(s => stateOf(s) === f).length);
+    const f = flt('sf', F2), L = d.students.filter(s => (f === 'All' || stateOf(s) === f) && (!q || (s.full_name + s.registration_number + s.enr.course_name + s.mobile).toLowerCase().includes(q)));
+    const row = s => { const a = attStats(s), b = balance(s), st = stateOf(s);
+      return `<button class="li-row" data-a="go" data-v="a_student" data-reg="${s.registration_number}"><span class="li-av" style="background:${col(s.full_name)}">${ini(s.full_name)}<i style="background:${dotc(st)}"></i></span><span class="li-t"><b>${esc(s.full_name)}</b><span class="h">${esc(s.enr.course_name)} \u00B7 ${esc(s.enr.faculty_name)}</span><span class="m">${s.registration_number} \u00B7 ${s.stage === 'new' ? 'Starts ' + fmtS(s.enr.course_start_date) : (a.t ? a.pct + '% attendance' : 'No classes yet')}${b ? ' \u00B7 ' + inr(b) + ' due' : ''}${st !== 'Active' ? ' \u00B7 ' + st : ''}</span></span><span class="li-v">View</span></button>`; };
+    return {
+      t: 'Students', sub: d.students.length + ' people on record', right: bellBtn(), fab: { a: 'go', d: 'data-v="a_student_form"', l: 'Add', i: 'plus' },
+      extra: `<label class="hdr-search">${ic('search', 's')}<input id="q-stu" data-q="stu" value="${esc(S.q.stu || '')}" placeholder="Search name, reg. no., course" autocomplete="off"></label>`,
+      body: chips('sf', F2, cnt) + (L.length ? `<div class="li-wrap">${L.map(row).join('')}</div>` : empty('No students found', 'Try a different search or filter.', 'users'))
+    };
+  };
+
+  /* ============ ADMIN VIEW OF A STUDENT (LinkedIn profile) ============ */
+  const _as = V.a_student;
+  V.a_student = p => {
+    const v = _as(p), s = stu(p.reg); if (!s || !v.body) return v;
+    const i = v.body.indexOf('<h2 class="sec">Manage</h2>'); if (i < 0) return v;
+    const a = attStats(s), b = balance(s), e = s.enr, st = stateOf(s);
+    v.body = `<div class="li-prof"><div class="li-cv"></div><div class="li-body"><div class="li-pav" style="background:${col(s.full_name)}">${ini(s.full_name)}</div><div class="li-nm">${esc(s.full_name)}</div><div class="li-hd">${esc(e.course_name)} student \u00B7 ${esc(e.faculty_name)}</div><div class="li-mt">${s.registration_number}${s.admission_number ? ' \u00B7 ' + s.admission_number : ''}${s.address ? ' \u00B7 ' + esc(s.address) : ''}</div><div class="li-pl">${pill(st)}${s.is_active ? '' : pill('Login disabled', 'bad')}${s.placement_enabled ? pill('Placement', 'v') : ''}</div>
+      <div class="li-bt"><a class="li-btn p" href="tel:${esc(s.mobile)}">Call</a><a class="li-btn" href="mailto:${esc(s.email)}">Email</a><button class="li-btn" data-a="go" data-v="a_student_form" data-reg="${s.registration_number}">Edit</button></div></div>
+      <div class="li-sts"><div><b style="color:${a.pct >= 75 || !a.t ? 'var(--ok)' : 'var(--bad)'}">${a.t ? a.pct + '%' : '\u2013'}</b><span>Attendance</span></div><div><b>${e.progress_percent}%</b><span>Progress</span></div><div><b style="color:${b ? 'var(--orange)' : 'var(--ok)'}">${b ? inr(b) : 'Paid'}</b><span>Balance</span></div></div></div>` + v.body.slice(i);
+    return v;
+  };
+
+  /* ============ ADMIN PROFILE / SETTINGS ============ */
+  const _st = V.a_settings;
+  V.a_settings = () => {
+    const v = _st(), d = D(), a = d.admin; if (!v.body) return v;
+    const i = v.body.indexOf('<div class="card flush list">'); if (i < 0) return v;
+    v.body = `<div class="li-prof"><div class="li-cv"></div><div class="li-body"><div class="li-pav">AD</div><div class="li-nm">${esc(a.full_name)}</div><div class="li-hd">Administrator at Balsam Creative Technology</div><div class="li-mt">${esc(a.email)} \u00B7 @${esc(a.username)}</div><div class="li-bt"><button class="li-btn p" data-a="adminedit">Edit profile</button><button class="li-btn" data-a="adminpw">Password</button></div></div><div class="li-sts"><div><b>${d.students.length}</b><span>Students</span></div><div><b>${d.courses.length}</b><span>Courses</span></div><div><b>${activeStu().length}</b><span>Active</span></div></div></div>` + v.body.slice(i);
+    return v;
+  };
+
+  /* ============ STUDENT PROFILE (LinkedIn) ============ */
+  V.s_me = () => {
+    const s = me(), R = reqs(s), met = R.filter(r => r[1]).length, onb = s.stage === 'new', a = attStats(s), e = s.enr;
+    const topics = (e.progress_remarks || '').split(/[,;]+/).map(x => x.trim()).filter(Boolean);
+    const ln = (i, k, v) => v ? `<div class="li-ln"><span class="ic">${ic(i)}</span><div><b>${esc(v)}</b><span>${k}</span></div></div>` : '';
+    return {
+      t: 'Profile', sub: s.registration_number, right: bellBtn(),
+      body: `<div class="px-root"><div class="px-pad"><div class="li-prof"><div class="li-cv"></div><div class="li-body"><div class="li-pav" style="background:${col(s.full_name)}">${ini(s.full_name)}</div><div class="li-nm">${esc(s.full_name)}</div><div class="li-hd">${esc(e.course_name)} student at Balsam Creative Technology</div><div class="li-mt">${s.registration_number}${s.admission_number ? ' \u00B7 ' + s.admission_number : ''}${s.address ? ' \u00B7 ' + esc(s.address) : ''}</div><div class="li-pl">${pill(stateOf(s))}</div>${onb ? '' : `<div class="li-bt"><button class="li-btn p" data-a="go" data-v="s_cert">Certificate</button><button class="li-btn" data-a="go" data-v="s_complete">Completion</button></div>`}</div>
+        <div class="li-sts"><div><b>${e.progress_percent}%</b><span>Progress</span></div><div><b>${a.t ? a.pct + '%' : '\u2013'}</b><span>Attendance</span></div><div><b>${met}/${R.length}</b><span>Requirements</span></div></div></div>
+        ${topics.length ? `<div class="li-card"><h3>About</h3><p>Currently learning ${esc(e.course_name)} with ${esc(e.faculty_name)}. Progress so far: ${esc(topics.slice(0, 3).join(', '))}.</p></div>` : ''}
+        <div class="li-card"><h3>Course</h3><div class="li-exp"><span class="logo">${ic('book')}</span><div><b>${esc(e.course_name)}</b><span>Balsam Creative Technology</span><span>${fmtD(e.course_start_date)} \u2013 Present \u00B7 ${e.duration_months} months</span><span>${esc(e.slot_days)}, ${slotText(s)} \u00B7 ${esc(e.faculty_name)}</span></div></div></div>
+        ${topics.length ? `<div class="li-card"><h3>Skills</h3><div class="li-sk">${topics.map(x => `<span>${esc(x)}</span>`).join('')}</div></div>` : ''}
+        <div class="li-card"><h3>Contact info</h3>${ln('phone', 'Mobile', s.mobile)}${ln('mail', 'Email', s.email)}${ln('cal', 'Date of birth', s.dob ? fmtD(s.dob) : '')}${ln('user', 'Gender', s.gender)}${ln('pin', 'Address', s.address)}</div>
+        <div class="li-wrap">${onb ? '' : item('layers', 'g', 'Course completion', completion(s)[0] + ' \u00B7 ' + met + ' of ' + R.length + ' requirements', 'data-a="go" data-v="s_complete"') + item('award', 'o', 'Certificate', certLabel(s.certificate.status), 'data-a="go" data-v="s_cert"') + (s.placement_enabled ? item('brief', 'v', 'Placement', 'Resume, portfolio and interviews', 'data-a="go" data-v="s_place"') : '') + item('rupee', 'o', 'Fee history', 'Payments &amp; receipts', 'data-a="tab" data-t="fees"')}${item('bell', 'r', 'Notifications', unreadOf(s) ? unreadOf(s) + ' unread' : 'All read', 'data-a="go" data-v="s_notif"')}${item('palette', 'o', 'Appearance', 'Theme, dark mode and accent colour', 'data-a="go" data-v="appearance"')}${item('help', '', 'Need help?', 'Contact the institute admin desk', 'data-a="help"')}</div>
+        <button class="btn danger" data-a="logout">${ic('out', 's')} Sign out</button><div class="nx-pw">Powered by Balsam Creative Technology</div></div></div>`
+    };
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+
 </body>
 </html>
