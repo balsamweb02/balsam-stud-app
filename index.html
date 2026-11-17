@@ -811,7 +811,7 @@ const S = { role: null, reg: null, tab: 'home', stack: [], theme: LS.get('balsam
 const V = {}, A = {};
 const me = () => S.role === 'student' ? stu(S.reg) : null;
 const cur = () => S.stack.length ? S.stack[S.stack.length - 1] : { v: S.role[0] + '_' + S.tab, p: {} };
-function session() { if (S.role) LS.set('balsam_session', JSON.stringify({ role: S.role, reg: S.reg })); else LS.del('balsam_session'); }
+function session() { if (S.role) LS.set('balsam_session', JSON.stringify({ role: S.role, reg: S.reg, lvl: S.lvl })); else LS.del('balsam_session'); }
 
 function render() {
   const app = $('#app'), root = $('#root'); app.dataset.theme = S.theme; app.dataset.role = S.role || ''; app.dataset.sub = S.stack.length ? '1' : '';
@@ -831,28 +831,33 @@ function render() {
   if (fid) { const e = document.getElementById(fid); if (e) { e.focus(); try { if (pos != null) e.setSelectionRange(pos, pos); } catch (x) { } } }
   if (v && v.after) v.after();
 }
-const userName = () => S.role === 'admin' ? 'Admin' : (me() ? me().full_name.split(' ')[0] : '');
+const isStaff = () => S.role === 'admin' && S.lvl === 'staff';
+const admName = () => isStaff() ? ((D().staff_admin || {}).full_name || 'Admin') : D().admin.full_name;
+const admRole = () => isStaff() ? 'Admin' : 'Super Admin';
+const admIni = () => isStaff() ? 'AD' : 'SA';
+const userName = () => S.role === 'admin' ? admRole() : (me() ? me().full_name.split(' ')[0] : '');
 function logoBar() {
-  const s = me(), n = S.role === 'admin' ? 'AD' : ini(s.full_name), un = S.role === 'admin' ? D().admin.full_name : s.full_name, cnt = S.role === 'student' ? unreadOf(s) : adminAlerts().length;
+  const s = me(), n = S.role === 'admin' ? admIni() : ini(s.full_name), un = S.role === 'admin' ? admRole() : s.full_name, cnt = S.role === 'student' ? unreadOf(s) : adminAlerts().length;
   return `<header class="logobar"><div class="lg">${logoSvg(34)}</div><button class="hbtn" data-a="go" data-v="${S.role === 'admin' ? 'a_notif' : 's_notif'}" aria-label="Notifications">${ic('bell')}${cnt ? `<u>${cnt}</u>` : ''}</button><button class="chipu" data-a="acct" aria-label="Account"><span class="avatar">${n}</span><span><b>${esc(un.split(' ')[0])}</b><small>${S.role === 'admin' ? 'Admin' : 'Student'}</small></span>${ic('x', 'xs').replace('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>', '<polyline points="6 9 12 15 18 9"/>')}</button></header>`;
 }
 function pageHead(v) {
   const g = v.greet || { t: v.t, s: v.sub };
   return `<div class="ph"><div class="grow"><h1>${g.t}</h1>${g.s ? `<p>${g.s}</p>` : ''}</div>${v.greet ? '' : v.right || ''}</div>${v.extra ? `<div class="xtra">${v.extra}</div>` : ''}`;
 }
-A.acct = () => { const adm = S.role === 'admin', s = me(); openSheet(`<div class="row" style="margin-bottom:12px"><span class="avatar lg">${adm ? 'AD' : ini(s.full_name)}</span><div class="grow"><b style="font-size:17px">${esc(adm ? D().admin.full_name : s.full_name)}</b><div class="mut">${adm ? 'Administrator' : s.registration_number + ' · ' + esc(s.enr.course_name)}</div></div></div><div class="card flush list">${item('user', '', adm ? 'Settings & account' : 'My profile', adm ? 'Password, data, appearance' : 'Details, certificate, placement', adm ? 'data-a="acctgo" data-v="a_settings"' : 'data-a="acctgo" data-t="me"')}${item('palette', 'o', 'Appearance', 'Website style, Premium or Contemporary', 'data-a="acctgo" data-v="appearance"')}${item('help', 'c', 'Need help?', 'Contact the institute', 'data-a="acctgo" data-v="help"')}</div><button class="btn danger" data-a="logout">${ic('out', 's')} Sign out</button>`); };
+A.acct = () => { const adm = S.role === 'admin', s = me(); openSheet(`<div class="row" style="margin-bottom:12px"><span class="avatar lg">${adm ? admIni() : ini(s.full_name)}</span><div class="grow"><b style="font-size:17px">${esc(adm ? admName() : s.full_name)}</b><div class="mut">${adm ? admRole() : s.registration_number + ' · ' + esc(s.enr.course_name)}</div></div></div><div class="card flush list">${item('user', '', adm ? 'Settings & account' : 'My profile', adm ? 'Password, data, appearance' : 'Details, certificate, placement', adm ? 'data-a="acctgo" data-v="a_settings"' : 'data-a="acctgo" data-t="me"')}${item('palette', 'o', 'Appearance', 'Website style, Premium or Contemporary', 'data-a="acctgo" data-v="appearance"')}${item('help', 'c', 'Need help?', 'Contact the institute', 'data-a="acctgo" data-v="help"')}</div><button class="btn danger" data-a="logout">${ic('out', 's')} Sign out</button>`); };
 A.acctgo = d => { S.sheet = null; if (d.t) tab(d.t); else if (d.v === 'help') { render(); A.help(); } else go(d.v); };
 function hdrHtml(v, rootScr) {
   if (v.hdr) return v.hdr;
-  return `<header class="hdr"><div class="hdr-top">${!rootScr ? `<button class="hbtn" data-a="back" aria-label="Back">${ic('back')}</button>` : `<button class="avatar" data-a="acct" aria-label="Account">${S.role === 'admin' ? 'AD' : ini(me().full_name)}</button>`}<div class="grow"><h1 class="trunc">${v.t}</h1>${v.sub ? `<small class="trunc">${v.sub}</small>` : ''}</div>${rootScr ? `<button class="hbtn" data-a="gsearch" aria-label="Search">${ic('search')}</button>` : ''}${v.right || ''}</div>${v.extra ? `<div class="hdr-extra">${v.extra}</div>` : ''}</header>`;
+  return `<header class="hdr"><div class="hdr-top">${!rootScr ? `<button class="hbtn" data-a="back" aria-label="Back">${ic('back')}</button>` : `<button class="avatar" data-a="acct" aria-label="Account">${S.role === 'admin' ? admIni() : ini(me().full_name)}</button>`}<div class="grow"><h1 class="trunc">${v.t}</h1>${v.sub ? `<small class="trunc">${v.sub}</small>` : ''}</div>${rootScr ? `<button class="hbtn" data-a="gsearch" aria-label="Search">${ic('search')}</button>` : ''}${v.right || ''}</div>${v.extra ? `<div class="hdr-extra">${v.extra}</div>` : ''}</header>`;
 }
 function tabBar() {
   const s = me(), onb = s && s.stage === 'new';
-  let t = TABS[S.role]; if (onb) t = [['home', 'Home', 'home'], ['notif', 'Alerts', 'bell'], ['me', 'Profile', 'user']];
+  let t = isStaff() ? TABS.staff : TABS[S.role]; if (onb) t = [['home', 'Home', 'home'], ['notif', 'Alerts', 'bell'], ['me', 'Profile', 'user']];
   return `<nav class="tabs">${t.map(x => { const b = x[0] === 'notif' && s ? unreadOf(s) : 0; return `<button data-a="tab" data-t="${x[0]}" class="${S.tab === x[0] ? 'on' : ''}" aria-label="${x[1]}"><span class="tb">${ic(x[2])}</span>${x[1]}${b ? `<u>${b}</u>` : ''}</button>`; }).join('')}</nav>`;
 }
 const TABS = {
   admin: [['home', 'Home', 'home'], ['students', 'Students', 'users'], ['att', 'Attendance', 'cal'], ['fees', 'Fees', 'rupee'], ['more', 'More', 'grid']],
+  staff: [['home', 'Home', 'home'], ['students', 'Students', 'users'], ['att', 'Attendance', 'cal'], ['fees', 'Follow-ups', 'bell'], ['more', 'More', 'grid']],
   student: [['home', 'Home', 'home'], ['learn', 'Learn', 'book'], ['tasks', 'Tasks', 'clip'], ['fees', 'Fees', 'rupee'], ['me', 'Profile', 'user']]
 };
 function go(v, p = {}) { S.stack.push({ v, p }); S.anim = 'push'; render(); }
@@ -891,7 +896,7 @@ A.flt = d => { S.f[d.k] = d.v; render(); };
 A.noop = () => { };
 A.eye = (d, el) => { const i = $('#f-pw'); if (i) { i.type = i.type === 'password' ? 'text' : 'password'; } };
 A.theme = d => { S.theme = d.v; LS.set('balsam_theme2', d.v); render(); toast('Theme: ' + d.l, 'ok'); };
-A.logout = () => { S.role = null; S.reg = null; S.stack = []; S.tab = 'home'; S.sheet = null; session(); render(); };
+A.logout = () => { S.lvl = null; S.role = null; S.reg = null; S.stack = []; S.tab = 'home'; S.sheet = null; session(); render(); };
 A.confirm = d => { S.pending = d; };
 
 /* ---------- reusable components ---------- */
@@ -946,16 +951,16 @@ function bellBtn() {
 const rootBar = (t, sub) => ({ t, sub, right: bellBtn() });
 
 /* ---------- login ---------- */
-const DEMO = { admin: [['admin', 'admin123']], student: [['anitha', 'anitha123'], ['hari', 'hari123'], ['karthika', 'karthika123'], ['divya', 'divya123']] };
+const DEMO = { admin: [['admin', 'admin123']], staff: [['staff', 'staff123']], student: [['anitha', 'anitha123'], ['hari', 'hari123'], ['karthika', 'karthika123'], ['divya', 'divya123']] };
 function loginView() {
-  const ad = S.lr === 'admin';
-  return `<div class="login"><div style="display:flex;justify-content:center;margin:6px 0 10px">${logoSvg(56, S.theme !== 'clean')}</div><div class="tag">${ad ? 'Admin workspace' : 'Student portal'}</div>
+  const ad = S.lr !== 'student', lt = S.lr === 'staff' ? 'Admin' : ad ? 'Super Admin' : 'Student';
+  return `<div class="login"><div style="display:flex;justify-content:center;margin:6px 0 10px">${logoSvg(56, S.theme !== 'clean')}</div><div class="tag">${S.lr === 'staff' ? 'Admin workspace' : ad ? 'Super Admin workspace' : 'Student portal'}</div>
   <div class="lcard"><h2>Welcome back</h2><div class="mut">Sign in to continue</div>
-  <div class="seg"><button data-a="lrole" data-v="admin" class="${ad ? 'on' : ''}">Admin</button><button data-a="lrole" data-v="student" class="${!ad ? 'on' : ''}">Student</button></div>
-  <label class="field"><span>${ad ? 'Username' : 'Username or registration no.'}</span><input id="f-user" autocomplete="username" autocapitalize="none" placeholder="${ad ? 'admin' : 'e.g. anitha or REG001'}"></label>
+  <div class="seg"><button data-a="lrole" data-v="admin" class="${S.lr === 'admin' ? 'on' : ''}">Super Admin</button><button data-a="lrole" data-v="staff" class="${S.lr === 'staff' ? 'on' : ''}">Admin</button><button data-a="lrole" data-v="student" class="${!ad ? 'on' : ''}">Student</button></div>
+  <label class="field"><span>${ad ? 'Username' : 'Username or registration no.'}</span><input id="f-user" autocomplete="username" autocapitalize="none" placeholder="${S.lr === 'staff' ? 'staff' : ad ? 'admin' : 'e.g. anitha or REG001'}"></label>
   <label class="field"><span>Password</span><div class="pw"><input id="f-pw" type="password" autocomplete="current-password" placeholder="Enter your password"><button type="button" data-a="eye" aria-label="Show password">${ic('eye')}</button></div></label>
   <div class="err" id="lerr"></div>
-  <button class="btn" data-a="login">Sign in as ${ad ? 'Admin' : 'Student'}</button>
+  <button class="btn" data-a="login">Sign in as ${lt}</button>
   <button class="btn ghost sm" style="width:100%;margin-top:6px" data-a="forgot">Forgot password?</button></div>
   <div class="demo">${DEMO[S.lr].map(d => `<button data-a="fill" data-u="${d[0]}" data-p="${d[1]}">${d[0]}</button>`).join('')}</div>
   <div class="mut" style="text-align:center;margin-top:8px;color:#8FA3D6;font-size:11.5px">Demo accounts — tap a name to fill the login</div>
@@ -969,8 +974,13 @@ A.login = () => {
   const bad = m => { err.textContent = m; };
   if (!u || !p) return bad('Enter your username and password.');
   const h = hash(p);
+  if (S.lr === 'staff') {
+    const sa = d.staff_admin || { username: 'staff', password_hash: hash('staff123'), full_name: 'Admin' };
+    if (u === sa.username && h === sa.password_hash) { S.role = 'admin'; S.lvl = 'staff'; S.reg = null; S.tab = 'home'; S.stack = []; session(); S.anim = 'fade'; render(); toast('Welcome, ' + sa.full_name, 'ok'); return; }
+    return bad('Incorrect admin username or password.');
+  }
   if (S.lr === 'admin') {
-    if (u === d.admin.username && h === d.admin.password_hash) { S.role = 'admin'; S.reg = null; S.tab = 'home'; S.stack = []; session(); S.anim = 'fade'; render(); toast('Welcome, ' + d.admin.full_name, 'ok'); return; }
+    if (u === d.admin.username && h === d.admin.password_hash) { S.role = 'admin'; S.lvl = 'super'; S.reg = null; S.tab = 'home'; S.stack = []; session(); S.anim = 'fade'; render(); toast('Welcome, ' + d.admin.full_name, 'ok'); return; }
     return bad('Incorrect admin username or password.');
   }
   const s = d.students.find(x => (x.username.toLowerCase() === u || x.registration_number.toLowerCase() === u) && x.password_hash === h);
@@ -1132,7 +1142,7 @@ A.stunext = d => {
   const x = S.draft[d.key], edit = !!d.reg, last = edit ? 2 : 3, dd = D(); readStep(x);
   if (x.step === 1) { if (!x.name) return toast('Please enter the full name.', 'bad'); if (!x.reg) return toast('Registration number is required.', 'bad'); if (dd.students.some(s => s.registration_number.toLowerCase() === x.reg.toLowerCase() && s.registration_number !== d.reg)) return toast('That registration number already exists.', 'bad'); }
   if (x.step === 2) { if (!x.course || !x.faculty || !x.start || !x.months || !x.from || !x.to || x.fee === '') return toast('Fill all required course fields.', 'bad'); if (!x.days) return toast('Choose at least one session day.', 'bad'); if (x.to <= x.from) return toast('Session end must be after the start time.', 'bad'); }
-  if (x.step === 3) { if (!x.user || (x.pass || '').length < 4) return toast('Enter a username and a password (min 4 characters).', 'bad'); if (x.user === dd.admin.username || dd.students.some(s => s.username.toLowerCase() === x.user)) return toast('That username is already taken.', 'bad'); }
+  if (x.step === 3) { if (!x.user || (x.pass || '').length < 4) return toast('Enter a username and a password (min 4 characters).', 'bad'); if (x.user === dd.admin.username || x.user === ((dd.staff_admin || {}).username || 'staff') || dd.students.some(s => s.username.toLowerCase() === x.user)) return toast('That username is already taken.', 'bad'); }
   if (x.step < last) { x.step++; S.anim = 'push'; render(); return; }
   // final save
   let c = dd.courses.find(c => c.course_name.toLowerCase() === x.course.toLowerCase()); if (!c) { c = { course_id: nid('course'), course_name: x.course, course_code: x.course.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase(), duration_weeks: Math.round(x.months * 4.3), is_active: true }; dd.courses.push(c); }
@@ -2567,7 +2577,7 @@ html[data-mode=dark] body{background:#05080F}
     3: ['Fee follow-up', 'Follow up with the student through WhatsApp or phone.'],
     2: ['Personal reminder', 'Personally remind the student about the pending installment.']
   };
-  const staff = () => D().admin.full_name;
+  const staff = () => admName();
   const hm = t => new Date(t).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
   const stamp = t => fmtTs(t) + ', ' + hm(t);
   const ord = n => n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]);
@@ -2680,10 +2690,10 @@ html[data-mode=dark] body{background:#05080F}
       if (followable && s.overall_status !== 'Dropped') {
         const overdue0 = nx.due_date < T;
         OFFS.forEach(o => { if (overdue0 && o !== 2) return; /* FIX: overdue -> one follow-up, not five at once */ if (!d.followups.some(f => f.reg === reg && f.inst_no === nx.no && f.offset === o)) { d.followups.push({ id: nid('followup'), reg, inst_no: nx.no, offset: o, trigger: addDays(nx.due_date, -o), title: FU[o][0], desc: FU[o][1], status: 'Pending', remarks: '', done_at: '', done_by: '' }); ch = true; } });
-        [5, 3].forEach(o => {
+        [7, 5, 3].forEach(o => {
           const key = 'fee:' + reg + ':' + nx.no + ':' + o;
           if (T >= addDays(nx.due_date, -o) && !d.notifications.some(n => n.key === key)) {
-            notify({ to: reg, key, notification_type: 'Fee Reminder', title: (o === 5 ? 'Fee reminder' : 'Fee follow-up') + ' · Installment ' + nx.no + ' of ' + s.plan.n, message: 'Installment ' + nx.no + ': ' + inr(nx.left) + ' payable by ' + fmtD(nx.due_date) + '.\nPlease pay at the front desk or by UPI. This reminder stops once the institute records your payment.' }); ch = true;
+            notify({ to: reg, key, notification_type: 'Fee Reminder', title: (o === 7 ? 'Upcoming installment' : o === 5 ? 'Fee reminder' : 'Fee follow-up') + ' · Installment ' + nx.no + ' of ' + s.plan.n, message: 'Installment ' + nx.no + ': ' + inr(nx.left) + ' payable by ' + fmtD(nx.due_date) + '.\nPlease pay at the front desk or by UPI. This reminder stops once the institute records your payment.' }); ch = true;
           }
         });
       }
@@ -2851,7 +2861,7 @@ html[data-mode=dark] body{background:#05080F}
 
   /* ================================================================== STUDENT SIDE: banner + schedule */
   const stuBanner = s => {
-    if (!s.plan) return ''; const nx = nextInst(s); if (!nx) return ''; const dd = diff(today(), nx.due_date); if (dd > 5) return ''; const od = dd < 0;
+    if (!s.plan) return ''; const nx = nextInst(s); if (!nx) return ''; const dd = diff(today(), nx.due_date); if (dd > 7) return ''; const od = dd < 0;
     return `<button class="alert ${od ? 'r' : 'o'}" data-a="tab" data-t="fees"><span class="ico ${od ? 'r' : 'o'}">${ic('rupee')}</span><span class="grow"><b>Fee reminder · Installment ${nx.no} of ${s.plan.n}</b><span class="mut">${inr(nx.left)} payable by ${fmtD(nx.due_date)} · ${od ? Math.abs(dd) + ' day' + (Math.abs(dd) > 1 ? 's' : '') + ' overdue' : dd === 0 ? 'due today' : 'due in ' + dd + ' day' + (dd > 1 ? 's' : '')}</span></span>${ic('next', 's')}</button>`;
   };
   const _sh2 = V.s_home;
@@ -2948,7 +2958,7 @@ html[data-mode=dark] body{background:#05080F}
 (function boot() {
   try {
     const ss = JSON.parse(LS.get('balsam_session') || 'null'); D();
-    if (ss && ss.role === 'admin') { S.role = 'admin'; S.splash = false; }
+    if (ss && ss.role === 'admin') { S.role = 'admin'; S.lvl = ss.lvl === 'staff' ? 'staff' : 'super'; S.splash = false; }
     else if (ss && ss.role === 'student' && stu(ss.reg) && stu(ss.reg).is_active) { S.role = 'student'; S.reg = ss.reg; S.splash = false; }
   } catch (e) { }
   render();
@@ -3418,6 +3428,60 @@ html[data-mode=dark] body{background:#05080F}
         <button class="btn danger" data-a="logout">${ic('out', 's')} Sign out</button><div class="nx-pw">Powered by Balsam Creative Technology</div></div></div>`
     };
   };
+
+  /* ============ SUPER ADMIN / ADMIN SPLIT (director request) ============ */
+  (function () { const d = D(); if (!d.staff_admin) { d.staff_admin = { username: 'staff', password_hash: hash('staff123'), full_name: 'Admin', email: 'admin@balsam.example' }; save(); } })();
+  const _homeSuper = V.a_home;
+  V.a_home = () => {
+    if (!isStaff()) { const v = _homeSuper(); v.t = 'Hello, Super Admin'; v.body = v.body.replace('Hello, Admin', 'Hello, Super Admin'); return v; }
+    const d = D(), T = today(), act = activeStu(), sched = act.filter(s => scheduled(s, T)), hol = (d.holidays || {})[T];
+    const st = s => s.attendance[T] || '', P = sched.filter(s => st(s) === 'Present'), A_ = sched.filter(s => st(s) === 'Absent'), L = sched.filter(s => st(s) === 'Leave'), N = sched.filter(s => !st(s));
+    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length, pendN = d.students.filter(s => balance(s) > 0 && s.overall_status !== 'Dropped').length;
+    const rev = d.tasks.filter(t => t.status === 'Submitted').length + d.students.filter(s => s.project && s.project.status === 'Submitted').length;
+    const ready = d.students.filter(s => s.certificate.status === 'Completed').length, al = adminAlerts();
+    const row = (i, t, ti, sub, a, r) => `<button class="px-r" ${a}><span class="ci ${t}">${ic(i)}</span><span class="t"><b>${ti}</b><span>${sub}</span></span>${r || ic('next', 's')}</button>`;
+    const order = { Absent: 0, Leave: 1, '': 2, Present: 3 }, list = sched.slice().sort((a, b) => order[st(a)] - order[st(b)]);
+    const att = list.map(s => { const v = st(s), a = attStats(s); return row(v === 'Present' ? 'tick' : v === 'Absent' ? 'x' : v === 'Leave' ? 'clock' : 'cal', v === 'Present' ? 't4' : v === 'Absent' ? 't5' : v === 'Leave' ? 't2' : 't1', esc(s.full_name), esc(s.enr.course_name) + ' \u00B7 ' + t12(s.enr.slot_start_time) + (a.t ? ' \u00B7 ' + a.pct + '% overall' : ''), 'data-a="go" data-v="a_att_student" data-reg="' + s.registration_number + '"', pill(v || 'Not marked', v === 'Present' ? 'ok' : v === 'Absent' ? 'bad' : v === 'Leave' ? 'warn' : 'n')); }).join('');
+    return {
+      t: 'Hello, Admin', sub: greet(),
+      body: `<div class="px-root"><div class="px-hero"><small>${greet()}</small><h1>Hello, Admin \uD83D\uDC4B</h1><button class="px-search" data-a="gsearch">${ic('search', 's')} Search students, actions</button></div>
+      <div class="px-float px-bal"><div class="l">Fee follow-ups</div><div class="a">${fu}</div><div class="s">due now \u00B7 ${pendN} student${pendN === 1 ? '' : 's'} with pending fees</div>
+        <div class="px-btns"><button class="p" style="flex:1" data-a="go" data-v="a_followups">${ic('bell', 's')} Follow-ups${fu ? ' (' + fu + ')' : ''}</button></div></div>
+      <div class="px-sec"><div class="px-g"><div class="px-gh">Quick actions</div>${gb('cal', 't4', 'Attendance', 'data-a="attopen" data-d="' + T + '"')}${gb('plus', 't0', 'Add student', 'data-a="go" data-v="a_student_form"')}${gb('bell', 't5', 'Follow-ups', 'data-a="go" data-v="a_followups"', fu)}${gb('award', 't4', 'Completion', 'data-a="go" data-v="a_cdash"')}${gb('mega', 't3', 'Message', 'data-a="go" data-v="a_notif" data-tab="Compose"')}${gb('grid', 't0', 'More', 'data-a="tab" data-t="more"')}</div></div>
+      <div class="px-sec" style="margin-top:2px"><div class="px-st"><button data-a="tab" data-t="students"><b>${d.students.length}</b><span>Students</span></button><button data-a="go" data-v="a_work"><b style="color:var(--violet)">${rev}</b><span>To review</span></button><button data-a="go" data-v="a_complete"><b style="color:var(--ok)">${ready}</b><span>Certs ready</span></button></div></div>
+      <div class="px-sec"><div class="px-h">Today's attendance<button data-a="attopen" data-d="${T}">Mark</button></div>${hol ? `<div class="note">Holiday \u00B7 ${esc(hol)}</div>` : !sched.length ? `<div class="note">No classes scheduled today.</div>` : `<div class="px-st" style="margin-bottom:10px"><button data-a="attopen" data-d="${T}"><b style="color:var(--ok)">${P.length}</b><span>Present</span></button><button data-a="attopen" data-d="${T}"><b style="color:var(--bad)">${A_.length}</b><span>Absent</span></button><button data-a="attopen" data-d="${T}"><b style="color:var(--orange)">${L.length}</b><span>Leave</span></button><button data-a="attopen" data-d="${T}"><b>${N.length}</b><span>Not marked</span></button></div><div class="px-l">${att}</div>`}</div>
+      <div class="px-sec"><div class="px-h">Needs attention${al.length > 4 ? `<button data-a="go" data-v="a_notif">View all (${al.length})</button>` : ''}</div>${al.length ? `<div class="px-l">${al.slice(0, 4).map(a => row(a.i, tone(a.tone), esc(a.t), esc(a.d), attr(a))).join('')}</div>` : `<div class="px-l"><div class="px-r"><span class="ci t4">${ic('tick')}</span><span class="t"><b>All clear</b><span>Nothing needs your attention</span></span></div></div>`}</div></div>`
+    };
+  };
+  const _moreSuper = V.a_more;
+  V.a_more = () => {
+    const v = _moreSuper();
+    if (!isStaff()) { v.body = v.body.replace(/Balsam Creative Technology \u00B7 Admin/, 'Balsam Creative Technology \u00B7 Super Admin'); return v; }
+    v.body = v.body.replace('<b>' + esc(D().admin.full_name) + '</b>', '<b>' + esc(admName()) + '</b>');
+    ['a_reports', 'a_data', 'a_settings'].forEach(k => { v.body = v.body.replace(new RegExp('<button data-a="go" data-v="' + k + '"(?:(?!</button>)[\\s\\S])*</button>', 'g'), ''); });
+    v.body = v.body.replace(/<button data-a="tab" data-t="fees"(?:(?!<\/button>)[\s\S])*<\/button>/g, '');
+    v.body = v.body.replace(/<button class="hbtn"[^>]*data-v="a_settings"[^>]*>(?:(?!<\/button>)[\s\S])*<\/button>/, '');
+    return v;
+  };
+  const linkCard = (tone, icon, t, sub, view) => `<button class="alert ${tone}" data-a="go" data-v="${view}"><span class="ico ${tone === 'b' ? '' : tone}">${ic(icon)}</span><span class="grow"><b>${t}</b><span class="mut">${sub}</span></span>${ic('next', 's')}</button>`;
+  const _feesSuper = V.a_fees, _fuSuper = V.a_followups;
+  V.a_fees = () => isStaff() ? V.a_followups() : _feesSuper();
+  V.a_pendfees = () => {
+    const d = D(), T = today(), q = (S.q.pf || '').toLowerCase();
+    const L = d.students.filter(s => balance(s) > 0 && s.overall_status !== 'Dropped' && (!q || (s.full_name + s.registration_number + s.enr.course_name).toLowerCase().includes(q))).sort((a, b) => (a.enr.next_due_date || '9') < (b.enr.next_due_date || '9') ? -1 : 1);
+    return { t: 'Pending fees', sub: L.length + ' student' + (L.length === 1 ? '' : 's') + ' with a balance', right: bellBtn(),
+      body: searchBox('pf', 'Search student') + (L.length ? L.map(s => { const dd = s.enr.next_due_date, od = dd && dd < T;
+        return `<button class="card tap" data-a="go" data-v="a_fee_stu" data-reg="${s.registration_number}" style="padding:12px"><div class="row"><span class="avatar" style="width:38px;height:38px;font-size:12px">${ini(s.full_name)}</span><div class="grow"><div class="row"><b class="grow trunc">${esc(s.full_name)}</b>${pill(inr(balance(s)) + ' due', od ? 'bad' : 'warn')}</div><div class="mut trunc">${esc(s.enr.course_name)} \u00B7 ${dd ? (od ? 'overdue since ' : 'due ') + fmtS(dd) : 'no due date set'}</div><div class="mut sm">${s.mobile ? esc(s.mobile) : ''}</div></div></div></button>`; }).join('') : empty('No pending fees', 'Every student is fully paid.', 'rupee')) };
+  };
+  V.a_followups = () => {
+    const v = _fuSuper(); if (!isStaff()) return v;
+    const n = D().students.filter(s => balance(s) > 0 && s.overall_status !== 'Dropped').length;
+    v.body = linkCard('b', 'rupee', 'Pending fees \u2013 every student', n + ' student' + (n === 1 ? '' : 's') + ' with a balance \u00B7 amount and due date', 'a_pendfees') + v.body; return v;
+  };
+  const _repsSuper = V.a_reports, _dataSuper = V.a_data, _setSuper = V.a_settings;
+  V.a_reports = () => isStaff() ? V.a_home() : _repsSuper();
+  V.a_data = () => isStaff() ? V.a_home() : _dataSuper();
+  V.a_settings = () => isStaff() ? V.a_more() : _setSuper();
   try { render(); } catch (e) { }
 })();
 </script>
