@@ -2647,6 +2647,7 @@ html[data-mode=dark] body{background:#05080F}
     return { s, c, last, left: diff(today(), last), items, done, total: req.length, full: done === req.length };
   }
   const cList = () => D().students.filter(s => s.stage === 'active' && s.overall_status !== 'Dropped').map(cinfo);
+  window.__cm = { cinfo, cList, comp, endDate, asmtDate };
 
   /* ------------------------------------------------------------------ reconcile: followups, due dates, student notices */
   function reconcile() {
@@ -3486,5 +3487,1003 @@ html[data-mode=dark] body{background:#05080F}
 })();
 </script>
 
+<!-- ================= UI v3: Fee Follow-up dashboard / details + Add Student fee form (matches mockups) ================= -->
+<style id="fx2-style">
+/* active tab = peach pill (like mockup) */
+#app#app .tabs button.on{background:#FDEBDD;color:#F26A10;border-radius:16px}
+#app#app .tabs button.on .tb{background:transparent}
+#app#app[data-mode=dark] .tabs button.on{background:#3A2616}
+/* cards */
+.fx2-card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 6px 20px rgba(15,27,77,.06);padding:16px;margin-bottom:14px}
+.fx2-h{display:flex;align-items:center;font-size:17px;font-weight:800;margin:0 0 14px;color:var(--ink)}
+.fx2-h small{margin-left:auto;font-size:12.5px;color:var(--mut);font-weight:600}
+.fx2-ov{display:flex;gap:14px;align-items:center}
+.fx2-donut{position:relative;width:124px;height:124px;flex:none}
+.fx2-dc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.fx2-dc b{font-size:28px;font-weight:800;line-height:1;letter-spacing:-.5px}
+.fx2-dc span{font-size:11.5px;color:var(--mut);margin-top:3px}
+.fx2-lg{flex:1;min-width:0;border:1px solid var(--line);border-radius:14px;padding:2px 12px}
+.fx2-lg div{display:flex;align-items:center;gap:8px;padding:8px 0;font-size:13px}
+.fx2-lg div+div{border-top:1px solid var(--line)}
+.fx2-lg i{width:10px;height:10px;border-radius:50%;flex:none}
+.fx2-lg b{margin-left:auto;font-weight:700}
+.fx2-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.fx2-t{border-radius:16px;padding:14px 4px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12.5px;color:var(--mut);font-weight:600}
+.fx2-t b{font-size:28px;font-weight:800;color:var(--ink);line-height:1.1}
+.fx2-t.b{background:rgba(59,130,246,.13)}.fx2-t.b svg{color:#2563EB}
+.fx2-t.a{background:rgba(251,191,36,.2)}.fx2-t.a svg{color:#D97706}
+.fx2-t.r{background:rgba(239,68,68,.13)}.fx2-t.r svg{color:#DC2626}
+.fx2-lh{display:flex;align-items:center;font-size:17px;font-weight:800;margin:6px 2px 12px;color:var(--ink)}
+.fx2-row{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 2px 10px rgba(15,27,77,.05);padding:12px 12px 12px 10px;margin-bottom:10px}
+.fx2-row:active{transform:scale(.985)}
+.fx2-av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;flex:none;background:#E8E8FD;color:#3730A3}
+.fx2-av.over{background:#FBE5E3;color:#B91C1C}.fx2-av.d3{background:#FDF1D6;color:#B45309}.fx2-av.paid{background:#DDF5E6;color:#15803D}
+.fx2-in{flex:1;min-width:0}
+.fx2-in b{display:block;font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx2-in span{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx2-am{text-align:right;flex:none}
+.fx2-am b{display:block;font-size:14px;font-weight:800}
+.fx2-am span{display:block;font-size:11.5px;color:var(--mut)}
+.fx2-p{font-size:11.5px;font-weight:700;border-radius:99px;padding:5px 10px;white-space:nowrap;flex:none;background:rgba(59,130,246,.14);color:#2563EB}
+.fx2-p.a{background:rgba(251,191,36,.22);color:#B45309}.fx2-p.r{background:rgba(239,68,68,.14);color:#DC2626}.fx2-p.g{background:rgba(34,197,94,.16);color:#15803D}.fx2-p.s{background:var(--field);color:var(--mut)}
+/* details */
+.fx2-hd{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.fx2-hd .fx2-av{width:52px;height:52px;font-size:17px}
+.fx2-hd b{display:block;font-size:19px;font-weight:800;letter-spacing:-.3px}.fx2-hd span.m{font-size:13px;color:var(--mut)}
+.fx2-cb{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;background:#E8EAFD;color:#2B3FD0}
+.fx2-cb.wa{background:#DDF5E6;color:#16A34A}
+.fx2-fee{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:16px;padding:12px 4px}
+.fx2-fee div{padding:0 12px}.fx2-fee div+div{border-left:1px solid var(--line)}
+.fx2-fee span{display:block;font-size:12px;color:var(--mut);font-weight:600}.fx2-fee b{display:block;font-size:17px;font-weight:800;margin-top:3px}
+.fx2-nx{display:flex;align-items:center;gap:12px;background:rgba(59,130,246,.1);border-radius:18px;padding:16px;margin-bottom:14px}
+.fx2-nx .ci{width:44px;height:44px;flex:none;display:grid;place-items:center;color:var(--ink)}.fx2-nx .ci svg{width:34px;height:34px;stroke-width:1.6}
+.fx2-nx small{display:block;font-size:14px;font-weight:700}
+.fx2-nx b{display:block;font-size:26px;font-weight:800;letter-spacing:-.5px;line-height:1.2}
+.fx2-nx span.d{font-size:13px;color:var(--mut)}
+.fx2-tr{display:flex;align-items:center;gap:12px;width:100%;padding:10px 0;text-align:left;position:relative}
+.fx2-tr+.fx2-tr{border-top:1px solid var(--line)}
+.fx2-tr .nd{width:26px;height:26px;border-radius:50%;border:2px solid #CBD5E1;display:grid;place-items:center;flex:none;background:var(--card);position:relative;z-index:1;color:#fff}
+.fx2-tr .nd.on{background:#22C55E;border-color:#22C55E}
+.fx2-tr:not(:last-child) .nd:after{content:"";position:absolute;left:10px;top:24px;height:36px;width:2px;background:#CBD5E1}
+.fx2-tr .t{flex:1;min-width:0}.fx2-tr .t b{display:block;font-size:15px;font-weight:700}.fx2-tr .t span{display:block;font-size:12.5px;color:var(--mut)}
+.fx2-bars{position:relative;display:flex;align-items:stretch;gap:14px;height:130px;border-bottom:1px solid var(--line);background:repeating-linear-gradient(to top,transparent 0,transparent 25px,var(--line) 25px,var(--line) 26px);padding:0 6px}
+.fx2-bc{flex:1;position:relative}
+.fx2-bc i{position:absolute;left:12%;right:12%;bottom:0;border-radius:6px 6px 0 0;min-height:3px}
+.fx2-bc b{position:absolute;left:0;right:0;text-align:center;font-size:13px;font-weight:800;margin-bottom:3px}
+.fx2-bl{display:flex;gap:14px;padding:6px 6px 0}.fx2-bl span{flex:1;text-align:center;font-size:12px;color:var(--mut);font-weight:600}
+.fx2-bar{position:sticky;bottom:-24px;margin:0 -18px -24px;padding:12px 18px calc(14px + var(--hb,0px));background:linear-gradient(180deg,transparent,var(--bg) 32%);display:flex;gap:10px;z-index:3}
+.fx2-b1,.fx2-b2{flex:1;height:50px;border-radius:14px;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+.fx2-b1{border:1.5px solid #22C55E;color:#15803D;background:var(--card)}
+.fx2-b2{background:#F26A10;color:#fff;box-shadow:0 8px 18px rgba(242,106,16,.28)}
+/* add student */
+.fx2-stu{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.fx2-stu .av{width:68px;height:68px;border-radius:50%;background:rgba(59,130,246,.14);display:grid;place-items:center;color:var(--ink);flex:none}
+.fx2-stu .av svg{width:30px;height:30px}
+.fx2-stu .bx{flex:1;min-width:0;background:var(--field);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.fx2-stu b{display:block;font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fx2-stu span{font-size:13px;color:var(--mut)}
+.fx2-g3{display:grid;grid-template-columns:1.15fr 1fr .8fr;gap:8px}
+.fx2-calc{display:flex;align-items:center;gap:12px;background:rgba(59,130,246,.12);border-radius:16px;padding:14px;margin:0 0 6px}
+.fx2-calc .ci{width:42px;height:42px;border-radius:12px;background:#2454E8;color:#fff;display:grid;place-items:center;flex:none}
+.fx2-calc div.c{flex:1;min-width:0}.fx2-calc small{display:block;font-size:12.5px;color:var(--ink)}.fx2-calc b{display:block;font-size:21px;font-weight:800;letter-spacing:-.4px}
+.fx2-calc hr{border:0;border-left:1px solid #9DB4F0;align-self:stretch;margin:2px 2px}
+.fx2-warn{display:flex;align-items:center;gap:10px;background:#FDF1D6;color:#7C3A0B;border-radius:14px;padding:13px 14px;font-size:14px;margin:4px 0 8px}
+.fx2-warn svg{color:#F59E0B;flex:none}.fx2-warn b{font-weight:800}
+.fx2-warn.bad{background:#FBE5E3;color:#991B1B}
+#app#app[data-mode=dark] .fx2-warn{background:#3A2E12;color:#FCD9A0}
+</style>
+<script>
+(function () {
+  Object.assign(IC, {
+    calc: '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8.01" y2="11"/><line x1="12" y1="11" x2="12.01" y2="11"/><line x1="16" y1="11" x2="16.01" y2="11"/><line x1="8" y1="15" x2="8.01" y2="15"/><line x1="12" y1="15" x2="12.01" y2="15"/><line x1="16" y1="15" x2="16.01" y2="15"/>',
+    wa: '<path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20l1.2-5.2A8.5 8.5 0 1 1 21 11.5z"/><path d="M9 9c.5 2.5 2.5 4.5 5 5l1.2-1.2-2-1-.8.8c-.9-.4-1.6-1.1-2-2l.8-.8-1-2z"/>',
+    cap: '<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/>'
+  });
+  const COL = { b: '#3B82F6', a: '#FBBF24', r: '#EF4444', g: '#22C55E', s: '#CBD5E1' };
+  const waNum = m => { const x = String(m || '').replace(/\D/g, ''); return x.length === 10 ? '91' + x : x; };
+  const stampT = t => fmtTs(t) + ', ' + new Date(t).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  const logFee = (reg, text) => { const d = D(); (d.act_log = d.act_log || []).unshift({ at: Date.now(), staff: admName(), kind: 'fee', reg, text }); d.act_log = d.act_log.slice(0, 600); };
+
+  /* ---------- data ---------- */
+  function allocI(s) {
+    const p = s.plan; if (!p) return []; let pool = paidSum(s) - Number(p.reg_amount || 0);
+    return p.installments.map(i => { const a = Number(i.amount), got = Math.max(0, Math.min(a, pool)); pool -= a; return { no: i.no, amount: a, due_date: i.due_date, left: a - got }; });
+  }
+  function rowOf(s) {
+    const T = today(), bal = balance(s); let nx = null, due = s.enr.next_due_date || '', amt = bal;
+    if (s.plan) { nx = allocI(s).find(i => i.left > 0) || null; if (nx) { due = nx.due_date; amt = nx.left; } else { due = ''; amt = bal; } }
+    const dd = due ? diff(T, due) : null; let k;
+    if (bal <= 0) k = 'paid'; else if (dd !== null && dd < 0) k = 'over'; else if (dd !== null && dd <= 3) k = 'd3'; else if (dd !== null && dd <= 5) k = 'd5'; else k = 'later';
+    return { s, nx, due, amt, bal, dd, k };
+  }
+  const model = () => D().students.filter(s => s.overall_status !== 'Dropped' && Number(s.enr.net_fee) > 0).map(rowOf);
+  function pillOf(m) {
+    if (m.k === 'paid') return ['Paid', 'g']; if (m.k === 'over') return ['Overdue', 'r']; if (m.dd === null) return ['No due date', 's'];
+    if (m.dd === 0) return ['Due today', 'a']; const t = 'In ' + m.dd + ' Day' + (m.dd > 1 ? 's' : '');
+    return [t, m.k === 'd3' ? 'a' : m.k === 'd5' ? '' : 's'];
+  }
+  const fxPill = m => { const p = pillOf(m); return `<span class="fx2-p ${p[1]}">${p[0]}</span>`; };
+
+  /* ---------- Follow-up overview ---------- */
+  V.a_followups = () => {
+    const M = model(), cnt = { d5: 0, d3: 0, over: 0, paid: 0, later: 0 }; M.forEach(m => cnt[m.k]++);
+    const tot = M.length, R = 50, C = 2 * Math.PI * R, segs = [['d5', '5-day Reminder', COL.b], ['d3', '3-day Reminder', COL.a], ['over', 'Overdue', COL.r], ['paid', 'Completed', COL.g], ['later', 'Later', COL.s]];
+    let off = 0, arcs = `<circle cx="62" cy="62" r="${R}" fill="none" stroke="rgba(148,163,184,.25)" stroke-width="16"/>`;
+    segs.forEach(sg0 => { const n = cnt[sg0[0]]; if (!n || !tot) return; const len = n / tot * C; arcs += `<circle cx="62" cy="62" r="${R}" fill="none" stroke="${sg0[2]}" stroke-width="16" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 62 62)"/>`; off += len; });
+    const labels = ['All', 'In 5 Days', 'In 3 Days', 'Overdue', 'Later', 'Paid'], key = { 'In 5 Days': 'd5', 'In 3 Days': 'd3', Overdue: 'over', Later: 'later', Paid: 'paid' };
+    const cn = { All: tot }; labels.slice(1).forEach(l => cn[l] = cnt[key[l]]);
+    const f = flt('fuf', labels), q = (S.q.fu2 || '').toLowerCase(), order = { over: 0, d3: 1, d5: 2, later: 3, paid: 4 };
+    const L = M.filter(m => (f === 'All' || m.k === key[f]) && (!q || (m.s.full_name + m.s.registration_number + m.s.enr.course_name).toLowerCase().includes(q)))
+      .sort((a, b) => order[a.k] - order[b.k] || (a.due || '9') .localeCompare(b.due || '9'));
+    const tile = (c, k, i, l) => `<button class="fx2-t ${c}" data-a="flt" data-k="fuf" data-v="${l}">${ic(i)}<b>${cnt[k]}</b>${l}</button>`;
+    const row = m => `<button class="fx2-row" data-a="go" data-v="a_fu_detail" data-reg="${m.s.registration_number}"><span class="fx2-av ${m.k}">${ini(m.s.full_name)}</span><span class="fx2-in"><b>${esc(m.s.full_name)}</b><span>${esc(m.s.enr.course_name)}</span></span><span class="fx2-am"><b>${m.amt ? inr(m.amt) : '\u2013'}</b><span>${m.due ? 'Due: ' + fmtS(m.due) : ''}</span></span>${fxPill(m)}${ic('next', 's')}</button>`;
+    return {
+      t: 'Fee Follow-up', sub: 'Track due fees &amp; reminders', right: bellBtn(),
+      body: `<div class="fx2-card"><div class="fx2-h">Follow-up Overview<small>All students</small></div><div class="fx2-ov"><div class="fx2-donut"><svg width="124" height="124" viewBox="0 0 124 124">${arcs}</svg><div class="fx2-dc"><b>${tot}</b><span>Students</span></div></div><div class="fx2-lg">${segs.filter(x => x[0] !== 'later' || cnt.later).map(x => `<div><i style="background:${x[2]}"></i>${x[1]}<b>${cnt[x[0]]}</b></div>`).join('')}</div></div><div class="fx2-tiles">${tile('b', 'd5', 'cal', 'In 5 Days')}${tile('a', 'd3', 'cal', 'In 3 Days')}${tile('r', 'over', 'warn', 'Overdue')}</div></div>` +
+        `<div class="fx2-lh">Student Fee Follow-up (${L.length})</div>` + searchBox('fu2', 'Search student') + chips('fuf', labels, cn) +
+        (L.length ? L.map(row).join('') : empty('No students here', 'Nothing matches this filter.', 'rupee')) +
+        `<button class="btn sec" style="margin-top:6px" data-a="go" data-v="a_fu_log">${ic('hist', 's')} Activity log</button>`
+    };
+  };
+  V.a_fu_log = () => {
+    const L = (D().act_log || []).filter(l => l.kind === 'fee').slice(0, 80);
+    return { t: 'Activity log', sub: 'Fee actions with date, time &amp; admin', body: L.length ? `<div class="fx2-card">${L.map(l => `<div class="hrow"><div class="grow"><b style="font-size:14px">${esc(l.text)}</b><div class="mut sm">${esc((stu(l.reg) || {}).full_name || l.reg)} \u00B7 ${stampT(l.at)} \u00B7 ${esc(l.staff)}</div></div></div>`).join('')}</div>` : empty('No activity yet', 'Fee actions appear here.', 'hist') };
+  };
+
+  /* ---------- Follow-up details ---------- */
+  V.a_fu_detail = p => {
+    const s = stu(p.reg); if (!s) return { t: 'Fee Follow-up Details', body: empty('Not found', '') };
+    const T = today(), m = rowOf(s), reg = s.registration_number, all = (D().followups || []).filter(f => f.reg === reg);
+    const cur = m.nx ? all.filter(f => f.inst_no === m.nx.no).sort((a, b) => b.offset - a.offset) : [];
+    const stat = f => f.status === 'Completed' ? ['Completed', 'g'] : f.status === 'Cancelled' ? ['Closed', 's'] : f.trigger <= T ? ['Due now', 'a'] : ['Scheduled', ''];
+    const tr = f => { const st = stat(f); return `<button class="fx2-tr" data-a="fuopen" data-id="${f.id}"><span class="nd ${f.status === 'Completed' ? 'on' : ''}">${f.status === 'Completed' ? ic('tick', 'xs') : ''}</span><span class="t"><b>${f.offset} Days Before</b><span>Remind on ${fmtS(f.trigger)}</span></span><span class="fx2-p ${st[1]}">${st[0]}</span></button>`; };
+    const dueRow = m.due ? `<div class="fx2-tr"><span class="nd"></span><span class="t"><b>Due Date</b><span>On ${fmtS(m.due)}</span></span><span class="fx2-p ${m.k === 'over' ? 'r' : ''}">${m.k === 'over' ? 'Overdue' : 'Scheduled'}</span></div>` : '';
+    const done = all.filter(f => f.status === 'Completed').length, dn = all.filter(f => f.status === 'Pending' && f.trigger <= T).length, sc = all.filter(f => f.status === 'Pending' && f.trigger > T).length, cl = all.filter(f => f.status === 'Cancelled').length;
+    const bars = [['Completed', done, COL.g], ['Due now', dn, COL.a], ['Scheduled', sc, COL.b], ['Closed', cl, '#94A3B8']], mx = Math.max(5, ...bars.map(b => b[1]));
+    const p0 = pillOf(m);
+    return {
+      t: 'Fee Follow-up Details', right: bellBtn(),
+      body: `<div class="fx2-card"><div class="fx2-hd"><span class="fx2-av ${m.k}">${ini(s.full_name)}</span><div class="grow" style="min-width:0"><b class="trunc">${esc(s.full_name)}</b><span class="m">${esc(s.enr.course_name)}</span></div><a class="fx2-cb" href="tel:${esc(s.mobile)}" aria-label="Call">${ic('phone')}</a><a class="fx2-cb wa" href="https://wa.me/${waNum(s.mobile)}" target="_blank" rel="noopener" aria-label="WhatsApp">${ic('wa')}</a></div>
+        <div class="fx2-fee"><div><span>Total Fee</span><b>${inr(s.enr.net_fee)}</b></div><div><span>Paid</span><b style="color:var(--ok)">${inr(paidSum(s))}</b></div><div><span>Balance</span><b style="color:var(--bad)">${inr(m.bal)}</b></div></div></div>` +
+        (m.bal > 0 ? `<div class="fx2-nx"><span class="ci">${ic('cal')}</span><div class="grow"><small>Next Installment Due</small><b>${inr(m.amt)}</b><span class="d">${m.due ? 'Due on ' + fmtD(m.due) : 'No due date set'}</span></div><span class="fx2-p ${p0[1]}">${p0[0]}</span></div>` : `<div class="note ok">All fees are paid. No more reminders will run.</div>`) +
+        `<div class="fx2-card"><div class="fx2-h">Reminder Schedule</div>${cur.length || dueRow ? cur.map(tr).join('') + dueRow : '<div class="mut">No reminders scheduled.</div>'}</div>` +
+        `<div class="fx2-card"><div class="fx2-h">Reminder Activity</div><div class="fx2-bars">${bars.map(b => { const pc = b[1] / mx * 100; return `<div class="fx2-bc"><i style="height:${pc}%;background:${b[2]}"></i><b style="bottom:${pc}%">${b[1]}</b></div>`; }).join('')}</div><div class="fx2-bl">${bars.map(b => `<span>${b[0]}</span>`).join('')}</div></div>` +
+        `<div class="fx2-bar"><button class="fx2-b1" data-a="fuwa" data-reg="${reg}">${ic('wa')} Send Reminder</button><button class="fx2-b2" data-a="furec" data-reg="${reg}">${ic('edit', 's')} Record Follow-up</button></div>`
+    };
+  };
+  A.fuwa = d => {
+    const s = stu(d.reg), m = rowOf(s); if (m.bal <= 0) return toast('No balance to remind about.');
+    const msg = 'Dear ' + s.full_name.split(' ')[0] + ', this is a friendly reminder from Balsam Creative Technology. ' + inr(m.amt) + ' for ' + s.enr.course_name + (m.due ? ' is due on ' + fmtD(m.due) : ' is pending') + '. Kindly pay at the institute or by UPI. Thank you.';
+    A.remind({ reg: d.reg }); logFee(d.reg, 'Reminder sent (in-app + WhatsApp) for ' + inr(m.amt)); save();
+    try { window.open('https://wa.me/' + waNum(s.mobile) + '?text=' + encodeURIComponent(msg), '_blank', 'noopener'); } catch (e) { }
+  };
+  A.furec = d => {
+    const T = today(), L = (D().followups || []).filter(f => f.reg === d.reg && f.status === 'Pending').sort((a, b) => a.trigger < b.trigger ? -1 : 1);
+    const f = L.find(x => x.trigger <= T) || L[0]; if (!f) return toast('No pending follow-up for this student.');
+    A.fuopen({ id: f.id });
+  };
+
+  /* ---------- Add Student: fee section ---------- */
+  function fxCalc(src) {
+    if (!$('#f-fee') || !$('#f-sreg')) return;
+    const T = +fv('fee') || 0, R = +fv('sreg') || 0, n = Math.max(1, +fv('sn') || 1), bal = Math.max(0, T - R), per = Math.round(bal / n), a = $('#f-sadm1');
+    if (a && src && src.id === 'f-sadm1') a.dataset.t = '1';
+    if (a && a.dataset.t !== '1') a.value = per;
+    const adm = a ? (+a.value || 0) : per, rem = bal - adm;
+    const b = $('#fx-bal'), p = $('#fx-per'), r = $('#fx-rem'), w = $('#fx-warn');
+    if (b) b.textContent = inr(bal); if (p) p.textContent = inr(per);
+    if (r) { if (rem < 0) { r.textContent = 'Admission fee is more than the balance'; if (w) w.classList.add('bad'); } else { if (w) w.classList.remove('bad'); r.innerHTML = n <= 1 ? 'No remaining installments' : 'Remaining ' + (n - 1) + ' Installment' + (n > 2 ? 's' : '') + ' : <b>' + inr(rem) + '</b>'; } }
+  }
+  document.addEventListener('input', e => { if (e.target.dataset && e.target.dataset.calc !== undefined) fxCalc(e.target); });
+  document.addEventListener('change', e => { if (e.target.dataset && e.target.dataset.calc !== undefined) fxCalc(e.target); });
+
+  const _rs = readStep;
+  readStep = function (x) {
+    _rs(x);
+    if (x.step === 2 && $('#f-sreg')) { x.sreg = fv('sreg'); x.sn = fv('sn'); x.sadm = ($('#f-sadm1') && $('#f-sadm1').dataset.t === '1') ? fv('sadm1') : ''; if (fv('admd2')) x.admdate = fv('admd2'); }
+  };
+
+  const _sf = V.a_student_form;
+  V.a_student_form = p => {
+    const v = _sf(p), edit = !!p.reg, x = S.draft['stu' + (p.reg || 'new')]; if (!x) return v;
+    if (!edit) { v.t = 'Add Student'; v.sub = 'Enter student details &amp; fee information'; v.body = v.body.replace('>Create student<', '>Add Student<'); }
+    if (!edit && x.step === 2) {
+      if (x.sreg === undefined) x.sreg = 2000; if (x.sn === undefined) x.sn = 2;
+      const touched = x.sadm !== undefined && x.sadm !== '' && x.sadm !== null;
+      const card = `<div class="fx2-stu"><span class="av">${ic('cap')}</span><div class="bx"><b>${esc(x.name || 'New student')}</b><span>${esc(x.mobile || 'No mobile added')}</span></div></div>`;
+      const block = sec('Fee Details') + `<div class="fx2-g3">${F.t('fee', 'Total Fees', x.fee, { type: 'number', ph: '50000', attr: 'data-calc="1" min="0"' })}${F.t('sreg', 'Registration Fee', x.sreg, { type: 'number', attr: 'data-calc="1" min="0"' })}${F.s('sn', 'Installments', Array.from({ length: 12 }, (_, i) => i + 1), x.sn, 'data-calc="1"')}</div>` +
+        `<div class="fx2-calc"><span class="ci">${ic('calc')}</span><div class="c"><small>Balance after Registration</small><b id="fx-bal">${inr(0)}</b></div><hr><div class="c"><small>Per Installment</small><b id="fx-per">${inr(0)}</b></div></div>` +
+        sec('Admission Details') + `<div class="g2">${F.t('admd2', 'Admission Date', x.admdate || today(), { type: 'date' })}<label class="field"><span>Admission Fees (1st Installment)</span><input id="f-sadm1" type="number" min="0" value="${touched ? esc(x.sadm) : ''}" ${touched ? 'data-t="1"' : ''} data-calc="1" autocomplete="off"></label></div>` +
+        `<div class="fx2-warn" id="fx-warn">${ic('help')}<span id="fx-rem"></span></div>`;
+      const re = /<div class="g2"><label class="field"><span>Net fee[\s\S]*?there are no fixed batches\.<\/div>/;
+      if (re.test(v.body)) v.body = v.body.replace(re, () => block);
+      v.body = v.body.replace('Step 2 · Course &amp; one-to-one session', 'Course &amp; Session').replace(/(<div class="steps">[\s\S]*?<\/div>)/, (m0) => m0 + card);
+      v.after = () => fxCalc();
+    }
+    return v;
+  };
+
+  function buildPlan(s, x) {
+    const total = +x.fee, reg = +x.sreg || 0, n = Math.max(1, +x.sn || 1), bal = Math.max(0, total - reg), adm = x.admdate || today();
+    let a1 = (x.sadm === '' || x.sadm == null) ? Math.round(bal / n) : +x.sadm; if (n === 1) a1 = bal; a1 = Math.max(0, Math.min(a1, bal));
+    const rest = bal - a1, amts = [a1]; if (n > 1) { const per = Math.floor(rest / (n - 1)); for (let i = 1; i < n; i++) amts.push(i === n - 1 ? rest - per * (n - 2) : per); }
+    s.plan = { total, reg_amount: reg, n, admission_date: adm, created_at: Date.now(), updated_by: admName(), installments: amts.map((a, i) => ({ no: i + 1, amount: a, due_date: i === 0 ? adm : addDays(adm, 30 * i) })) };
+    s.enr.net_fee = total; s.admission_date = adm;
+    logFee(s.registration_number, 'Installment plan created at admission: ' + inr(total) + ' in ' + n + ' installment' + (n > 1 ? 's' : '') + ', registration ' + inr(reg)); save();
+  }
+  const _sn = A.stunext;
+  A.stunext = d => {
+    const x = S.draft[d.key], edit = !!d.reg;
+    if (!edit && x && x.step === 2 && $('#f-sreg')) {
+      const T = +fv('fee') || 0, R = +fv('sreg') || 0, a = +fv('sadm1') || 0;
+      if (T > 0 && R >= T) return toast('Registration fee must be less than the total fees.', 'bad');
+      if (T > 0 && a > T - R) return toast('Admission fee cannot be more than the balance (' + inr(T - R) + ').', 'bad');
+    }
+    const snap = (!edit && x) ? Object.assign({}, x) : null;
+    _sn(d);
+    if (snap && snap.step === 3) { const s = stu(snap.reg); if (s && !s.plan && Number(snap.fee) > 0) buildPlan(s, snap); }
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+
+
+<style id="fx3-style">
+.fx3-pg .card{border-radius:20px;box-shadow:0 6px 20px rgba(15,27,77,.06)}
+.fx3-pg .seg button.on{background:#F26A10;color:#fff;border-color:#F26A10}
+.fx3-pg .fh{font-size:16px;font-weight:800}
+.fx3-st{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.fx3-pr{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:6px 0 4px}
+.fx3-pr i{display:block;height:100%;border-radius:99px;background:#22C55E}
+.fp-inst{border-radius:18px;box-shadow:0 4px 14px rgba(15,27,77,.05)}
+</style>
+<script>
+(function () {
+  const M = () => window.__cm; if (!M()) return;
+  const ini = n => String(n || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  const wn = m => { const x = String(m || '').replace(/\D/g, ''); return x.length === 10 ? '91' + x : x; };
+  const COL = { g: '#22C55E', b: '#3B82F6', a: '#F59E0B', r: '#EF4444' };
+  const kindOf = i => i.full ? 'g' : (i.c.course_status === 'Pending' ? (i.left <= 0 ? 'r' : 'b') : (i.c.course_status === 'Not Completed' ? 'r' : 'a'));
+  const label = i => i.full ? 'Complete' : i.c.course_status === 'Pending' ? (i.left <= 0 ? 'Action needed' : 'In progress') : i.c.course_status === 'Not Completed' ? 'Not completed' : 'Follow-up pending';
+  const FL = {
+    'All': () => true, 'Action needed': i => i.c.course_status === 'Pending' && i.left <= 0, 'In progress': i => i.c.course_status === 'Pending' && i.left > 0,
+    'Assessment': i => i.c.assessment_status !== 'Done' && (i.c.course_status === 'Completed' || i.left <= 0),
+    'Feedback': i => i.c.course_status === 'Completed' && i.c.oral_feedback !== 'Done',
+    'Reviews': i => i.c.course_status === 'Completed' && (i.c.google_review !== 'Done' || i.c.justdial_review !== 'Done'),
+    'Complete': i => i.full
+  };
+  V.a_cdash = () => {
+    const L = M().cList(), keys = Object.keys(FL), cnt = {}; keys.forEach(k => cnt[k] = L.filter(FL[k]).length);
+    const f = flt('cdf', keys), q = (S.q.cd || '').toLowerCase(), list = L.filter(i => FL[f](i) && (!q || (i.s.full_name + i.s.enr.course_name).toLowerCase().includes(q))).sort((a, b) => a.left - b.left);
+    const tot = L.length, segs = [['Complete', COL.g, cnt['Complete']], ['In progress', COL.b, cnt['In progress']], ['Action needed', COL.r, cnt['Action needed']]];
+    const other = Math.max(0, tot - segs.reduce((a, x) => a + x[2], 0)); if (other) segs.push(['Follow-up pending', COL.a, other]);
+    const R = 50, C = 2 * Math.PI * R; let off = 0, arcs = `<circle cx="62" cy="62" r="${R}" fill="none" stroke="rgba(148,163,184,.25)" stroke-width="16"/>`;
+    segs.forEach(g => { if (!g[2] || !tot) return; const len = g[2] / tot * C; arcs += `<circle cx="62" cy="62" r="${R}" fill="none" stroke="${g[1]}" stroke-width="16" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 62 62)"/>`; off += len; });
+    const tile = (c, ic0, k) => `<button class="fx2-t ${c}" data-a="flt" data-k="cdf" data-v="${k}">${ic(ic0)}<b>${cnt[k]}</b>${k}</button>`;
+    const row = i => `<button class="fx2-row" data-a="go" data-v="a_comp_stu" data-reg="${i.s.registration_number}"><span class="fx2-av ${i.full ? 'paid' : kindOf(i) === 'r' ? 'over' : kindOf(i) === 'a' ? 'd3' : ''}">${ini(i.s.full_name)}</span><span class="fx2-in"><b>${esc(i.s.full_name)}</b><span>${esc(i.s.enr.course_name)}</span><span>Last day: ${fmtD(i.last)} · ${i.done}/${i.total} steps</span></span><span class="fx2-p ${kindOf(i)}">${label(i)}</span>${ic('next', 's')}</button>`;
+    return {
+      t: 'Completion Dashboard', sub: 'Course closure, assessment, feedback &amp; reviews', right: bellBtn(),
+      body: `<div class="fx2-card"><div class="fx2-h">Completion Overview<small>Active students</small></div><div class="fx2-ov"><div class="fx2-donut"><svg width="124" height="124" viewBox="0 0 124 124">${arcs}</svg><div class="fx2-dc"><b>${tot}</b><span>Students</span></div></div><div class="fx2-lg">${segs.map(g => `<div><i style="background:${g[1]}"></i>${g[0]}<b>${g[2]}</b></div>`).join('')}</div></div>
+      <div class="fx2-tiles">${tile('b', 'clip', 'Assessment')}${tile('a', 'mega', 'Feedback')}${tile('r', 'award', 'Reviews')}</div></div>` +
+        `<div class="fx2-lh">Student Completion (${list.length})</div>` + searchBox('cd', 'Search student or course') + chips('cdf', keys, cnt) +
+        (list.length ? list.map(row).join('') : empty('No students here', 'Nothing matches this filter.', 'award'))
+    };
+  };
+  const cs0 = V.a_comp_stu;
+  V.a_comp_stu = p => {
+    const v = cs0(p), s = stu(p.reg); if (!s || !v.body) return v; const I = M().cinfo(s), pct = Math.round(I.done / I.total * 100);
+    const k = v.body.indexOf('<div class="card"><div class="row"><b class="grow fh" style="margin:0">1 · Course completion'); if (k < 0) return v;
+    const lastTxt = I.left > 0 ? 'in ' + I.left + ' day' + (I.left > 1 ? 's' : '') : I.left === 0 ? 'today' : Math.abs(I.left) + ' day' + (Math.abs(I.left) > 1 ? 's' : '') + ' ago';
+    const hd = `<div class="fx2-hd"><span class="fx2-av ${I.full ? 'paid' : ''}">${ini(s.full_name)}</span><div style="flex:1;min-width:0"><b>${esc(s.full_name)}</b><span class="m">${esc(s.enr.course_name)}</span></div><a class="fx2-cb" href="tel:${esc(s.mobile)}">${ic('phone', 's')}</a><a class="fx2-cb wa" target="_blank" rel="noopener" href="https://wa.me/${wn(s.mobile)}">${ic('send', 's')}</a></div>`;
+    const ck = `<div class="fx2-card"><div class="fx2-h">Final Checklist<small>${I.done} of ${I.total} done</small></div><div class="fx3-pr"><i style="width:${pct}%"></i></div><div class="mut sm" style="margin-bottom:8px">${I.full ? 'All required steps are complete' : 'Last day ' + fmtD(I.last) + ' · ' + lastTxt}</div>` +
+      I.items.map(i => `<div class="fx2-tr"><span class="nd ${i[1] ? 'on' : ''}">${i[1] ? ic('tick', 'xs') : ''}</span><span class="t"><b>${i[0]}</b></span><span class="fx2-p ${i[1] ? 'g' : 'a'}">${i[1] ? i[2] : i[3]}</span></div>`).join('') + `</div>`;
+    v.body = '<div class="fx3-pg">' + hd + ck + v.body.slice(k) + '</div>'; return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+
+<script>
+/* ===== Super Admin completion patch: Staff, Management, Reviews, Activity logs (demo data in localStorage; production needs backend/API + real auth) ===== */
+(function () {
+  const sup = () => S.role === 'admin' && S.lvl === 'super';
+  const denied = () => ({ t: 'Not available', body: empty('Super Admin only', 'This screen is restricted to the Super Admin.', 'users') });
+  const stamp = t => fmtTs(t) + ', ' + new Date(t).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  (function seedStaff() { const d = D(); if (!d.staff_list) { d.staff_list = [{ id: 'st1', full_name: (d.staff_admin || {}).full_name || 'Admin', username: 'staff', active: true, builtin: true }, { id: 'st2', full_name: 'Meera R', username: 'meera', password_hash: hash('meera123'), active: true }]; save(); } })();
+  TABS.admin = [['home', 'Home', 'home'], ['students', 'Students', 'users'], ['staff', 'Admins', 'user'], ['mgmt', 'Management', 'layers'], ['reports', 'Reports', 'chart'], ['more', 'More', 'grid']];
+
+  const logsOf = n => (D().act_log || []).filter(l => l.staff === n);
+  V.a_staff = () => {
+    if (!sup()) return denied(); const d = D(), L = d.staff_list, T = iso(new Date());
+    const row = m => { const lg = logsOf(m.full_name); return item('user', m.active ? 'g' : 'r', esc(m.full_name), esc(m.username) + ' · ' + lg.length + ' actions' + (lg[0] ? ' · last ' + stamp(lg[0].at) : ''), `data-a="stf_view" data-id="${m.id}"`, pill(m.active ? 'Active' : 'Disabled', m.active ? 'ok' : 'bad')); };
+    return { t: 'Admins', sub: L.filter(m => m.active).length + ' active admins', right: `<button class="hbtn" data-a="stf_add" aria-label="Add admin">${ic('plus')}</button>`,
+      body: `<div class="card"><div class="row"><div class="grow"><div class="mut">Admins</div><b style="font-size:20px">${L.length}</b></div><div class="grow"><div class="mut">Students</div><b style="font-size:20px">${d.students.length}</b></div><div class="grow"><div class="mut">Actions today</div><b style="font-size:20px">${(d.act_log || []).filter(l => iso(new Date(l.at)) === T).length}</b></div></div></div>` + sec('Admin accounts') + `<div class="card flush list">${L.map(row).join('')}</div><button class="btn" data-a="go" data-v="a_actlog">${ic('clock', 's')} Admin activity logs</button>` };
+  };
+  A.stf_add = () => openSheet(`<h3>Add admin</h3>${F.t('sn', 'Full name')}${F.t('su', 'Username')}${F.t('sp', 'Password', '', { type: 'password', hint: 'At least 6 characters' })}<div class="btns"><button class="btn sec" data-a="close">Cancel</button><button class="btn" data-a="stf_save">Save</button></div>`);
+  A.stf_save = () => {
+    const n = fv('sn'), u = fv('su').toLowerCase(), p = document.getElementById('f-sp').value, d = D();
+    if (!n || !u) return toast('Enter name and username', 'bad'); if (p.length < 6) return toast('Password must be 6+ characters', 'bad');
+    if (u === d.admin.username || d.staff_list.some(m => m.username === u)) return toast('Username already in use', 'bad');
+    d.staff_list.push({ id: 'st' + Date.now(), full_name: n, username: u, password_hash: hash(p), active: true });
+    (d.act_log = d.act_log || []).unshift({ at: Date.now(), staff: admName(), kind: 'staff', reg: '', text: 'Added admin account: ' + n }); save(); S.sheet = null; render(); toast('Admin added', 'ok');
+  };
+  A.stf_view = x => { const m = D().staff_list.find(s => s.id === x.id); if (!m) return; const lg = logsOf(m.full_name).slice(0, 6);
+    openSheet(`<h3>${esc(m.full_name)}</h3><p class="sub">${esc(m.username)} · ${m.active ? 'Active' : 'Disabled'}</p>${lg.length ? lg.map(l => `<div class="lg-r"><span class="d"></span><div><b style="font-weight:600">${esc(l.text)}</b><small>${stamp(l.at)}</small></div></div>`).join('') : '<p class="mut">No activity yet.</p>'}<div class="btns"><button class="btn sec" data-a="close">Close</button>${m.builtin ? '' : `<button class="btn ${m.active ? 'danger' : ''}" data-a="stf_toggle" data-id="${m.id}">${m.active ? 'Disable' : 'Enable'}</button>`}</div>`); };
+  A.stf_toggle = x => { const m = D().staff_list.find(s => s.id === x.id); if (m) { m.active = !m.active; save(); S.sheet = null; render(); toast(m.active ? 'Enabled' : 'Disabled', 'ok'); } };
+
+  const _login = A.login;
+  A.login = () => {
+    if (S.lr === 'staff') { const u = fv('user').toLowerCase(), pw = document.getElementById('f-pw').value, d = D(), m = (d.staff_list || []).find(s => !s.builtin && s.active && s.username === u && s.password_hash === hash(pw));
+      if (m) { d.staff_admin = Object.assign(d.staff_admin || {}, { full_name: m.full_name }); save(); S.role = 'admin'; S.lvl = 'staff'; S.reg = null; S.tab = 'home'; S.stack = []; session(); S.anim = 'fade'; render(); return toast('Welcome, ' + m.full_name, 'ok'); }
+      const b = (d.staff_list || []).find(s => s.builtin); if (b && !b.active) return ($('#lerr').textContent = 'This account is disabled.'); }
+    _login();
+  };
+
+  V.a_mgmt = () => { if (!sup()) return denied(); const d = D(), g = (i, t, s, v) => item(i, t, t === '' ? '' : '', '', '') && '';
+    const it = (i, tn, t, s, v) => item(i, tn, t, s, `data-a="${v === 'fees' ? 'tab' : 'go'}" ${v === 'fees' ? 'data-t="fees"' : 'data-v="' + v + '"'}`);
+    const att = D().students.length;
+    return { t: 'Management', sub: 'Institute operations', right: bellBtn(),
+      body: sec('Operations') + `<div class="card flush list">${it('cal', 'g', 'Attendance', 'Institute-wide daily marking', 'a_att')}${it('plus', '', 'Admissions', 'Add a student and set the fee plan', 'a_student_form')}${it('book', 'o', 'Courses', d.courses.length + ' courses', 'a_courses')}</div>` +
+        sec('Finance') + `<div class="card flush list">${it('rupee', 'o', 'Fee collection & outstanding', 'Institute-wide totals', 'fees')}${it('bell', 'r', 'Fee follow-up monitoring', 'All pending follow-ups', 'a_followups')}</div>` +
+        sec('Completion & quality') + `<div class="card flush list">${it('layers', 'g', 'Course completion dashboard', 'Checklist progress per student', 'a_cdash')}${it('award', 'v', 'Project assessment & marks', 'Internal / external marks (admin-only)', 'a_complete')}${it('star', 'o', 'Google & Justdial reviews', 'Review tracking', 'a_reviews')}</div>` +
+        sec('System') + `<div class="card flush list">${it('clock', '', 'Admin activity logs', 'Who did what and when', 'a_actlog')}${it('user', '', 'System settings', 'Password, data, appearance', 'a_settings')}</div>` };
+  };
+
+  V.a_reviews = () => { if (!sup()) return denied(); const d = D(), q = key => d.students.filter(s => (s.completion || {})[key] === 'Done').length, n = d.students.length;
+    return { t: 'Online reviews', sub: 'Google & Justdial', right: bellBtn(),
+      body: `<div class="card"><div class="row"><div class="grow"><div class="mut">Google</div><b style="font-size:20px">${q('google_review')}/${n}</b></div><div class="grow"><div class="mut">Justdial</div><b style="font-size:20px">${q('justdial_review')}/${n}</b></div></div></div>` + sec('Students') +
+        `<div class="card flush list">${d.students.filter(s => s.overall_status !== 'Dropped').map(s => { const c = s.completion || {}, g = c.google_review === 'Done', j = c.justdial_review === 'Done';
+          return item('star', g && j ? 'g' : 'o', esc(s.full_name), esc(s.enr.course_name), `data-a="go" data-v="a_comp_stu" data-reg="${s.registration_number}"`, pill('G ' + (g ? '✓' : '–') + ' · J ' + (j ? '✓' : '–'), g && j ? 'ok' : 'warn')); }).join('')}</div><p class="mut sm">A review counts as done only when staff record it on the student's completion record.</p>` };
+  };
+
+  V.a_actlog = () => { if (!sup()) return denied(); const L = (D().act_log || []).slice(0, 60);
+    return { t: 'Activity logs', sub: 'Date, time and admin name', right: bellBtn(), body: L.length ? `<div class="card">${L.map(l => `<div class="lg-r"><span class="d"></span><div><b style="font-weight:600">${esc(l.text)}</b><small>${stamp(l.at)} · ${esc(l.staff || '')}${l.reg && stu(l.reg) ? ' · ' + esc(stu(l.reg).full_name) : ''}</small></div></div>`).join('')}</div>` : empty('No activity yet', 'Actions by admins appear here.', 'clock') };
+  };
+  render();
+})();
+</script>
+
+<style id="ref-skin">
+/* Reference-style skin: white cards, 20px radius, soft shadows, one-card-per-row lists, tinted summary tiles */
+#app{--bg:#F4F6FD;--r:20px;--sh:0 4px 16px rgba(30,50,110,.07)}
+#app .view{background:#F4F6FD}
+#app .card{border:0;border-radius:20px;box-shadow:0 4px 16px rgba(30,50,110,.07)}
+#app .card.flush.list,#app .px-l{background:transparent;border:0;box-shadow:none;padding:0;display:flex;flex-direction:column;gap:10px}
+#app .card.flush.list>.item,#app .px-l>.px-r,#app .px-l>.item{background:#fff;border:0!important;border-radius:18px;box-shadow:0 3px 12px rgba(30,50,110,.07);padding:12px 14px;margin:0}
+#app .item .ico,#app .px-r .ci{border-radius:14px}
+#app h2.sec,#app .px-h{font-size:17px;font-weight:800;color:var(--navy);margin:18px 2px 10px}
+#app .hdr h1{font-size:21px;font-weight:800;color:var(--navy)}
+#app .hdr .hbtn,#app .hdr-top>.hbtn:first-child{width:40px;height:40px;border-radius:50%;background:#EEF1FA}
+#app .px-st,#app .stats{gap:10px}
+#app .px-st>button{border-radius:18px;border:0;box-shadow:0 3px 12px rgba(30,50,110,.07);background:#fff}
+#app .px-st>button:nth-child(1){background:#E4ECFF}#app .px-st>button:nth-child(2){background:#FDF1DD}#app .px-st>button:nth-child(3){background:#FBE4E4}#app .px-st>button:nth-child(4){background:#E4F5EC}
+#app .pill{border-radius:99px;font-weight:700}
+#app .btn{border-radius:16px}
+#app .tabbar .on,#app nav .on{background:#FDEBDD;border-radius:16px}
+#app .chip,#app .chips button{border-radius:99px}
+#app .li-wrap{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;display:flex;flex-direction:column;gap:10px}#app .li-wrap>.li-row,#app .li-wrap>.item{background:#fff!important;border:0!important;border-radius:18px;box-shadow:0 3px 12px rgba(30,50,110,.07);padding:12px 14px}
+</style>
+<style id="home-skin">
+.z{padding:2px 2px 90px}.z-hi{padding:6px 4px 12px}.z-hi small{color:var(--mut);font-size:13px}.z-hi h1{margin:2px 0 0;font-size:24px;font-weight:800;color:var(--navy)}
+.z-c{background:#fff;border-radius:20px;box-shadow:0 4px 16px rgba(30,50,110,.07);padding:16px;margin-bottom:14px}
+.z-c h3{margin:0 0 12px;font-size:16px;font-weight:800;color:var(--navy);display:flex;align-items:center}.z-c h3 a,.z-c h3 button{margin-left:auto;font-size:13px;font-weight:700;color:var(--accent);background:none;border:0}
+.z-k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.z-k.t3{grid-template-columns:repeat(3,1fr)}
+.z-k>*{border-radius:16px;padding:12px 4px;text-align:center;border:0;background:#EEF3FF;font:inherit;color:var(--navy)}
+.z-k b{display:block;font-size:22px;font-weight:800}.z-k span{font-size:11.5px;color:var(--mut);font-weight:600}
+.z-k .g{background:#E4F5EC}.z-k .g b{color:var(--ok)}.z-k .r{background:#FBE4E4}.z-k .r b{color:var(--bad)}.z-k .a{background:#FDF1DD}.z-k .a b{color:#C77700}
+.z-q{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 6px}.z-q button{background:none;border:0;font:inherit;font-size:12px;font-weight:600;color:var(--navy);display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+.z-q .i{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:#EAF0FD;color:var(--accent)}.z-q .i.o{background:#FDEBDD;color:#E8590C}.z-q .i.g{background:#E4F5EC;color:var(--ok)}.z-q .i.v{background:#EEEAFE;color:var(--violet)}
+.z-q u{position:absolute;top:-4px;right:10px;background:var(--orange);color:#fff;font-size:10px;font-style:normal;font-weight:700;border-radius:99px;padding:1px 6px;text-decoration:none}
+.z-p{display:flex;align-items:center;gap:14px}.z-p .ring{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;flex:none}.z-p .ring i{width:56px;height:56px;border-radius:50%;background:#fff;display:grid;place-items:center;font-style:normal;font-weight:800;color:var(--navy)}
+.z-p b{font-size:16px;color:var(--navy)}.z-p small{display:block;color:var(--mut);margin-top:2px}
+.z-b{width:100%;margin-top:12px;border:0;border-radius:14px;padding:13px;font:inherit;font-weight:700;background:var(--orange);color:#fff}.z-h{margin:6px 2px 10px;font-size:17px;font-weight:800;color:var(--navy)}.z-b.s{background:#EEF3FF;color:var(--accent)}
+.z-r{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);background:none;border-left:0;border-right:0;border-top:0;width:100%;font:inherit;text-align:left;color:inherit}.z-r:last-child{border-bottom:0}.z-r .t{flex:1;min-width:0}.z-r .t b{display:block;font-size:14px}.z-r .t span{font-size:12px;color:var(--mut)}
+.z-amt{font-size:28px;font-weight:800;color:var(--navy);margin:2px 0}
+.z-s{display:flex;gap:6px;overflow:hidden}
+#app .nx-hello{display:none}#app .view:has(.z) .ph{display:none}
+</style>
+<script>
+/* ===== Clean home screens for all three roles (demo data; production needs API) ===== */
+(function () {
+  const Q = (items) => `<div class="z-q">${items.map(([i, c, l, a, n]) => `<button ${a}>${n ? `<u>${n}</u>` : ''}<span class="i ${c}">${ic(i)}</span>${l}</button>`).join('')}</div>`;
+  const G = (p, c) => `conic-gradient(${c || 'var(--ok)'} ${p * 3.6}deg,#E3E8F2 0)`;
+  const stuHome = V.s_home, stfHome = V.a_home;
+  V.s_home = function () {
+    const v = stuHome(), s = me(); if (!s || !/Quick access/.test(v.body)) return v;
+    const T = today(), R = reqs(s), met = R.filter(r => r[1]).length, p = Math.round(s.enr.progress_percent || 0), bal = balance(s), due = s.enr.next_due_date, a = attStats(s);
+    const sess = scheduled(s, T), st = s.attendance[T] || 'Not marked';
+    v.body = `<div class="z"><div class="z-hi"><small>${greet()}</small><h1>Hi, ${esc(s.full_name.split(' ')[0])} 👋</h1><small>${esc(s.enr.course_name)} · ${esc(s.registration_number)}</small></div>
+      <div class="z-c"><h3>Course progress</h3><div class="z-p"><div class="ring" style="background:${G(p)}"><i>${p}%</i></div><div><b>${met} of ${R.length} requirements met</b><small>Attendance ${a.t ? a.pct + '%' : '–'}</small></div></div><button class="z-b s" data-a="go" data-v="s_complete">View requirements</button></div>
+      ${bal > 0 ? `<div class="z-c"><h3>Fee due</h3><div class="z-amt">${inr(bal)}</div><small class="mut">${due ? 'Next payment by ' + fmtD(due) : 'Balance pending'}</small><button class="z-b" data-a="tab" data-t="fees">View fees</button></div>` : ''}
+      ${sess ? `<div class="z-c"><h3>Today's session</h3><div class="z-r" style="border:0;padding:0"><span class="t"><b>${esc(s.enr.course_name)}</b><span>${t12(s.enr.slot_start_time)} · ${esc(s.enr.faculty_name || '')}</span></span>${pill(st, st === 'Present' ? 'ok' : st === 'Absent' ? 'bad' : 'n')}</div></div>` : ''}
+      <div class="z-c"><h3>Quick access</h3>${Q([['cal', 'g', 'Attendance', 'data-a="go" data-v="s_att"'], ['clip', 'o', 'Tasks', 'data-a="tab" data-t="tasks"'], ['folder', '', 'Materials', 'data-a="tab" data-t="learn"'], ['award', 'v', 'Certificate', 'data-a="go" data-v="s_cert"']])}</div></div>`;
+    v.t = ''; v.sub = ''; return v;
+  };
+  const stat = (c, n, l, a) => `<button class="${c}" ${a}><b>${n}</b><span>${l}</span></button>`;
+  V.a_home = function () {
+    const v = stfHome(); const d = D(), T = today(), sched = activeStu().filter(s => scheduled(s, T)), st = s => s.attendance[T] || '';
+    const P = sched.filter(s => st(s) === 'Present').length, A_ = sched.filter(s => st(s) === 'Absent'), L = sched.filter(s => st(s) === 'Leave').length, N = sched.filter(s => !st(s));
+    const al = adminAlerts(), mark = `data-a="attopen" data-d="${T}"`;
+    const row = (s, tag) => `<button class="z-r" data-a="go" data-v="a_att_student" data-reg="${s.registration_number}"><span class="avatar" style="width:36px;height:36px;font-size:12px">${ini(s.full_name)}</span><span class="t"><b>${esc(s.full_name)}</b><span>${esc(s.enr.course_name)}</span></span>${pill(tag, tag === 'Absent' ? 'bad' : 'n')}</button>`;
+    if (!isStaff()) {
+      const all = d.students, paid = all.reduce((x, s) => x + paidSum(s), 0), out = all.reduce((x, s) => x + Math.max(0, balance(s)), 0), pend = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+      v.body = `<div class="z"><div class="z-hi"><small>${greet()}</small><h1>Super Admin</h1><small>Institute overview</small></div>
+        <div class="z-c"><h3>Overview</h3><div class="z-k t3">${stat('', all.length, 'Students', 'data-a="tab" data-t="students"')}${stat('', (d.staff_list || []).length || 1, 'Admins', 'data-a="tab" data-t="staff"')}${stat('g', P + '/' + sched.length, 'Present today', mark)}</div></div>
+        <div class="z-c"><h3>Fees <button data-a="tab" data-t="fees">Details</button></h3><div class="z-k t3">${stat('g', inr(paid), 'Collected', 'data-a="tab" data-t="fees"')}${stat('r', inr(out), 'Outstanding', 'data-a="go" data-v="a_pendfees"')}${stat('a', pend, 'Follow-ups due', 'data-a="go" data-v="a_followups"')}</div></div>
+        <div class="z-c"><h3>Quick actions</h3>${Q([['cal', 'g', 'Attendance', mark], ['plus', '', 'Admission', 'data-a="go" data-v="a_student_form"'], ['layers', 'g', 'Completion', 'data-a="go" data-v="a_cdash"'], ['star', 'o', 'Reviews', 'data-a="go" data-v="a_reviews"'], ['user', 'v', 'Admins', 'data-a="tab" data-t="staff"'], ['chart', '', 'Reports', 'data-a="tab" data-t="reports"'], ['clock', '', 'Logs', 'data-a="go" data-v="a_actlog"'], ['grid', 'o', 'More', 'data-a="tab" data-t="more"']])}</div>
+        <div class="z-c"><h3>Needs attention ${al.length > 3 ? `<button data-a="go" data-v="a_notif">All (${al.length})</button>` : ''}</h3>${al.slice(0, 3).map(x => `<div class="z-r"><span class="t"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></span></div>`).join('') || '<small class="mut">All clear</small>'}</div></div>`;
+      v.t = ''; v.sub = ''; return v;
+    }
+    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+    v.body = `<div class="z"><div class="z-hi"><small>${greet()}</small><h1>Hello, Admin 👋</h1></div>
+      <div class="z-c"><h3>Today's attendance <button ${mark}>Mark</button></h3><div class="z-k">${stat('g', P, 'Present', mark)}${stat('r', A_.length, 'Absent', mark)}${stat('a', L, 'Leave', mark)}${stat('', N.length, 'Not marked', mark)}</div></div>
+      <div class="z-c"><h3>Fee follow-ups</h3><div class="z-amt">${fu}</div><small class="mut">pending follow-ups due now</small><button class="z-b" data-a="go" data-v="a_followups">Open follow-ups</button></div>
+      <div class="z-c"><h3>Quick actions</h3>${Q([['users', '', 'Students', 'data-a="tab" data-t="students"'], ['cal', 'g', 'Attendance', mark], ['bell', 'o', 'Follow-ups', 'data-a="go" data-v="a_followups"', fu], ['layers', 'g', 'Completion', 'data-a="go" data-v="a_cdash"'], ['clip', 'v', 'Academics', 'data-a="go" data-v="a_work"'], ['mega', 'o', 'Message', 'data-a="go" data-v="a_notif"']])}</div>
+      ${A_.length + N.length ? `<div class="z-c"><h3>Needs marking</h3>${A_.concat(N).slice(0, 5).map(s => row(s, st(s) || 'Not marked')).join('')}</div>` : ''}</div>`;
+    v.t = ''; v.sub = ''; return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+<script>
+/* ===== Certificate status page + home header fix ===== */
+(function () {
+  const sh = V.s_home; V.s_home = function () { const v = sh(); if (/class="z"/.test(v.body || '')) { v.t = ''; v.sub = ''; } return v; };
+  const sc = V.s_cert;
+  V.s_cert = function () {
+    const v = sc(), s = me(); if (!s) return v; const st = s.certificate.status, R = reqs(s), met = R.filter(r => r[1]).length, steps = ['Pending', 'Started', 'Ready', 'Issued'], idx = Math.max(0, steps.indexOf(st));
+    const btns = (v.body.match(/<button class="btn[^>]*>[\s\S]*?<\/button>/g) || []).join('');
+    v.body = `<div class="z"><div class="z-c" style="text-align:center"><div class="z-q" style="grid-template-columns:1fr"><span class="i ${st === 'Issued' || st === 'Ready' ? 'g' : 'o'}" style="margin:auto;width:60px;height:60px">${ic('award', 'l')}</span></div><h3 style="justify-content:center;margin:12px 0 4px">${st === 'Issued' ? 'Certificate issued' : st === 'Ready' ? 'Certificate ready' : 'Not ready yet'}</h3><small class="mut">${met} of ${R.length} requirements met</small></div>
+      <div class="z-c"><h3>Status</h3><div class="z-s" style="justify-content:space-between">${steps.map((x, i) => `<div style="flex:1;text-align:center"><div style="width:26px;height:26px;margin:0 auto 6px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:${i <= idx ? 'var(--ok)' : '#E3E8F2'};color:${i <= idx ? '#fff' : 'var(--mut)'}">${i < idx ? '✓' : i + 1}</div><small style="font-size:11px;color:${i <= idx ? 'var(--navy)' : 'var(--mut)'}">${x}</small></div>`).join('')}</div></div>
+      <div class="z-c"><h3>Requirements</h3>${R.map(r => `<div class="z-r"><span class="t"><b>${r[0]}</b><span>${esc(r[2])}</span></span>${pill(r[1] ? 'Met' : 'Open', r[1] ? 'ok' : 'warn')}</div>`).join('')}</div>${btns ? `<div style="display:grid;gap:10px">${btns}</div>` : ''}</div>`;
+    return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+<style id="ref-form">
+#app .field>span{font-size:13px;font-weight:600;color:#4B5878;margin-bottom:6px}
+#app .field input,#app .field select,#app .field textarea{background:#fff;border:1.5px solid #E3E8F2;border-radius:14px;padding:14px;font-size:16px;font-weight:600;color:var(--navy);box-shadow:none}
+#app .field input:focus,#app .field select:focus{border-color:var(--accent);outline:0}
+#app .view .btn:not(.sec):not(.danger){border-radius:99px;padding:16px;font-size:16px;font-weight:700;box-shadow:0 8px 20px rgba(36,84,232,.28)}
+#app .fx2-calc{background:#E4ECFF;border-radius:16px}
+#app .fx2-warn{background:#FDF1DD;border-radius:14px;color:#7A4A00;font-weight:600}
+#app .fx2-stu .bx{background:#fff;border:1.5px solid #E3E8F2;border-radius:16px}
+</style><style id="home-model">
+.m-hero{border-radius:22px;padding:20px;margin:4px 0 14px;background:linear-gradient(135deg,#14246B,#0F1B4D);color:#fff;position:relative;overflow:hidden}.m-hero:after{content:"";position:absolute;right:-24px;top:-24px;width:90px;height:90px;border-radius:50%;background:#F26A10}
+.m-hero small{opacity:.85;font-size:14px}.m-hero h1{margin:4px 0;font-size:26px;font-weight:800;color:#fff}
+.m-soft{padding:10px 4px 14px;background:linear-gradient(180deg,#E8EEFF,transparent);border-radius:20px;margin-bottom:10px}.m-soft h1{margin:0;font-size:28px;font-weight:800;color:var(--navy)}.m-soft small{color:var(--mut);font-size:14px}
+.m-t{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.m-t>button{background:#fff;border:0;border-radius:18px;box-shadow:0 4px 14px rgba(30,50,110,.08);padding:14px 4px;text-align:center;font:inherit;color:var(--navy)}
+.m-t .i{display:grid;place-items:center;width:34px;height:34px;margin:0 auto 6px;border-radius:12px;background:#EEEAFE;color:var(--violet)}.m-t b{display:block;font-size:22px;font-weight:800}.m-t span.l{font-size:12px;color:var(--mut)}
+.m-f{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.m-f>button{border:0;border-radius:18px;padding:14px 4px;text-align:center;font:inherit;background:#E4F5EC;color:var(--navy)}.m-f .r{background:#FBE4E4}.m-f .a{background:#FDF1DD}
+.m-f b{display:block;font-size:17px;font-weight:800;margin-top:6px}.m-f .r b{color:var(--bad)}.m-f .g b{color:var(--ok)}.m-f span{font-size:12px;color:var(--mut)}
+.m-help{display:flex;align-items:center;gap:12px;background:#14246B;color:#fff;border-radius:18px;padding:14px 16px;margin-bottom:14px}.m-help div{flex:1}.m-help b{display:block}.m-help small{opacity:.8}.m-help button{background:var(--ok);color:#fff;border:0;border-radius:12px;padding:10px 16px;font-weight:700}
+.m-nav{display:block;width:100%;margin-top:10px;border:0;border-radius:99px;padding:14px;background:#0F1B4D;color:#fff;font:inherit;font-weight:700}
+.m-ok{border-radius:14px;padding:10px;text-align:center;font-weight:700;margin-top:12px;background:#E4F5EC;color:var(--ok)}.m-ok.w{background:#FDF1DD;color:#B9740A}
+.m-av{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#F26A10,#FFB066);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px;flex:none}
+.m-tip{display:flex;align-items:center;gap:12px;background:#FFF6DD;border-radius:16px;padding:14px;color:#7A5300;margin-bottom:14px}
+</style>
+<script>
+/* ===== Home screens matched to manager's model image ===== */
+(function () {
+  TABS.admin[2] = ['staff', 'Admin', 'user']; TABS.staff[3] = ['fees', 'Follow-up', 'bell'];
+  const Q = (items) => `<div class="z-q">${items.map(([i, c, l, a, n]) => `<button ${a}>${n ? `<u>${n}</u>` : ''}<span class="i ${c}">${ic(i)}</span>${l}</button>`).join('')}</div>`;
+  const G = p => `conic-gradient(var(--ok) ${p * 3.6}deg,#E3E8F2 0)`;
+  const prevS = V.s_home, prevA = V.a_home;
+  V.s_home = function () {
+    const v = prevS(), s = me(); if (!s || !/class="z"/.test(v.body || '')) return v;
+    const T = today(), R = reqs(s), met = R.filter(r => r[1]).length, p = Math.round(s.enr.progress_percent || 0), bal = balance(s), due = s.enr.next_due_date, a = attStats(s), st = s.attendance[T] || 'Not marked', ok = !a.t || a.pct >= 75;
+    v.body = `<div class="z"><div class="z-p" style="padding:6px 4px 14px"><span class="m-av">${ini(s.full_name)}</span><div><small class="mut">${greet()}</small><h1 style="margin:2px 0;font-size:26px;font-weight:800;color:var(--navy)">Hi, ${esc(s.full_name.split(' ')[0])} 👋</h1><small class="mut">${esc(s.enr.course_name)} · ${esc(s.registration_number)}</small></div></div>
+      <div class="z-c"><h3>Course Progress <button data-a="go" data-v="s_complete">View Details →</button></h3><div class="z-p"><div class="ring" style="background:${G(p)}"><i>${p}%</i></div><div><b>${met} of ${R.length} requirements met</b><small>Attendance ${a.t ? a.pct + '%' : '–'}</small></div></div><div class="m-ok ${ok ? '' : 'w'}">${ok ? '✓ On track for completion!' : 'Attendance needs attention'}</div></div>
+      ${bal > 0 ? `<div class="z-c"><h3>Fee Due</h3><div class="z-amt">${inr(bal)}</div><small class="mut">${due ? 'Next payment by ' + fmtD(due) : 'Balance pending'}</small><button class="z-b" data-a="tab" data-t="fees">View Fees →</button></div>` : ''}
+      ${scheduled(s, T) ? `<div class="z-c"><h3>Today's Session</h3><div class="z-r" style="border:0;padding:0"><span class="t"><b>${esc(s.enr.course_name)}</b><span>${t12(s.enr.slot_start_time)} – ${t12(s.enr.slot_end_time || s.enr.slot_start_time)}</span></span>${pill(st, st === 'Present' ? 'ok' : st === 'Absent' ? 'bad' : 'n')}</div></div>` : ''}
+      <div class="z-c"><h3>Quick Access</h3>${Q([['cal', 'g', 'Attendance', 'data-a="go" data-v="s_att"'], ['rupee', 'g', 'Fees', 'data-a="tab" data-t="fees"'], ['user', 'o', 'Profile', 'data-a="tab" data-t="me"'], ['grid', '', 'More', 'data-a="tab" data-t="learn"']])}</div></div>`;
+    v.t = ''; v.sub = ''; return v;
+  };
+  V.a_home = function () {
+    const v = prevA(); if (!/class="z"/.test(v.body || '')) return v; const d = D(), T = today(), sup = !isStaff();
+    const sched = activeStu().filter(s => scheduled(s, T)), st = s => s.attendance[T] || '', cnt = k => sched.filter(s => st(s) === k).length, N = sched.filter(s => !st(s)).length, mark = `data-a="attopen" data-d="${T}"`;
+    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+    if (sup) {
+      const all = d.students, paid = all.reduce((x, s) => x + paidSum(s), 0), out = all.reduce((x, s) => x + Math.max(0, balance(s)), 0);
+      v.body = `<div class="z"><div class="m-hero"><small>${greet()}</small><h1>Super Admin</h1><small>Here's what's happening today</small></div>
+        <div class="m-t"><button data-a="tab" data-t="students"><span class="i">${ic('users')}</span><b>${all.length}</b><span class="l">Students</span></button><button data-a="tab" data-t="staff"><span class="i">${ic('user')}</span><b>${(d.staff_list || []).length || 1}</b><span class="l">Admins</span></button><button ${mark}><span class="i">${ic('cal')}</span><b>${cnt('Present')}/${sched.length}</b><span class="l">Present Today</span></button></div>
+        <h3 class="z-h">Fees Overview</h3><div class="m-f"><button class="g" data-a="tab" data-t="fees">${ic('rupee')}<b>${inr(paid)}</b><span>Collected</span></button><button class="r" data-a="go" data-v="a_pendfees">${ic('rupee')}<b>${inr(out)}</b><span>Outstanding</span></button><button class="a" data-a="go" data-v="a_followups">${ic('bell')}<b>${fu}</b><span>Follow-ups</span></button></div>
+        <div class="z-c"><h3>Quick Actions</h3>${Q([['cal', 'g', 'Attendance', mark], ['plus', '', 'Admission', 'data-a="go" data-v="a_student_form"'], ['cap', 'g', 'Completion', 'data-a="go" data-v="a_cdash"'], ['star', 'o', 'Reviews', 'data-a="go" data-v="a_reviews"'], ['user', 'v', 'Admins', 'data-a="tab" data-t="staff"'], ['chart', '', 'Reports', 'data-a="tab" data-t="reports"'], ['clock', '', 'Logs', 'data-a="go" data-v="a_actlog"'], ['grid', 'o', 'More', 'data-a="tab" data-t="more"']])}</div>
+        <div class="m-help"><div><b>Need Assistance?</b><small>Contact us for help</small></div><button data-a="help">Contact</button></div></div>`;
+    } else {
+      const k = (c, n, l) => `<button class="${c}" ${mark}><b>${n}</b><span>${l}</span></button>`;
+      v.body = `<div class="z"><div class="m-soft"><h1>Hello, Admin 👋</h1><small>Welcome back!</small></div>
+        <div class="z-c"><h3>Today's Attendance <button ${mark}>Mark All</button></h3><div class="z-k">${k('g', cnt('Present'), 'Present')}${k('r', cnt('Absent'), 'Absent')}${k('a', cnt('Leave'), 'Leave')}${k('', N, 'Not marked')}</div></div>
+        <div class="z-c"><h3>Fee Follow-ups</h3><div class="z-amt">${fu}</div><small class="mut" style="display:block">Pending follow-ups due now</small><button class="m-nav" style="width:auto;padding:14px 22px" data-a="go" data-v="a_followups">Open Follow-ups →</button></div>
+        <div class="z-c"><h3>Quick Actions</h3>${Q([['users', '', 'Students', 'data-a="tab" data-t="students"'], ['cal', 'g', 'Attendance', mark], ['bell', 'o', 'Follow-ups', 'data-a="go" data-v="a_followups"', fu], ['layers', 'g', 'Completion', 'data-a="go" data-v="a_cdash"'], ['clip', 'v', 'Academic', 'data-a="go" data-v="a_work"'], ['mega', 'o', 'Message', 'data-a="go" data-v="a_notif"']])}</div>
+        <div class="m-tip"><span>💡</span><div><b>You're doing great!</b><br><small>Keep up the good work.</small></div></div></div>`;
+    }
+    v.t = ''; v.sub = ''; return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+<style id="model3">
+.m-banner{display:flex;align-items:center;gap:14px;border-radius:22px;padding:16px;margin:0 0 12px;background:linear-gradient(135deg,#14246B,#0F1B4D);color:#fff;position:relative;overflow:hidden}.m-banner:after{content:"";position:absolute;right:-22px;top:-22px;width:80px;height:80px;border-radius:50%;background:#F26A10}
+.m-banner .ib{width:52px;height:52px;border-radius:14px;background:#fff;color:#14246B;display:grid;place-items:center;flex:none}.m-banner b{display:block;font-size:22px}.m-banner small{opacity:.85}
+.m-fh{display:flex;align-items:center;gap:12px;padding:4px 2px 12px}.m-fh .ib{width:52px;height:52px;border-radius:50%;background:#E4ECFF;color:var(--accent);display:grid;place-items:center}.m-fh b{display:block;font-size:26px;font-weight:800;color:var(--navy)}.m-fh small{color:var(--mut)}
+.m-ft{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.m-ft>div{border-radius:20px;padding:16px;text-align:center;background:#E4F5EC;color:var(--navy)}.m-ft>div.o{background:#FDF1DD}.m-ft b{display:block;font-size:24px;font-weight:800;margin:6px 0 2px}.m-ft>div.o b{color:#C25A00}.m-ft span{color:var(--mut)}
+.m-sc{display:block;width:100%;text-align:left;background:#fff;border:0;border-radius:20px;box-shadow:0 4px 14px rgba(30,50,110,.08);padding:14px;margin-bottom:10px;font:inherit;color:inherit}.m-sc .top{display:flex;align-items:center;gap:12px}.m-sc .top .t{flex:1;min-width:0}.m-sc .top b{display:block;color:var(--navy);font-size:16px}.m-sc .top small{color:var(--mut)}
+.m-bar{height:7px;border-radius:9px;background:#E3E8F2;margin:10px 0 6px;overflow:hidden}.m-bar i{display:block;height:100%;border-radius:9px;background:var(--accent)}.m-bar.ok i{background:var(--ok)}.m-sc .ft{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut)}
+.m-cta{position:sticky;bottom:8px;display:block;width:100%;border:0;border-radius:99px;padding:15px;background:#0F1B4D;color:#fff;font:inherit;font-weight:700;box-shadow:0 8px 20px rgba(15,27,77,.3)}
+#app .seg button.on,#app .tabs button.on{background:#0F1B4D;color:#fff;border-radius:99px}
+#app .view .stats>*:nth-child(1),#app .view .stat3>*:nth-child(1){background:#FDEBDD}#app .view .stats>*:nth-child(3),#app .view .stat3>*:nth-child(3){background:#E4F5EC}
+#app .mx-tabs{background:transparent;gap:8px;display:flex}#app .mx-tabs button{border:0;border-radius:99px;background:#E8EEFF;color:var(--navy);padding:10px 16px;font-weight:700;border-bottom:0}#app .mx-tabs button.on{background:#0F1B4D;color:#fff}#app .mx-tabs button i{background:var(--orange);color:#fff;border-radius:99px;padding:1px 7px;font-style:normal;margin-left:6px;font-size:12px}#app .mx-sc{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}#app .mx-sc>*{border:0;border-radius:18px;background:#E8EEFF;box-shadow:0 3px 12px rgba(30,50,110,.07)}#app .mx-sc>*:nth-child(1){background:#FDEBDD}#app .mx-sc>*:nth-child(3){background:#E4F5EC}
+</style>
+<script>
+/* ===== Fees (Super Admin) + Academics banner, matched to manager's model ===== */
+(function () {
+  const pf = V.a_fees, pw = V.a_work;
+  V.a_fees = function () {
+    if (isStaff()) return pf(); const d = D(), T = iso(new Date()), q = (S.q.sf || '').toLowerCase();
+    const all = d.students.filter(s => s.overall_status !== 'Dropped'), tot = s => (s.plan && s.plan.total) || s.enr.net_fee || 0;
+    const paid = all.reduce((x, s) => x + paidSum(s), 0), out = all.reduce((x, s) => x + Math.max(0, balance(s)), 0);
+    const kind = s => balance(s) <= 0 ? 'Paid' : (s.enr.next_due_date && s.enr.next_due_date < T ? 'Overdue' : 'Pending');
+    const cn = { All: all.length, Pending: 0, Overdue: 0, Paid: 0 }; all.forEach(s => { const k = kind(s); cn[k]++; if (k === 'Overdue') cn.Pending++; });
+    const labels = ['All', 'Pending', 'Overdue', 'Paid'], f = flt('sff', labels);
+    const L = all.filter(s => (f === 'All' || kind(s) === f || (f === 'Pending' && kind(s) === 'Overdue')) && (!q || (s.full_name + s.registration_number + s.enr.course_name).toLowerCase().includes(q)));
+    const row = s => { const t = tot(s), p = paidSum(s), pc = t ? Math.min(100, Math.round(p / t * 100)) : 0, k = kind(s);
+      return `<button class="m-sc" data-a="go" data-v="a_fee_stu" data-reg="${s.registration_number}"><div class="top"><span class="avatar" style="width:42px;height:42px">${ini(s.full_name)}</span><span class="t"><b>${esc(s.full_name)}</b><small>${esc(s.enr.course_name)}</small></span>${pill(k === 'Paid' ? 'Paid' : inr(balance(s)) + ' due', k === 'Paid' ? 'ok' : k === 'Overdue' ? 'bad' : 'warn')}</div><div class="m-bar ${k === 'Paid' ? 'ok' : ''}"><i style="width:${pc}%"></i></div><div class="ft"><span>${inr(p)} paid</span><span>of ${inr(t)}</span></div></button>`; };
+    return { t: 'Fees', sub: 'Record payments and track balances', right: bellBtn(),
+      body: `<div class="m-ft"><div>${ic('tick', 'l')}<b>${inr(paid)}</b><span>Collected</span></div><div class="o">${ic('clock', 'l')}<b>${inr(out)}</b><span>Outstanding</span></div></div>` + searchBox('sf', 'Search student') + chips('sff', labels, cn) + (L.length ? L.map(row).join('') : empty('No students here', 'Nothing matches this filter.', 'rupee')) + `<button class="m-cta" data-a="go" data-v="a_pendfees">${ic('rupee', 's')} Collect Payment</button>` };
+  };
+  V.a_work = function () { const v = pw(); if (!/m-banner/.test(v.body)) v.body = `<div class="m-banner"><span class="ib">${ic('cap', 'l')}</span><div><b>Academics</b><small>Assignments, projects &amp; assessments</small></div></div>` + v.body; return v; };
+  try { render(); } catch (e) { }
+})();
+</script>
+<style id="more-model">
+.mm-hero{border-radius:22px;padding:16px;margin:2px 0 14px;color:#fff;background:linear-gradient(135deg,#14246B,#0F1B4D);position:relative;overflow:hidden}
+.mm-hero .u{display:flex;align-items:center;gap:12px}.mm-hero .av{width:52px;height:52px;border-radius:50%;background:#2454E8;display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+.mm-hero b{display:block;font-size:18px}.mm-hero small{opacity:.85;font-size:12.5px}.mm-hero .g{margin-left:auto;width:38px;height:38px;border-radius:12px;border:0;background:rgba(255,255,255,.16);color:#fff;display:grid;place-items:center}
+.mm-hero h2{margin:14px 0 2px;font-size:19px;font-weight:800;color:#fff}.mm-hero h2 em{font-style:normal;color:#FFD23F}.mm-hero p{margin:0;opacity:.85;font-size:13px}
+.mm-s{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.mm-s>button{border:0;border-radius:18px;padding:14px 4px;text-align:center;font:inherit;color:var(--navy);background:#E8EEFF;box-shadow:0 3px 12px rgba(30,50,110,.07)}.mm-s>button:nth-child(2){background:#FDEBDD}.mm-s>button:nth-child(3){background:#E4F5EC}
+.mm-s .i{display:grid;place-items:center;width:36px;height:36px;margin:0 auto 4px;border-radius:50%;background:#fff;color:var(--accent)}.mm-s button:nth-child(2) .i{color:#F26A10}.mm-s button:nth-child(3) .i{color:var(--ok)}.mm-s b{display:block;font-size:24px;font-weight:800}.mm-s span.l{font-size:13px;color:var(--mut)}
+.mm-c{background:#fff;border-radius:20px;box-shadow:0 4px 16px rgba(30,50,110,.07);padding:14px;margin-bottom:14px}.mm-c h3{display:flex;align-items:center;margin:0 0 12px;font-size:17px;font-weight:800;color:var(--navy)}.mm-c h3:before{content:"";width:4px;height:18px;border-radius:3px;background:var(--orange);margin-right:8px}.mm-c h3 button{margin-left:auto;border:0;background:none;color:var(--accent);font-weight:700;font-size:13px}
+.mm-g{display:grid;gap:8px 4px}.mm-g.c5{grid-template-columns:repeat(5,1fr)}.mm-g.c4{grid-template-columns:repeat(4,1fr)}
+.mm-g button{border:0;background:none;font:inherit;font-size:11.5px;font-weight:600;color:var(--navy);display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;min-width:0}.mm-g .i{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:#E8EEFF;color:var(--accent)}
+.mm-g .i.o{background:#FDEBDD;color:#E8590C}.mm-g .i.v{background:#EEEAFE;color:var(--violet)}.mm-g .i.g{background:#E4F5EC;color:var(--ok)}.mm-g .i.r{background:#FBE4E4;color:var(--bad)}
+.mm-g u{position:absolute;top:-5px;right:2px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;font-style:normal;border-radius:99px;padding:1px 6px;text-decoration:none}
+</style>
+<script>
+/* ===== More screen matched to manager's model (Super Admin + Admin) ===== */
+(function () {
+  A.wkgo = d => { S.seg.wk = d.v; go('a_work'); };
+  const prev = V.a_more;
+  V.a_more = function () {
+    const v = prev(), d = D(), sup = !isStaff(), al = adminAlerts().length, T = iso(new Date());
+    const rev = d.tasks.filter(t => t.status === 'Submitted').length, certs = d.students.filter(s => s.certificate.status === 'Completed').length, fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+    const t = (i, c, l, a, n) => `<button ${a}>${n ? `<u>${n}</u>` : ''}<span class="i ${c}">${ic(i)}</span>${l}</button>`, G = (a, ...x) => `<div class="mm-g ${a}">${x.join('')}</div>`;
+    const go_ = vw => `data-a="go" data-v="${vw}"`, tb = k => `data-a="tab" data-t="${k}"`;
+    const learn = `<div class="mm-c"><h3>Learning <button ${go_('a_courses')}>View All →</button></h3>${G('c5', t('book', '', 'Courses', go_('a_courses')), t('folder', 'o', 'Materials', go_('a_materials')), t('clip', 'v', 'Assignments', 'data-a="wkgo" data-v="Assignments"', rev), t('tick', 'g', 'Tests', go_('a_tests')), t('target', 'r', 'Projects', 'data-a="wkgo" data-v="Projects"'))}</div>`;
+    const stu = `<div class="mm-c"><h3>Students <button ${tb('students')}>View All →</button></h3>${G('c4', t('users', '', 'All Students', tb('students')), t('layers', 'g', 'Completion', go_('a_cdash')), t('award', 'o', 'Certificates', go_('a_complete'), certs), t('chart', 'v', 'Placement', go_('a_place')))}</div>`;
+    const tools = sup ? `<div class="mm-c"><h3>Money &amp; Tools <button ${tb('fees')}>View All →</button></h3>${G('c4', t('rupee', 'o', 'Fees', tb('fees')), t('bell', 'r', 'Alerts', go_('a_notif'), al), t('chart', 'g', 'Reports', tb('reports')), t('star', 'v', 'Reviews', go_('a_reviews')))}</div>`
+      : `<div class="mm-c"><h3>Tools</h3>${G('c4', t('cal', 'g', 'Attendance', tb('att')), t('bell', 'o', 'Follow-ups', go_('a_followups'), fu), t('mega', 'v', 'Message', go_('a_notif')), t('bell', 'r', 'Alerts', go_('a_notif'), al))}</div>`;
+    v.body = `<div class="z"><div class="mm-hero"><div class="u"><span class="av">${admIni()}</span><div><b>${esc(admName())}</b><small>Balsam Creative Technology · ${admRole()}</small></div>${sup ? `<button class="g" ${go_('a_settings')} aria-label="Settings">${ic('gear')}</button>` : ''}</div><h2><em>Welcome</em> back!</h2><p>Manage your academic platform efficiently.</p></div>
+      <div class="mm-s"><button ${tb('students')}><span class="i">${ic('users')}</span><b>${d.students.length}</b><span class="l">Students</span></button><button ${go_('a_notif')}><span class="i">${ic('bell')}</span><b>${al}</b><span class="l">Alerts</span></button><button ${go_('a_followups')}><span class="i">${ic('users')}</span><b>${fu}</b><span class="l">Follow-ups</span></button></div>${learn}${stu}${tools}<button class="btn danger" data-a="logout">${ic('out', 's')} Sign out</button></div>`;
+    v.t = ''; v.sub = ''; return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+<style id="comp-model">
+.cm-hd{padding:4px 4px 12px;background:linear-gradient(180deg,#E8EEFF,transparent);border-radius:20px;margin-bottom:6px}.cm-hd h1{margin:0;font-size:28px;font-weight:800;color:var(--navy)}.cm-hd small{color:var(--mut);font-size:14px}
+.cm-st{display:flex;align-items:center;gap:12px;background:#fff;border-radius:20px;box-shadow:0 4px 16px rgba(30,50,110,.07);padding:14px;margin-bottom:12px}.cm-st .av{width:52px;height:52px;border-radius:50%;background:#2454E8;color:#fff;display:grid;place-items:center;font-weight:800;flex:none}.cm-st b{display:block;font-size:18px;color:var(--navy)}.cm-st small{color:var(--mut)}
+.cm-pr{display:grid;grid-template-columns:1.1fr 1fr 1fr;align-items:center;background:#fff;border-radius:20px;box-shadow:0 4px 16px rgba(30,50,110,.07);padding:16px 8px;margin-bottom:12px;text-align:center}.cm-pr>div+div{border-left:1px solid var(--line)}
+.cm-pr .ring{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;margin:auto}.cm-pr .ring i{width:74px;height:74px;border-radius:50%;background:#fff;display:grid;place-items:center;font-style:normal;font-weight:800;font-size:20px;color:var(--navy);line-height:1.1}.cm-pr .ring i small{display:block;font-size:11px;font-weight:500;color:var(--mut)}
+.cm-pr b{display:block;font-size:18px;color:var(--navy);margin-top:6px}.cm-pr span{font-size:12.5px;color:var(--mut)}
+.cm-mk{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.cm-mk>div{display:flex;align-items:center;gap:10px;border-radius:18px;padding:12px;background:#E8EEFF}.cm-mk>div+div{background:#FDEBDD}.cm-mk b{display:block;font-size:24px;color:var(--navy)}.cm-mk span{font-size:13px;color:var(--accent);font-weight:600}.cm-mk>div+div span{color:#E8590C}.cm-mk .i{width:38px;height:38px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--accent);flex:none}
+.cm-r{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border:0;border-radius:18px;box-shadow:0 3px 12px rgba(30,50,110,.07);padding:12px 14px;margin-bottom:10px;font:inherit;color:inherit}.cm-r .i{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;background:#E8EEFF;color:var(--accent)}.cm-r .i.g{background:#E4F5EC;color:var(--ok)}.cm-r .i.o{background:#FDEBDD;color:#E8590C}.cm-r .i.v{background:#EEEAFE;color:var(--violet)}
+.cm-r .t{flex:1;min-width:0}.cm-r .t b{display:block;font-size:15px;color:var(--navy)}.cm-r .t span{font-size:12.5px;color:var(--mut)}
+</style>
+<script>
+/* ===== Completion detail matched to manager's model; the full edit forms are kept as a_comp_edit ===== */
+(function () {
+  const old = V.a_comp_stu; V.a_comp_edit = old; const X = window.__cm;
+  V.a_comp_stu = function (p) {
+    const s = stu(p.reg); if (!s || !X) return old(p); const i = X.cinfo(s), c = i.c, pct = Math.round(i.done / i.total * 100), full = i.full, has = v => v !== '' && v != null;
+    const e = `data-a="go" data-v="a_comp_edit" data-reg="${s.registration_number}"`, sm = (t, k) => pill(t, k);
+    const row = (ic_, tone, t, sub, right) => `<button class="cm-r" ${e}><span class="i ${tone}">${ic(ic_)}</span><span class="t"><b>${t}</b><span>${sub}</span></span>${right || ''}${ic('next', 's')}</button>`;
+    const asm = c.assessment_status === 'Done', rv = k => c[k] === 'Done';
+    return { t: 'Completion', sub: 'Progress and certificates', right: bellBtn(),
+      body: `<div class="z"><div class="cm-st"><span class="av">${ini(s.full_name)}</span><div><b>${esc(s.full_name)}</b><small>${esc(s.enr.course_name)}</small></div></div>
+      <div class="cm-pr"><div><div class="ring" style="background:conic-gradient(${full ? 'var(--ok)' : 'var(--accent)'} ${pct * 3.6}deg,#E3E8F2 0)"><i><span>${pct}%<small>${full ? 'Completed' : 'Done'}</small></span></i></div></div><div>${ic('award', 'l')}<b>${i.done} / ${i.total}</b><span>Requirements</span></div><div>${ic(full ? 'tick' : 'clock', 'l')}<b>${c.course_status === 'Completed' ? 'Completed' : 'Final day'}</b><span>${fmtD(i.last)}</span></div></div>
+      <div class="cm-mk"><div><span class="i">${ic('file')}</span><div><b>${has(c.internal_marks) ? c.internal_marks : '–'}</b><span>Faculty Marks</span></div></div><div><span class="i" style="color:#E8590C">${ic('star')}</span><div><b>${has(c.external_marks) ? c.external_marks : '–'}</b><span>External Marks</span></div></div></div>
+      ${row('clip', '', 'Course Completion', c.course_status === 'Completed' ? 'All requirements completed' : (i.left > 0 ? 'Final day in ' + i.left + ' days' : 'Awaiting Admin update'), sm(c.course_status === 'Completed' ? 'Completed' : 'Pending', c.course_status === 'Completed' ? 'ok' : 'warn'))}
+      ${row('book', 'v', 'Project &amp; Assessment', 'Assessment date ' + fmtD(X.asmtDate(s)), sm(asm ? 'Done' : 'Not Done', asm ? 'ok' : 'warn'))}
+      ${row('chart', 'g', 'Assessment Marks', 'Admin only · ' + (c.marks_visible ? 'visible to student' : 'hidden from student'))}
+      ${row('mega', 'o', 'Student Feedback', rv('oral_feedback') ? 'Oral feedback collected' : 'Oral feedback pending', sm(rv('oral_feedback') ? 'Done' : 'Pending', rv('oral_feedback') ? 'ok' : 'warn'))}
+      ${row('lock', '', 'Student Concerns', 'Confidential · Admin only', sm(String(c.concerns || '').trim() ? 'Recorded' : 'None', String(c.concerns || '').trim() ? 'ok' : 'n'))}
+      ${row('star', 'o', 'Google Review', 'Recorded only when the student confirms', sm(rv('google_review') ? 'Done' : 'Pending', rv('google_review') ? 'ok' : 'warn'))}
+      ${row('star', 'v', 'Justdial Review', 'Recorded only when the student confirms', sm(rv('justdial_review') ? 'Done' : 'Pending', rv('justdial_review') ? 'ok' : 'warn'))}
+      <button class="m-cta" ${e}>${ic('cal', 's')} Schedule a Separate Date</button></div>` };
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+<style id="balsam-ds-v4">
+/* Balsam Design System v4 - global visual layer (no logic changes) */
+:root{--navy:#14265B;--orange:#FF6B0B;--ok:#16A66A;--warn:#F5A623;--bad:#E5484D;--okbg:#E5F6EE;--warnbg:#FEF3DC;--badbg:#FCE9EA}
+body{background:#E7EBF5}
+#app#app,#app#app[data-theme],#app#app[data-role],#app#app[data-bbc]:not([data-mode=dark]){
+ --bg:#F4F6FB;--card:#FFFFFF;--ink:#172554;--mut:#718096;--line:#E2E8F0;--field:#F4F6FB;
+ --accent:#14265B;--accent2:#FF6B0B;--tint:#EDF0F8;--r:16px;--sh:0 2px 10px rgba(20,38,91,.06);
+ --hdr:#fff;--hdr-ink:#172554;--hdr-mut:#718096;--hdr-btn:#F4F6FB;--hdr-r:0}
+#app#app .hdr{border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(20,38,91,.03)}
+#app#app .card,#app#app .kpi,#app#app .tile,#app#app .fx2-card{border:1px solid var(--line);box-shadow:var(--sh);border-radius:16px}
+#app#app .card .card{box-shadow:none;border-radius:12px}
+#app#app .btn{min-height:46px;border-radius:12px;font-weight:700;background:var(--orange);color:#fff;box-shadow:0 4px 12px rgba(255,107,11,.22)}
+#app#app .btn.sec,#app#app .btn.ghost,#app#app .btn.out{background:#fff;color:var(--navy);border:1.5px solid var(--navy);box-shadow:none}
+#app#app .field input,#app#app .field select,#app#app .field textarea,#app#app .search{min-height:46px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:15px}
+#app#app .field input:focus,#app#app .field select:focus,#app#app .field textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(20,38,91,.12)}
+#app#app .tabs{background:#fff;border-top:1px solid var(--line);padding-bottom:max(6px,env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(20,38,91,.05)}
+#app#app .tabs button{color:var(--mut);min-height:48px}
+#app#app .tabs button.on,#app#app .tabs button.on{background:#FFF0E5;color:var(--orange);border-radius:14px}
+#app#app .tabs button.on:before{display:none}
+#app#app .tabs u,#app#app .hbtn u{background:var(--orange)}
+#app#app .chip{border:1px solid var(--line);background:#fff;color:var(--mut);font-weight:600;min-height:36px}
+#app#app .chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+#app#app .pill{font-weight:700;border-radius:999px}
+#app#app .pill.ok{background:var(--okbg);color:var(--ok)}
+#app#app .pill.warn{background:var(--warnbg);color:#B97800}
+#app#app .pill.bad{background:var(--badbg);color:var(--bad)}
+#app#app .bar-t{height:8px;background:#E8EDF5}
+#app#app .bar-t i{background:var(--navy)}
+#app#app .sec{font-size:15.5px;font-weight:800;color:var(--ink);margin:18px 0 10px}
+#app#app .ico{background:#EDF0F8;color:var(--navy)}
+#app#app .ico.o{background:#FFF0E5;color:var(--orange)}
+#app#app .ico.g{background:var(--okbg);color:var(--ok)}
+#app#app .empty .ico{background:#EDF0F8}
+#app#app .sheet{border-radius:22px 22px 0 0}
+#app#app .toast{background:var(--navy)}
+/* responsive safety */
+#app#app{overflow-x:hidden}
+#app#app img,#app#app svg{max-width:100%}
+#app#app .trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app#app button,#app#app .item,#app#app .chip{touch-action:manipulation}
+#app#app .item{min-height:56px}
+</style>
+<script>
+/* ===== Completion detail v6: step-by-step checklist, each step edits in a small sheet (same actions/validation as the full form) ===== */
+(function () {
+  const X = window.__cm, edit = V.a_comp_edit; if (!X || !edit) return;
+  const has = v => v !== '' && v != null, COLS = { g: '#22C55E', a: '#FBBF24', s: '#CBD5E1' };
+  const P = (t, k) => '<span class="fx2-p ' + k + '">' + t + '</span>';
+  function steps(s) {
+    const i = X.cinfo(s), c = i.c, it = i.items, fm = (c.internal_marks !== '' && c.external_marks !== '' && c.internal_marks != null && c.external_marks != null);
+    return { i, c, list: [
+      { k: 'course', ico: 'clip', t: 'Course Completion', sub: it[0][1] ? 'All sessions completed' : 'Final day ' + fmtD(i.last), done: it[0][1], req: 1 },
+      { k: 'project', ico: 'book', t: 'Project &amp; Assessment', sub: 'Assessment on ' + fmtD(X.asmtDate(s)), done: it[1][1] && it[2][1], req: 1, yes: 'Done', no: 'Not Done' },
+      { k: 'marks', ico: 'chart', t: 'Assessment Marks', sub: 'Admin only · ' + (c.marks_visible ? 'visible to student' : 'hidden from student'), done: fm, req: 1, yes: 'Updated' },
+      { k: 'feedback', ico: 'mega', t: 'Student Feedback', sub: it[5][1] ? 'Oral feedback collected' : 'Oral feedback pending', done: it[5][1], req: 1 },
+      { k: 'concerns', ico: 'lock', t: 'Student Concerns', sub: 'Confidential · Admin only', done: it[6][1], req: 0, yes: 'Recorded', no: 'None' },
+      { k: 'google', ico: 'star', t: 'Google Review', sub: 'Recorded when student confirms', done: it[7][1], req: 1 },
+      { k: 'justdial', ico: 'star', t: 'Justdial Review', sub: 'Recorded when student confirms', done: it[8][1], req: 1 }
+    ] };
+  }
+  const seg = (reg, k, cur, opts) => '<div class="seg" style="margin:8px 0 14px">' + opts.map(o => '<button class="' + (cur === o ? 'on' : '') + '" data-a="cq" data-reg="' + reg + '" data-key="' + k + '" data-k="' + k + '" data-v="' + o + '" data-step="' + (cqStep[k] || '') + '">' + o + '</button>').join('') + '</div>';
+  const cqStep = { course_status: 'course', project_submission: 'project', assessment_status: 'project', oral_feedback: 'feedback', google_review: 'google', justdial_review: 'justdial' };
+  A.cq = d => { A.cset(d); A.cstep({ reg: d.reg, step: d.step }); };
+  A.cstep = d => {
+    const s = stu(d.reg); if (!s) return; const c = X.comp(s), r = d.reg, I = X.cinfo(s), pj = s.project, projEff = I.items[1][1] ? 'Done' : 'Not Done';
+    const head = (t, sub) => '<h3>' + t + '</h3><p class="sub">' + esc(s.full_name) + ' · ' + sub + '</p>', close = '<button class="btn sec" style="width:100%;margin-top:6px" data-a="close">Close</button>';
+    let h = '';
+    if (d.step === 'course') h = head('Course Completion', 'Final day ' + fmtD(I.last)) + '<div class="mut">Course status</div>' + seg(r, 'course_status', c.course_status, ['Completed', 'Not Completed']) + '<button class="btn sec sm" data-a="clast" data-reg="' + r + '">' + ic('cal', 's') + ' Change last day</button>' + close;
+    else if (d.step === 'project') h = head('Project &amp; Assessment', 'Assessment on ' + fmtD(X.asmtDate(s))) + '<div class="mut">Project submission</div>' + seg(r, 'project_submission', projEff, ['Done', 'Not Done']) + '<div class="mut">Presentation &amp; assessment</div>' + seg(r, 'assessment_status', c.assessment_status, ['Done', 'Not Done']) + '<button class="btn sec sm" data-a="cres" data-reg="' + r + '">' + ic('cal', 's') + ' ' + (c.reschedule_date ? 'Change assessment date' : 'Project not ready? Separate date') + '</button>' + close;
+    else if (d.step === 'marks') h = head('Assessment Marks', 'Admin only') + '<div class="g2">' + F.t('cmi', 'Faculty marks', c.internal_marks, { type: 'number', attr: 'min="0"' }) + F.t('cme', 'External marks', c.external_marks, { type: 'number', attr: 'min="0"' }) + '</div>' + F.t('cmx', 'Out of', c.max_marks, { type: 'number', attr: 'min="1"' }) + '<label class="row" style="gap:10px;margin:2px 0 12px"><input type="checkbox" id="f-cvis" ' + (c.marks_visible ? 'checked' : '') + '><span class="grow"><b>Show marks to student</b><div class="mut">Off by default.</div></span></label><div class="btns"><button class="btn sec" data-a="close">Cancel</button><button class="btn" data-a="cmq" data-reg="' + r + '">Save marks</button></div>';
+    else if (d.step === 'feedback') h = head('Student Feedback', 'Oral feedback') + '<div class="mut">Oral feedback collected</div>' + seg(r, 'oral_feedback', c.oral_feedback, ['Done', 'Not Done']) + F.ta('c-feedback_notes', 'Feedback notes (admin only)', c.feedback_notes, 'What the student said…') + '<div class="btns"><button class="btn sec" data-a="close">Cancel</button><button class="btn" data-a="cnq" data-reg="' + r + '" data-k="feedback_notes">Save notes</button></div>';
+    else if (d.step === 'concerns') h = head('Student Concerns', 'Confidential · Admin &amp; management only') + F.ta('c-concerns', 'Notes', c.concerns, 'Record anything important…') + '<div class="btns"><button class="btn sec" data-a="close">Cancel</button><button class="btn" data-a="cnq" data-reg="' + r + '" data-k="concerns">Save notes</button></div>';
+    else if (d.step === 'google') h = head('Google Review', 'Business Profile') + '<div class="mut">Review posted</div>' + seg(r, 'google_review', c.google_review, ['Done', 'Not Done']) + close;
+    else if (d.step === 'justdial') h = head('Justdial Review', 'Justdial listing') + '<div class="mut">Review posted</div>' + seg(r, 'justdial_review', c.justdial_review, ['Done', 'Not Done']) + close;
+    if (h) openSheet(h);
+  };
+  A.cmq = d => { const i = fv('cmi'), e = fv('cme'), mx = Number(fv('cmx')) || 100, bad = (i !== '' && (+i < 0 || +i > mx)) || (e !== '' && (+e < 0 || +e > mx)); A.cmarks(d); if (!bad) { S.sheet = null; render(); } };
+  A.cnq = d => { A.cnote(d); S.sheet = null; render(); };
+
+  V.a_comp_stu = function (p) {
+    const s = stu(p.reg); if (!s) return edit(p);
+    const { i, c, list } = steps(s), pct = Math.round(i.done / i.total * 100), pend = i.total - i.done, reg = s.registration_number;
+    const R = 50, C = 2 * Math.PI * R, g = i.done / i.total * C;
+    const arcs = '<circle cx="62" cy="62" r="50" fill="none" stroke="rgba(148,163,184,.25)" stroke-width="16"/>' +
+      (i.done ? '<circle cx="62" cy="62" r="50" fill="none" stroke="' + COLS.g + '" stroke-width="16" stroke-dasharray="' + g.toFixed(2) + ' ' + (C - g).toFixed(2) + '" transform="rotate(-90 62 62)"/>' : '') +
+      (pend && i.done ? '<circle cx="62" cy="62" r="50" fill="none" stroke="' + COLS.a + '" stroke-width="16" stroke-dasharray="' + (C - g).toFixed(2) + ' ' + g.toFixed(2) + '" stroke-dashoffset="' + (-g).toFixed(2) + '" transform="rotate(-90 62 62)"/>' : '');
+    const left = i.left > 0 ? i.left + ' day' + (i.left > 1 ? 's' : '') : i.left === 0 ? 'Today' : 'Ended';
+    const tile = (cl, ico, v, l) => '<div class="fx2-t ' + cl + '">' + ic(ico) + '<b>' + v + '</b>' + l + '</div>';
+    const nx = list.find(x => x.req && !x.done), n = list.filter(x => x.req).length; let k = 0;
+    const row = x => { const num = x.req ? ++k : '·'; return '<button class="fx2-row" data-a="cstep" data-reg="' + reg + '" data-step="' + x.k + '"><span class="fx2-av ' + (x.done ? 'paid' : x.req ? 'd3' : '') + '">' + (x.done ? ic('tick', 's') : num) + '</span><span class="fx2-in"><b>' + x.t + '</b><span>' + x.sub + '</span></span>' + (x.done ? P(x.yes || 'Done', 'g') : P(x.no || 'Pending', x.req ? 'a' : 's')) + ic('next', 's') + '</button>'; };
+    return {
+      t: 'Completion', sub: 'Progress and certificates', right: bellBtn(),
+      body: '<div class="fx2-card"><div class="fx2-hd"><span class="fx2-av ' + (i.full ? 'paid' : '') + '">' + ini(s.full_name) + '</span><div class="grow" style="min-width:0"><b class="trunc">' + esc(s.full_name) + '</b><span class="m">' + esc(s.enr.course_name) + '</span></div><a class="fx2-cb" href="tel:' + esc(s.mobile) + '">' + ic('phone', 's') + '</a></div>' +
+        '<div class="fx2-ov"><div class="fx2-donut" style="width:104px;height:104px"><svg width="104" height="104" viewBox="0 0 124 124">' + arcs + '</svg><div class="fx2-dc"><b style="font-size:24px">' + pct + '%</b><span>Done</span></div></div>' +
+        '<div class="fx2-lg"><div><i style="background:' + COLS.g + '"></i>Completed<b>' + i.done + '</b></div><div><i style="background:' + COLS.a + '"></i>Pending<b>' + pend + '</b></div><div><i style="background:' + COLS.s + '"></i>Last day<b style="font-size:12px">' + fmtD(i.last) + '</b></div></div></div>' +
+        '<div class="fx2-tiles">' + tile('b', 'file', has(c.internal_marks) ? c.internal_marks : '–', 'Faculty Marks') + tile('a', 'star', has(c.external_marks) ? c.external_marks : '–', 'External Marks') + tile(i.left < 0 ? 'r' : 'b', 'clock', Math.abs(i.left), i.left < 0 ? 'Days over' : 'Days left') + '</div></div>' +
+        (nx ? '<button class="fx2-nx" style="width:100%;text-align:left" data-a="cstep" data-reg="' + reg + '" data-step="' + nx.k + '"><span class="ci">' + ic(nx.ico) + '</span><div class="grow"><small>Next step</small><b style="font-size:19px">' + nx.t + '</b><span class="d">' + nx.sub + '</span></div><span class="fx2-p">Update</span></button>' : '<div class="fx2-warn" style="background:#DDF5E6;color:#15803D">' + ic('tick') + '<span><b>All required steps are complete.</b> Ready for the certificate.</span></div>') +
+        '<div class="fx2-lh">Final Checklist<span style="margin-left:auto;font-size:12.5px;color:var(--mut);font-weight:600">Tap a step to update</span></div>' + list.map(row).join('') +
+        '<div class="fx2-bar"><button class="fx2-b1" style="border-color:#14265B;color:#14265B;white-space:nowrap" data-a="go" data-v="a_comp_edit" data-reg="' + reg + '">' + ic('edit', 's') + ' Full Form</button><button class="fx2-b2" style="white-space:nowrap" data-a="cres" data-reg="' + reg + '">' + ic('cal', 's') + ' Separate Date</button></div>'
+    };
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+<style id="hp-style">
+.hp{padding:2px 2px 96px}
+.hp-top{display:flex;align-items:center;gap:12px;padding:4px 2px 14px}
+.hp-av{width:48px;height:48px;border-radius:50%;background:#14265B;color:#fff;display:grid;place-items:center;font-weight:800;font-size:16px;flex:none}
+.hp-top .g{flex:1;min-width:0}.hp-top small{display:block;color:var(--mut);font-size:12.5px}.hp-top b{display:block;font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hp-role{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#FF6B0B;background:#FFF0E5;border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:2px}
+.hp-hero{position:relative;overflow:hidden;border-radius:24px;padding:18px;color:#fff;background:linear-gradient(135deg,#1B3377 0%,#0B1D49 100%);box-shadow:0 12px 28px rgba(11,29,73,.28);margin-bottom:14px}
+.hp-hero:before{content:"";position:absolute;right:-40px;top:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.06)}
+.hp-hero:after{content:"";position:absolute;right:30px;bottom:-60px;width:120px;height:120px;border-radius:50%;background:rgba(255,107,11,.18)}
+.hp-hero>*{position:relative;z-index:1}
+.hp-hero .l{font-size:12.5px;opacity:.8;font-weight:600}.hp-hero .a{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1.15;margin:2px 0 4px}.hp-hero .s{font-size:12.5px;opacity:.85}
+.hp-pb{height:8px;border-radius:9px;background:rgba(255,255,255,.18);margin:12px 0 6px;overflow:hidden}.hp-pb i{display:block;height:100%;border-radius:9px;background:#FF6B0B}
+.hp-cta{display:flex;gap:10px;margin-top:14px}.hp-cta button{flex:1;height:44px;border-radius:13px;font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+.hp-cta .p{background:#FF6B0B;color:#fff;box-shadow:0 6px 14px rgba(255,107,11,.35)}.hp-cta .o{background:rgba(255,255,255,.14);color:#fff}
+.hp-hr{display:flex;align-items:center;gap:16px}.hp-ring{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;flex:none}.hp-ring i{width:66px;height:66px;border-radius:50%;background:#14265B;display:grid;place-items:center;font-style:normal;font-weight:800;font-size:19px}
+.hp-kp{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.hp-kp button{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:13px;box-shadow:0 2px 10px rgba(20,38,91,.05);text-align:left;display:flex;align-items:center;gap:11px}
+.hp-kp .i{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;flex:none;background:#EDF0F8;color:#14265B}
+.hp-kp .i.o{background:#FFF0E5;color:#FF6B0B}.hp-kp .i.g{background:#E5F6EE;color:#16A66A}.hp-kp .i.r{background:#FCE9EA;color:#E5484D}.hp-kp .i.v{background:#EEEAFE;color:#6D4AE8}
+.hp-kp b{display:block;font-size:21px;font-weight:800;line-height:1.1;color:var(--ink)}.hp-kp span.l{font-size:12px;color:var(--mut);font-weight:600}
+.hp-h{display:flex;align-items:center;margin:18px 2px 10px;font-size:16.5px;font-weight:800;color:var(--ink)}.hp-h button{margin-left:auto;font-size:12.5px;font-weight:700;color:#FF6B0B}
+.hp-qa{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 6px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 8px;box-shadow:0 2px 10px rgba(20,38,91,.05)}
+.hp-qa button{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--ink);position:relative;min-width:0}
+.hp-qa .i{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:#EDF0F8;color:#14265B}
+.hp-qa .i.o{background:#FFF0E5;color:#FF6B0B}.hp-qa .i.g{background:#E5F6EE;color:#16A66A}.hp-qa .i.v{background:#EEEAFE;color:#6D4AE8}.hp-qa .i.r{background:#FCE9EA;color:#E5484D}
+.hp-qa u{position:absolute;top:-4px;right:6px;min-width:18px;height:18px;border-radius:9px;background:#FF6B0B;color:#fff;font:700 10px/18px Inter,sans-serif;text-align:center;text-decoration:none;padding:0 4px}
+.hp-bars .r{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px}.hp-bars .r span{width:96px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}.hp-bars .r .t{flex:1;height:9px;border-radius:9px;background:#E8EDF5;overflow:hidden}.hp-bars .r .t i{display:block;height:100%;background:#14265B;border-radius:9px}.hp-bars .r b{width:26px;text-align:right}
+.hp-ok{display:flex;align-items:center;gap:10px;background:#E5F6EE;color:#0F7A4E;border-radius:16px;padding:13px 14px;font-size:13.5px;font-weight:600}
+.hp-lg4{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;flex:1;min-width:0}.hp-lg4 div{display:flex;align-items:center;gap:7px;font-size:12.5px}.hp-lg4 i{width:9px;height:9px;border-radius:50%;flex:none}.hp-lg4 b{margin-left:auto}
+</style>
+<script>
+/* ===== Pro home screens v7: Super Admin, Admin, Student (same data/actions, new frontend) ===== */
+(function () {
+  const prevA = V.a_home, prevS = V.s_home;
+  const QA = (items) => '<div class="hp-qa">' + items.map(x => '<button ' + x[3] + '>' + (x[4] ? '<u>' + x[4] + '</u>' : '') + '<span class="i ' + x[1] + '">' + ic(x[0]) + '</span>' + x[2] + '</button>').join('') + '</div>';
+  const KP = (items) => '<div class="hp-kp">' + items.map(x => '<button ' + x[4] + '><span class="i ' + x[1] + '">' + ic(x[0]) + '</span><span><b>' + x[2] + '</b><span class="l">' + x[3] + '</span></span></button>').join('') + '</div>';
+  const H = (t, a) => '<div class="hp-h">' + t + (a ? '<button ' + a[1] + '>' + a[0] + '</button>' : '') + '</div>';
+  const top = (ini_, name, role) => '<div class="hp-top"><div class="g"><small>' + new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' }) + '</small><b>' + greet() + (role === 'Student' ? ', ' + esc(name) : '') + ' 👋</b></div></div>';
+  const attr = a => a.go === 'a_att' ? 'data-a="tab" data-t="att"' : 'data-a="go" data-v="' + a.go + '" ' + Object.entries(a.p || {}).map(([k, x]) => 'data-' + k + '="' + esc(x) + '"').join(' ');
+  const tn = t => ({ r: 'v', o: 'o', b: '', g: 'g' }[t] || '');
+  const alertsCard = () => { const al = adminAlerts(); return H('Needs attention' + (al.length ? ' (' + al.length + ')' : ''), al.length > 4 ? ['View all', 'data-a="go" data-v="a_notif"'] : null) + (al.length ? al.slice(0, 4).map(a => '<button class="fx2-row" ' + attr(a) + '><span class="fx2-av ' + (a.tone === 'r' ? 'over' : a.tone === 'o' ? 'd3' : '') + '">' + ic(a.i, 's') + '</span><span class="fx2-in"><b>' + esc(a.t) + '</b><span>' + esc(a.d) + '</span></span>' + ic('next', 's') + '</button>').join('') : '<div class="hp-ok">' + ic('tick') + ' All clear — nothing needs your attention</div>'); };
+  const attDonut = (P, A_, L, N, tot) => { const R = 50, C = 2 * Math.PI * R, segs = [[P, '#22C55E', 'Present'], [A_, '#EF4444', 'Absent'], [L, '#FBBF24', 'Leave'], [N, '#CBD5E1', 'Not marked']]; let off = 0, arcs = '<circle cx="62" cy="62" r="50" fill="none" stroke="rgba(148,163,184,.25)" stroke-width="16"/>'; segs.forEach(g => { if (!g[0] || !tot) return; const len = g[0] / tot * C; arcs += '<circle cx="62" cy="62" r="50" fill="none" stroke="' + g[1] + '" stroke-width="16" stroke-dasharray="' + len.toFixed(2) + ' ' + (C - len).toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) + '" transform="rotate(-90 62 62)"/>'; off += len; });
+    return '<div class="fx2-ov"><div class="fx2-donut" style="width:104px;height:104px"><svg width="104" height="104" viewBox="0 0 124 124">' + arcs + '</svg><div class="fx2-dc"><b style="font-size:22px">' + tot + '</b><span>Scheduled</span></div></div><div class="hp-lg4">' + segs.map(g => '<div><i style="background:' + g[1] + '"></i>' + g[2] + '<b>' + g[0] + '</b></div>').join('') + '</div></div>'; };
+
+  V.a_home = function () {
+    const v = prevA(); try {
+      const d = D(), T = today(), sup = !isStaff(), sched = activeStu().filter(s => scheduled(s, T)), st = s => s.attendance[T] || '', cnt = k => sched.filter(s => st(s) === k).length, N = sched.filter(s => !st(s)).length, mark = 'data-a="attopen" data-d="' + T + '"';
+      const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length, rev = d.tasks.filter(t => t.status === 'Submitted').length + d.students.filter(s => s.project && s.project.status === 'Submitted').length, ready = d.students.filter(s => s.certificate.status === 'Completed').length;
+      const nm = sup ? 'Super Admin' : (typeof admName === 'function' ? admName() : 'Admin'), role = sup ? 'Super Admin' : 'Admin', hol = (d.holidays || {})[T];
+      let body;
+      if (sup) {
+        const all = d.students, paid = all.reduce((x, s) => x + paidSum(s), 0), out = all.reduce((x, s) => x + balance(s), 0), pc = paid + out ? Math.round(paid / (paid + out) * 100) : 0;
+        const byC = {}; all.filter(s => s.overall_status !== 'Dropped').forEach(s => { byC[s.enr.course_name] = (byC[s.enr.course_name] || 0) + 1; }); const cl = Object.entries(byC).sort((a, b) => b[1] - a[1]).slice(0, 6), mx = cl.length ? cl[0][1] : 1;
+        const lg = (d.act_log || []).slice(0, 3);
+        body = top('SA', nm, role) +
+          '<div class="hp-hero"><div class="l">Fees collected</div><div class="a">' + inr(paid) + '</div><div class="s">' + pc + '% of total fees · ' + inr(out) + ' outstanding</div><div class="hp-pb"><i style="width:' + pc + '%"></i></div><div class="hp-cta"><button class="p" data-a="tab" data-t="fees">' + ic('rupee', 's') + ' Fees</button><button class="o" data-a="tab" data-t="reports">' + ic('chart', 's') + ' Reports</button></div></div>' +
+          KP([['users', '', all.length, 'Students', 'data-a="tab" data-t="students"'], ['tick', 'g', cnt('Present') + '/' + sched.length, 'Present today', mark], ['bell', 'o', fu, 'Follow-ups due', 'data-a="go" data-v="a_followups"'], ['award', 'v', ready, 'Certificates ready', 'data-a="go" data-v="a_complete"']]) +
+          '<div class="fx2-card"><div class="fx2-h">Today\'s Attendance<small>' + (hol ? 'Holiday · ' + esc(hol) : fmtD(T)) + '</small></div>' + (sched.length ? attDonut(cnt('Present'), cnt('Absent'), cnt('Leave'), N, sched.length) : '<div class="mut">No classes scheduled today.</div>') + '</div>' +
+          alertsCard() +
+          (cl.length ? H('Students by course', ['Courses', 'data-a="go" data-v="a_courses"']) + '<div class="fx2-card hp-bars">' + cl.map(c => '<div class="r"><span>' + esc(c[0]) + '</span><div class="t"><i style="width:' + Math.round(c[1] / mx * 100) + '%"></i></div><b>' + c[1] + '</b></div>').join('') + '</div>' : '') +
+          H('Quick actions') + QA([['plus', '', 'Admission', 'data-a="go" data-v="a_student_form"'], ['cal', 'g', 'Attendance', mark], ['layers', 'g', 'Completion', 'data-a="go" data-v="a_cdash"'], ['star', 'o', 'Reviews', 'data-a="go" data-v="a_reviews"'], ['user', 'v', 'Admins', 'data-a="tab" data-t="staff"'], ['chart', '', 'Reports', 'data-a="tab" data-t="reports"'], ['clock', '', 'Logs', 'data-a="go" data-v="a_actlog"'], ['grid', '', 'More', 'data-a="tab" data-t="more"']]) +
+          (lg.length ? H('Recent activity') + '<div class="fx2-card">' + lg.map(l => '<div class="fx2-tr"><span class="nd on">' + ic('tick', 'xs') + '</span><span class="t"><b style="font-size:13.5px">' + esc(l.text) + '</b><span>' + esc(l.staff || '') + '</span></span></div>').join('') + '</div>' : '');
+      } else {
+        const mk = sched.length - N, pc = sched.length ? Math.round(mk / sched.length * 100) : 0;
+        body = top(esc(nm).slice(0, 2).toUpperCase(), nm, role) +
+          '<div class="hp-hero"><div class="l">Today\'s attendance</div><div class="a">' + mk + ' / ' + sched.length + ' marked</div><div class="s">' + (hol ? 'Holiday · ' + esc(hol) : N ? N + ' student' + (N > 1 ? 's' : '') + ' still to mark' : sched.length ? 'All students marked ✓' : 'No classes scheduled today') + '</div><div class="hp-pb"><i style="width:' + pc + '%"></i></div><div class="hp-cta"><button class="p" ' + mark + '>' + ic('cal', 's') + ' Mark attendance</button><button class="o" data-a="go" data-v="a_followups">' + ic('bell', 's') + ' Follow-ups' + (fu ? ' (' + fu + ')' : '') + '</button></div></div>' +
+          KP([['tick', 'g', cnt('Present'), 'Present', mark], ['x', 'r', cnt('Absent'), 'Absent', mark], ['clock', 'o', cnt('Leave'), 'On leave', mark], ['users', '', d.students.length, 'Students', 'data-a="tab" data-t="students"']]) +
+          (sched.length ? H('Absent &amp; not marked', ['Open', mark]) + (sched.filter(x => st(x) !== 'Present').length ? sched.filter(x => st(x) !== 'Present').sort((a, b) => ({ Absent: 0, Leave: 1, '': 2 }[st(a)] - { Absent: 0, Leave: 1, '': 2 }[st(b)])).slice(0, 5).map(x => '<button class="fx2-row" data-a="go" data-v="a_att_student" data-reg="' + x.registration_number + '"><span class="fx2-av ' + (st(x) === 'Absent' ? 'over' : st(x) === 'Leave' ? 'd3' : '') + '">' + ini(x.full_name) + '</span><span class="fx2-in"><b>' + esc(x.full_name) + '</b><span>' + esc(x.enr.course_name) + ' · ' + t12(x.enr.slot_start_time) + '</span></span><span class="fx2-p ' + (st(x) === 'Absent' ? 'r' : st(x) === 'Leave' ? 'a' : 's') + '">' + (st(x) || 'Not marked') + '</span>' + ic('next', 's') + '</button>').join('') : '<div class="hp-ok">' + ic('tick') + ' Everyone scheduled today is present</div>') : '') +
+          H('Today\'s tasks') + '<button class="fx2-row" data-a="go" data-v="a_followups"><span class="fx2-av d3">' + ic('bell', 's') + '</span><span class="fx2-in"><b>Fee follow-ups</b><span>' + fu + ' due now</span></span>' + (fu ? '<span class="fx2-p a">' + fu + '</span>' : '<span class="fx2-p g">Clear</span>') + ic('next', 's') + '</button>' +
+          '<button class="fx2-row" data-a="go" data-v="a_work"><span class="fx2-av">' + ic('clip', 's') + '</span><span class="fx2-in"><b>Submissions to review</b><span>Assignments, projects &amp; tests</span></span>' + (rev ? '<span class="fx2-p">' + rev + '</span>' : '<span class="fx2-p g">Clear</span>') + ic('next', 's') + '</button>' +
+          '<button class="fx2-row" data-a="go" data-v="a_complete"><span class="fx2-av paid">' + ic('award', 's') + '</span><span class="fx2-in"><b>Certificates ready</b><span>Students who completed the course</span></span><span class="fx2-p ' + (ready ? 'g' : 's') + '">' + ready + '</span>' + ic('next', 's') + '</button>' +
+          alertsCard() +
+          H('Quick actions') + QA([['users', '', 'Students', 'data-a="tab" data-t="students"'], ['cal', 'g', 'Attendance', mark], ['bell', 'o', 'Follow-ups', 'data-a="go" data-v="a_followups"', fu], ['layers', 'g', 'Completion', 'data-a="go" data-v="a_cdash"'], ['clip', 'v', 'Academic', 'data-a="go" data-v="a_work"'], ['mega', 'o', 'Message', 'data-a="go" data-v="a_notif"'], ['plus', '', 'Add student', 'data-a="go" data-v="a_student_form"'], ['grid', '', 'More', 'data-a="tab" data-t="more"']]);
+      }
+      v.body = '<div class="hp">' + body + '</div>'; v.t = ''; v.sub = ''; v.greet = null; v.extra = null;
+    } catch (e) { console.error('home', e); } return v;
+  };
+
+  V.s_home = function () {
+    const v = prevS(); try {
+      const s = me(); if (!s) return v; const d = D(), T = today(), R = reqs(s), met = R.filter(r => r[1]).length, p = Math.round(s.enr.progress_percent || 0), bal = balance(s), due = s.enr.next_due_date, a = attStats(s), st = s.attendance[T] || 'Not marked', ok = !a.t || a.pct >= 75;
+      const tasks = d.tasks.filter(t => t.registration_number === s.registration_number && t.status === 'Pending').sort((x, y) => (x.due_date || '9') < (y.due_date || '9') ? -1 : 1);
+      const fn = s.full_name.split(' ')[0];
+      v.body = '<div class="hp">' + top(ini(s.full_name), fn, 'Student') +
+        '<div class="hp-hero"><div class="hp-hr"><div class="hp-ring" style="background:conic-gradient(#FF6B0B ' + p * 3.6 + 'deg,#E8EDF5 0)"><i>' + p + '%</i></div><div><div class="l">' + esc(s.enr.course_name) + '</div><div class="a" style="font-size:20px">' + met + ' of ' + R.length + ' requirements</div><div class="s">Attendance ' + (a.t ? a.pct + '%' : '–') + ' · ' + (ok ? 'On track ✓' : 'Needs attention') + '</div></div></div><div class="hp-cta"><button class="p" data-a="go" data-v="s_complete">View progress</button><button class="o" data-a="go" data-v="s_att">' + ic('cal', 's') + ' Attendance</button></div></div>' +
+        (bal > 0 ? '<div class="fx2-nx" style="background:#FFF0E5"><span class="ci">' + ic('rupee') + '</span><div class="grow"><small>Fee due</small><b>' + inr(bal) + '</b><span class="d">' + (due ? 'Pay by ' + fmtD(due) : 'Balance pending') + '</span></div><button class="fx2-p a" data-a="tab" data-t="fees">Pay / View</button></div>' : '') +
+        (scheduled(s, T) ? H('Today\'s session') + '<div class="fx2-row" style="cursor:default"><span class="fx2-av">' + ic('cal', 's') + '</span><span class="fx2-in"><b>' + esc(s.enr.course_name) + '</b><span>' + t12(s.enr.slot_start_time) + (s.enr.faculty_name ? ' · ' + esc(s.enr.faculty_name) : '') + '</span></span><span class="fx2-p ' + (st === 'Present' ? 'g' : st === 'Absent' ? 'r' : 's') + '">' + st + '</span></div>' : '') +
+        H('Pending tasks', ['View all', 'data-a="tab" data-t="tasks"']) + (tasks.length ? tasks.slice(0, 3).map(t => '<button class="fx2-row" data-a="tab" data-t="tasks"><span class="fx2-av d3">' + ic('clip', 's') + '</span><span class="fx2-in"><b>' + esc(t.title) + '</b><span>' + esc(t.task_type || 'Task') + (t.due_date ? ' · Due ' + fmtD(t.due_date) : '') + '</span></span>' + ic('next', 's') + '</button>').join('') : '<div class="hp-ok">' + ic('tick') + ' You\'re all caught up</div>') +
+        H('Quick access') + QA([['cal', 'g', 'Attendance', 'data-a="go" data-v="s_att"'], ['clip', 'o', 'Tasks', 'data-a="tab" data-t="tasks"', tasks.length], ['folder', '', 'Materials', 'data-a="tab" data-t="learn"'], ['rupee', 'o', 'Fees', 'data-a="tab" data-t="fees"'], ['award', 'v', 'Certificate', 'data-a="go" data-v="s_cert"'], ['layers', 'g', 'Completion', 'data-a="go" data-v="s_complete"'], ['user', '', 'Profile', 'data-a="tab" data-t="me"'], ['grid', '', 'More', 'data-a="tab" data-t="learn"']]) + '</div>';
+      v.t = ''; v.sub = ''; v.greet = null; v.extra = null;
+    } catch (e) { console.error('shome', e); } return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+<style id="sa-style">
+.sa-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.sa-cal .w{font-size:11px;font-weight:700;color:var(--mut);padding:4px 0}
+.sa-cal .d{aspect-ratio:1;border-radius:12px;display:grid;place-items:center;font-size:13px;font-weight:600;background:#F4F6FB;color:var(--ink)}
+.sa-cal .d.P{background:#DDF5E6;color:#15803D}.sa-cal .d.A{background:#FBE5E3;color:#B91C1C}.sa-cal .d.L{background:#FDF1D6;color:#B45309}.sa-cal .d.H{background:#EDF0F8;color:#94A3B8}.sa-cal .d.n{background:none}.sa-cal .d.t{outline:2px solid #FF6B0B}
+.sa-mn{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-weight:800;font-size:16px}.sa-mn button{width:36px;height:36px;border-radius:50%;background:#EDF0F8;display:grid;place-items:center;color:#14265B}
+</style>
+<script>
+/* ===== Student attendance screen (fixes dead s_att link) ===== */
+(function () {
+  let off = 0;
+  A.attm = d => { off += Number(d.n); render(); };
+  V.s_att = function () {
+    const s = me(); if (!s) return { t: 'Attendance', body: empty('Not available', '') };
+    const T = today(), a = attStats(s), now = new Date(); now.setDate(1); now.setMonth(now.getMonth() + off);
+    const y = now.getFullYear(), m = now.getMonth(), first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
+    let cells = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(x => '<div class="w">' + x + '</div>').join('') + '<div class="d n"></div>'.repeat(first);
+    for (let i = 1; i <= days; i++) { const ds = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(i).padStart(2, '0'), v = s.attendance[ds], k = v === 'Present' ? 'P' : v === 'Absent' ? 'A' : v === 'Leave' ? 'L' : (isHoliday(ds) ? 'H' : ''); cells += '<div class="d ' + k + (ds === T ? ' t' : '') + '">' + i + '</div>'; }
+    const pc = a.t ? a.pct : 0, ok = !a.t || a.pct >= 75, tile = (c, ico, n, l) => '<div class="fx2-t ' + c + '">' + ic(ico) + '<b>' + n + '</b>' + l + '</div>';
+    return { t: 'Attendance', sub: esc(s.enr.course_name),
+      body: '<div class="fx2-card"><div class="fx2-h">Overall Attendance<small>' + (ok ? 'On track' : 'Below 75%') + '</small></div><div class="fx2-ov"><div class="fx2-donut" style="width:104px;height:104px"><svg width="104" height="104" viewBox="0 0 124 124"><circle cx="62" cy="62" r="50" fill="none" stroke="rgba(148,163,184,.25)" stroke-width="16"/><circle cx="62" cy="62" r="50" fill="none" stroke="' + (ok ? '#22C55E' : '#EF4444') + '" stroke-width="16" stroke-dasharray="' + (pc / 100 * 314.16).toFixed(1) + ' 314.16" transform="rotate(-90 62 62)"/></svg><div class="fx2-dc"><b style="font-size:22px">' + (a.t ? pc + '%' : '–') + '</b><span>Present</span></div></div><div class="fx2-lg"><div><i style="background:#22C55E"></i>Present<b>' + (a.P || 0) + '</b></div><div><i style="background:#EF4444"></i>Absent<b>' + (a.A || 0) + '</b></div><div><i style="background:#FBBF24"></i>Leave<b>' + (a.L || 0) + '</b></div></div></div></div>' +
+        '<div class="fx2-card"><div class="sa-mn"><button data-a="attm" data-n="-1">' + ic('back', 's') + '</button>' + now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) + '<button data-a="attm" data-n="1" style="transform:scaleX(-1)">' + ic('back', 's') + '</button></div><div class="sa-cal">' + cells + '</div></div>' };
+  };
+})();
+</script>
+<style id="cf-style">
+.cr-st{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.cr-st button{border-radius:16px;padding:11px 4px;text-align:center;background:var(--card);border:1.5px solid var(--line);box-shadow:0 2px 8px rgba(20,38,91,.04)}
+.cr-st button b{display:block;font-size:22px;font-weight:800;color:var(--ink);line-height:1.1}.cr-st button span{font-size:11px;font-weight:700;color:var(--mut)}
+.cr-st button.on{border-color:#14265B;background:#14265B}.cr-st button.on b,.cr-st button.on span{color:#fff}
+.cr-st button.rd b{color:#16A66A}.cr-st button.rd.on b{color:#fff}
+.cr-gh{display:flex;align-items:center;gap:8px;margin:16px 2px 8px;font-size:13px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}.cr-gh i{width:9px;height:9px;border-radius:50%}.cr-gh span{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:700}
+.cr-r,.fl-r{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:11px 12px;margin-bottom:9px;box-shadow:0 2px 8px rgba(20,38,91,.04);width:100%;text-align:left}
+.cr-r .m,.fl-r .m{flex:1;min-width:0;display:flex;align-items:center;gap:11px;text-align:left}
+.cr-rg{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;flex:none}.cr-rg i{width:35px;height:35px;border-radius:50%;background:#fff;display:grid;place-items:center;font-style:normal;font-size:11.5px;font-weight:800;color:#14265B}
+.cr-r .t,.fl-r .t{flex:1;min-width:0}.cr-r .t b,.fl-r .t b{display:block;font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cr-r .t span,.fl-r .t span{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr-dots{display:flex;gap:3px;margin-top:5px}.cr-dots i{height:5px;flex:1;max-width:22px;border-radius:3px;background:#E2E8F0}.cr-dots i.on{background:#16A66A}
+.cr-go{flex:none;height:36px;padding:0 13px;border-radius:11px;font-size:12.5px;font-weight:700;background:#FF6B0B;color:#fff;white-space:nowrap}.cr-go.ok{background:#16A66A}.cr-go.n{background:#14265B}
+.cr-x{width:34px;height:36px;border-radius:11px;background:#EDF0F8;color:#14265B;display:grid;place-items:center;flex:none}
+.cr-lk{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:#EDF0F8;border-radius:16px;padding:12px 14px;margin-bottom:12px;font-size:13px}.cr-lk b{display:block;font-size:14px;color:#14265B}.cr-lk span{color:var(--mut)}
+.fl-hero{border-radius:24px;padding:18px;color:#fff;background:linear-gradient(135deg,#1B3377,#0B1D49);box-shadow:0 12px 26px rgba(11,29,73,.25);margin-bottom:14px;position:relative;overflow:hidden}
+.fl-hero:after{content:"";position:absolute;right:-30px;top:-40px;width:150px;height:150px;border-radius:50%;background:rgba(255,107,11,.2)}
+.fl-hero>*{position:relative;z-index:1}.fl-hero .l{font-size:12.5px;opacity:.8;font-weight:600}.fl-hero .a{font-size:30px;font-weight:800;letter-spacing:-1px;margin:2px 0 8px}
+.fl-pb{height:9px;border-radius:9px;background:rgba(255,255,255,.18);overflow:hidden}.fl-pb i{display:block;height:100%;background:#22C55E;border-radius:9px}
+.fl-sp{display:flex;gap:10px;margin-top:14px}.fl-sp div{flex:1;background:rgba(255,255,255,.1);border-radius:14px;padding:10px 12px}.fl-sp small{display:block;font-size:11.5px;opacity:.8}.fl-sp b{font-size:16px;font-weight:800}.fl-sp .r b{color:#FFB4B6}.fl-sp .o b{color:#FFD08A}
+.fl-ac{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.fl-ac button{height:46px;border-radius:14px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;background:var(--card);border:1.5px solid #14265B;color:#14265B}.fl-ac button.p{background:#FF6B0B;border-color:#FF6B0B;color:#fff;box-shadow:0 6px 14px rgba(255,107,11,.28)}
+.fl-av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;flex:none;background:#E8E8FD;color:#3730A3}.fl-av.over{background:#FBE5E3;color:#B91C1C}.fl-av.due{background:#FDF1D6;color:#B45309}.fl-av.paid{background:#DDF5E6;color:#15803D}
+.fl-r .t i.b{display:block;height:5px;border-radius:3px;background:#E8EDF5;margin-top:6px;overflow:hidden}.fl-r .t i.b u{display:block;height:100%;background:#14265B;border-radius:3px}.fl-r.over .t i.b u{background:#E5484D}.fl-r.paid .t i.b u{background:#16A66A}
+.fl-am{text-align:right;flex:none}.fl-am b{display:block;font-size:15px;font-weight:800}.fl-am span{font-size:11.5px;color:var(--mut)}.fl-r.over .fl-am b{color:#E5484D}.fl-r.paid .fl-am b{color:#16A66A}
+.fl-sw{display:flex;gap:6px;background:#E6EAF3;border-radius:14px;padding:4px;margin-bottom:12px}.fl-sw button{flex:1;height:38px;border-radius:11px;font-weight:700;font-size:13.5px;color:var(--mut)}.fl-sw button.on{background:#fff;color:#14265B;box-shadow:0 2px 8px rgba(20,38,91,.1)}
+</style>
+<script>
+/* ===== Certificates pipeline + Fees ledger (Super Admin & Admin) ===== */
+(function () {
+  const STG = [['Pending', 'Pending'], ['Started', 'In process'], ['Completed', 'Ready'], ['Issued', 'Issued']], NX = { Pending: ['Started', 'Start'], Started: ['Completed', 'Mark ready'], Completed: ['Issued', 'Issue'] };
+  const TAB = { Pending: 'Pending', 'In process': 'Started', Ready: 'Completed', Issued: 'Issued' }, COLR = { Pending: '#CBD5E1', Started: '#FBBF24', Completed: '#16A66A', Issued: '#14265B' };
+  V.a_complete = function () {
+    const d = D(), act = d.students.filter(s => s.stage === 'active'), cnt = {}; STG.forEach(g => cnt[g[0]] = act.filter(s => s.certificate.status === g[0]).length);
+    const f = flt('cmf', ['All', 'Pending', 'In process', 'Ready', 'Issued']), q = (S.q.cm || '').toLowerCase(), want = f === 'All' ? null : TAB[f];
+    const L = act.filter(s => (!want || s.certificate.status === want) && (!q || (s.full_name + s.enr.course_name).toLowerCase().includes(q)));
+    const avg = act.length ? Math.round(act.reduce((a, s) => a + s.enr.progress_percent, 0) / act.length) : 0;
+    const row = s => { const R = reqs(s), met = R.filter(r => r[1]).length, c = s.certificate, nx = NX[c.status], p = Math.round(s.enr.progress_percent || 0), reg = s.registration_number;
+      return '<div class="cr-r"><button class="m" data-a="go" data-v="a_complete_stu" data-reg="' + reg + '"><span class="cr-rg" style="background:conic-gradient(' + COLR[c.status] + ' ' + p * 3.6 + 'deg,#E2E8F0 0)"><i>' + p + '%</i></span><span class="t"><b>' + esc(s.full_name) + '</b><span>' + esc(s.enr.course_name) + ' · ' + met + '/' + R.length + ' requirements</span><span class="cr-dots">' + R.map(r => '<i class="' + (r[1] ? 'on' : '') + '"></i>').join('') + '</span></span></button>' +
+        (nx ? '<button class="cr-go ' + (nx[0] === 'Issued' ? 'ok' : nx[0] === 'Completed' ? 'n' : '') + '" data-a="certnext" data-reg="' + reg + '" data-v="' + nx[0] + '">' + nx[1] + '</button>' : '<span class="fx2-p g">' + ic('tick', 'xs') + ' Issued</span>') + '<button class="cr-x" data-a="certsheet" data-reg="' + reg + '" aria-label="More">' + ic('gear', 's') + '</button></div>'; };
+    let list = '';
+    if (!L.length) list = empty('No students here', 'Nobody is at this certificate stage.', 'award');
+    else if (want) list = L.map(row).join('');
+    else [['Completed', 'Ready to issue'], ['Started', 'In process'], ['Pending', 'Not started'], ['Issued', 'Issued']].forEach(g => { const x = L.filter(s => s.certificate.status === g[0]); if (x.length) list += '<div class="cr-gh"><i style="background:' + COLR[g[0]] + '"></i>' + g[1] + '<span>' + x.length + '</span></div>' + x.map(row).join(''); });
+    return { t: 'Certificates', sub: 'Stages, progress and issuing', right: bellBtn(),
+      body: '<div class="cr-st">' + STG.map(g => '<button class="' + (g[0] === 'Completed' ? 'rd ' : '') + (want === g[0] ? 'on' : '') + '" data-a="flt" data-k="cmf" data-v="' + (want === g[0] ? 'All' : STG.find(x => x[0] === g[0])[1]) + '"><b>' + cnt[g[0]] + '</b><span>' + g[1] + '</span></button>').join('') + '</div>' +
+        '<button class="cr-lk" data-a="go" data-v="a_cdash"><span class="fx2-cb" style="background:#fff">' + ic('layers', 's') + '</span><span class="grow"><b>Completion dashboard</b><span>Average progress ' + avg + '% · checklist, assessment &amp; reviews</span></span>' + ic('next', 's') + '</button>' +
+        searchBox('cm', 'Search student or course') + list };
+  };
+
+  const FV = ['Fees', 'Follow-ups'], fu0 = V.a_followups;
+  V.a_fees = function () {
+    if (isStaff()) { const v = fu0(); v.t = 'Fee Follow-up'; v.sub = 'Track due fees &amp; reminders'; return v; }
+    const sw = (() => { const k = flt('fvw', FV); return [k, '<div class="fl-sw">' + FV.map(x => '<button class="' + (k === x ? 'on' : '') + '" data-a="flt" data-k="fvw" data-v="' + x + '">' + x + '</button>').join('') + '</div>']; })();
+    if (sw[0] === 'Follow-ups') { const v = fu0(); v.body = sw[1] + v.body; v.t = 'Fees'; v.sub = 'Follow-ups and reminders'; return v; }
+    const d = D(), T = iso(new Date()), q = (S.q.sf || '').toLowerCase(), all = d.students.filter(s => s.overall_status !== 'Dropped');
+    const tot = s => (s.plan && s.plan.total) || s.enr.net_fee || 0, kind = s => balance(s) <= 0 ? 'paid' : (s.enr.next_due_date && s.enr.next_due_date < T ? 'over' : 'due');
+    const paid = all.reduce((x, s) => x + paidSum(s), 0), out = all.reduce((x, s) => x + balance(s), 0), ovr = all.filter(s => kind(s) === 'over').reduce((x, s) => x + balance(s), 0), pc = paid + out ? Math.round(paid / (paid + out) * 100) : 0;
+    const cn = { All: all.length, Overdue: 0, Due: 0, Paid: 0 }; all.forEach(s => { const k = kind(s); cn[k === 'over' ? 'Overdue' : k === 'due' ? 'Due' : 'Paid']++; });
+    const labs = ['All', 'Overdue', 'Due', 'Paid'], f = flt('sff2', labs), km = { Overdue: 'over', Due: 'due', Paid: 'paid' };
+    const L = all.filter(s => (f === 'All' || kind(s) === km[f]) && (!q || (s.full_name + s.registration_number + s.enr.course_name).toLowerCase().includes(q))).sort((a, b) => (a.enr.next_due_date || '9') < (b.enr.next_due_date || '9') ? -1 : 1);
+    const row = s => { const t = tot(s), p = paidSum(s), pcs = t ? Math.min(100, Math.round(p / t * 100)) : 0, k = kind(s);
+      return '<button class="fl-r ' + k + '" data-a="go" data-v="a_fee_stu" data-reg="' + s.registration_number + '"><span class="fl-av ' + k + '">' + ini(s.full_name) + '</span><span class="t"><b>' + esc(s.full_name) + '</b><span>' + esc(s.enr.course_name) + (k !== 'paid' && s.enr.next_due_date ? ' · Due ' + fmtS(s.enr.next_due_date) : '') + '</span><i class="b"><u style="width:' + pcs + '%"></u></i></span><span class="fl-am"><b>' + (k === 'paid' ? 'Paid' : inr(balance(s))) + '</b><span>' + (k === 'paid' ? inr(t) : pcs + '% of ' + inr(t)) + '</span></span>' + ic('next', 's') + '</button>'; };
+    let list = '';
+    if (!L.length) list = empty('No students here', 'Nothing matches this filter.', 'rupee');
+    else if (f !== 'All') list = L.map(row).join('');
+    else [['over', 'Overdue', '#E5484D'], ['due', 'Upcoming dues', '#F5A623'], ['paid', 'Fully paid', '#16A66A']].forEach(g => { const x = L.filter(s => kind(s) === g[0]); if (x.length) list += '<div class="cr-gh"><i style="background:' + g[2] + '"></i>' + g[1] + '<span>' + x.length + '</span></div>' + x.map(row).join(''); });
+    return { t: 'Fees', sub: 'Record payments and track balances', right: bellBtn(),
+      body: sw[1] + '<div class="fl-hero"><div class="l">Total collected</div><div class="a">' + inr(paid) + '</div><div class="fl-pb"><i style="width:' + pc + '%"></i></div><div class="fl-sp"><div class="o"><small>Outstanding</small><b>' + inr(out) + '</b></div><div class="r"><small>Overdue</small><b>' + inr(ovr) + '</b></div><div><small>Collected</small><b>' + pc + '%</b></div></div></div>' +
+        '<div class="fl-ac"><button class="p" data-a="go" data-v="a_pendfees">' + ic('rupee', 's') + ' Collect</button><button data-a="flt" data-k="fvw" data-v="Follow-ups">' + ic('bell', 's') + ' Follow-ups</button><button data-a="go" data-v="a_student_form">' + ic('plus', 's') + ' Admission</button></div>' +
+        searchBox('sf', 'Search student') + '<div class="cr-st" style="grid-template-columns:repeat(4,1fr)">' + labs.map(l => '<button class="' + (f === l ? 'on' : '') + '" data-a="flt" data-k="sff2" data-v="' + l + '"><b>' + cn[l] + '</b><span>' + l + '</span></button>').join('') + '</div>' + list };
+  };
+  TABS.staff[3] = ['fees', 'Follow-up', 'bell'];
+  try { render(); } catch (e) { }
+})();
+</script>
+<style id="balsam-ds-v5">
+/* Theme v5: Fee Follow-up mockup look across every screen */
+#app#app,#app#app[data-theme],#app#app[data-role]{--bg:#F3F5FD;--line:#E6EAF5;--sh:0 6px 20px rgba(15,27,77,.06);--field:#F3F5FD;--r:20px;--tint:#E8EEFF}
+#app#app .logobar{background:#fff;border-bottom:1px solid var(--line);box-shadow:none}
+#app#app .ph{margin:0 0 14px}.ph:has(h1:empty){display:none}
+#app#app .ph h1{font-family:Inter,system-ui,sans-serif;font-size:26px;font-weight:800;letter-spacing:-.5px;color:#14265B}
+#app#app .ph p{font-size:13.5px;color:var(--mut)}
+#app#app .card,#app#app .kpi,#app#app .tile,#app#app .item.card,#app#app .mx-sc2,#app#app .m-sc{border-radius:20px;border:1px solid var(--line);box-shadow:var(--sh);background:#fff}
+#app#app .card.flush.list .item{border-radius:0}
+#app#app .view .stats>*,#app#app .view .stat3>*,#app#app .view .tiles>*{border-radius:18px;border:0;box-shadow:none}
+#app#app .view .stats>*:nth-child(4n+1),#app#app .view .stat3>*:nth-child(4n+1){background:rgba(59,130,246,.12)}
+#app#app .view .stats>*:nth-child(4n+2),#app#app .view .stat3>*:nth-child(4n+2){background:rgba(251,191,36,.2)}
+#app#app .view .stats>*:nth-child(4n+3),#app#app .view .stat3>*:nth-child(4n+3){background:rgba(239,68,68,.12)}
+#app#app .view .stats>*:nth-child(4n+4),#app#app .view .stat3>*:nth-child(4n+4){background:rgba(34,197,94,.15)}
+#app#app .pill{background:rgba(59,130,246,.14);color:#2563EB;font-weight:700;border-radius:99px;padding:5px 11px}
+#app#app .pill.ok{background:rgba(34,197,94,.16);color:#15803D}#app#app .pill.warn{background:rgba(251,191,36,.24);color:#B45309}#app#app .pill.bad{background:rgba(239,68,68,.14);color:#DC2626}#app#app .pill.n{background:#EEF1F8;color:var(--mut)}
+#app#app .sec,#app#app h2.sec{font-size:17px;font-weight:800;color:#14265B;margin:20px 2px 10px}
+#app#app .chip{background:#fff;border:1px solid var(--line);color:var(--mut);font-weight:700}#app#app .chip.on{background:#14265B;border-color:#14265B;color:#fff}
+#app#app .search{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 2px 8px rgba(15,27,77,.04)}
+#app#app .item{border-radius:16px}
+#app#app .seg{background:#E6EAF3;border-radius:14px}#app#app .seg button.on{background:#fff;color:#14265B;box-shadow:0 2px 8px rgba(20,38,91,.1)}
+#app#app .fab,#app#app .m-cta{background:#FF6B0B;box-shadow:0 10px 22px rgba(255,107,11,.3)}
+#app#app .view{padding-bottom:104px}
+/* home top: no duplicate avatar/role/bell (the top bar already has them) */
+.hp-top{padding:2px 2px 12px}.hp-top .g b{font-size:22px}
+</style>
+<script>
+/* ===== remove repeated titles/banners and duplicate headers after every render ===== */
+(function () {
+  const _r = render;
+  render = function () {
+    _r();
+    try {
+      const view = document.querySelector('#root .view'); if (!view) return;
+      const h = document.querySelector('#root .hdr h1, #root .ph h1'); const title = h ? h.textContent.trim().toLowerCase() : '';
+      const norm = x => (x || '').replace(/\s+/g, ' ').trim().toLowerCase();
+      if (title) [...view.children].slice(0, 3).forEach(el => {
+        if (!el.matches('.m-banner,.cm-hd,.z-hi,.m-soft,.mm-hero,.m-hero,.nx-ban')) return;
+        const hd = el.querySelector('h1,h2,b'); if (hd && norm(hd.textContent) === title) el.remove();
+      });
+      const ph = view.querySelector('.ph'); if (ph && !ph.textContent.trim()) ph.remove();
+    } catch (e) { }
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+<style id="balsam-ds-v6">
+/* light hero cards + tab fix, to match the Fee Follow-up theme */
+.hp-hero,.fl-hero{background:#fff!important;color:#14265B!important;border:1px solid var(--line);box-shadow:0 6px 20px rgba(15,27,77,.06)!important}
+.hp-hero:before,.hp-hero:after,.fl-hero:after{display:none!important}
+.hp-hero .l,.fl-hero .l{color:var(--mut)!important;opacity:1!important}.hp-hero .s,.fl-hero small{color:var(--mut)!important;opacity:1!important}
+.hp-hero .a,.fl-hero .a{color:#14265B}
+.hp-pb,.fl-pb{background:#E8EDF5!important}
+.hp-cta .o{background:#fff!important;color:#14265B!important;border:1.5px solid #14265B}
+.hp-ring i{background:#fff!important;color:#14265B!important}
+.fl-sp div{background:#F3F5FD!important}.fl-sp b{color:#14265B}.fl-sp .r b{color:#DC2626!important}.fl-sp .o b{color:#D97706!important}
+#app#app .tabs button .tb,#app#app .tabs button.on .tb{background:transparent!important;box-shadow:none!important}
+.hp-top small{color:var(--mut)}
+</style>
+<style id="balsam-ds-att">
+/* Attendance marking: Fee Follow-up theme */
+#app#app .avatar{background:#E8E8FD!important;color:#3730A3!important;background-image:none!important}
+#app#app .a2-top{border-radius:20px;box-shadow:0 6px 20px rgba(15,27,77,.06)}
+#app#app .a2-wd.sel{background:#14265B}
+#app#app .a2-sum{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 6px 20px rgba(15,27,77,.06);padding:14px;margin:0 0 12px}
+#app#app .a2-sum h3{font-size:17px;font-weight:800;color:#14265B}
+#app#app .a2-sum .hb{background:rgba(59,130,246,.12);color:#2563EB}
+#app#app .a2-list{background:none;border:0;box-shadow:none;overflow:visible;border-radius:0}
+#app#app .a2-r{flex-wrap:wrap;gap:10px 12px;padding:12px;margin-bottom:10px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 2px 10px rgba(15,27,77,.05)}
+#app#app .a2-r+.a2-r{border-top:1px solid var(--line)}
+#app#app .a2-r .avatar{width:44px;height:44px;font-size:14px;font-weight:800}
+#app#app .a2-r .t b{font-size:14.5px;font-weight:700}
+#app#app .a2-g{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#app#app .a2-g button{width:auto;height:40px;flex-direction:row;gap:6px;font-size:13px;border-radius:12px;background:#F3F5FD;border:1.5px solid #E6EAF5}
+#app#app .a2-g button svg{width:17px;height:17px}
+#app#app .a2-g .P.on{background:#DDF5E6;border-color:#22C55E;color:#15803D}
+#app#app .a2-g .A.on{background:#FBE5E3;border-color:#EF4444;color:#B91C1C}
+#app#app .a2-g .L.on{background:#FDF1D6;border-color:#FBBF24;color:#B45309}
+#app#app .a2-bar{background:#F3F5FD;border-top:1px solid #E6EAF5;padding-top:10px;bottom:-24px}
+#app#app .a2-bar .btn,#app#app .a2-bar .btn.ok{height:48px;background:#FF6B0B;box-shadow:0 10px 22px rgba(255,107,11,.3);color:#fff}
+</style>
 </body>
 </html>
