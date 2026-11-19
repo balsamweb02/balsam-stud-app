@@ -3646,7 +3646,6 @@ html[data-mode=dark] body{background:#05080F}
         <div class="fx2-fee"><div><span>Total Fee</span><b>${inr(s.enr.net_fee)}</b></div><div><span>Paid</span><b style="color:var(--ok)">${inr(paidSum(s))}</b></div><div><span>Balance</span><b style="color:var(--bad)">${inr(m.bal)}</b></div></div></div>` +
         (m.bal > 0 ? `<div class="fx2-nx"><span class="ci">${ic('cal')}</span><div class="grow"><small>Next Installment Due</small><b>${inr(m.amt)}</b><span class="d">${m.due ? 'Due on ' + fmtD(m.due) : 'No due date set'}</span></div><span class="fx2-p ${p0[1]}">${p0[0]}</span></div>` : `<div class="note ok">All fees are paid. No more reminders will run.</div>`) +
         `<div class="fx2-card"><div class="fx2-h">Reminder Schedule</div>${cur.length || dueRow ? cur.map(tr).join('') + dueRow : '<div class="mut">No reminders scheduled.</div>'}</div>` +
-        `<div class="fx2-card"><div class="fx2-h">Reminder Activity</div><div class="fx2-bars">${bars.map(b => { const pc = b[1] / mx * 100; return `<div class="fx2-bc"><i style="height:${pc}%;background:${b[2]}"></i><b style="bottom:${pc}%">${b[1]}</b></div>`; }).join('')}</div><div class="fx2-bl">${bars.map(b => `<span>${b[0]}</span>`).join('')}</div></div>` +
         `<div class="fx2-bar"><button class="fx2-b1" data-a="fuwa" data-reg="${reg}">${ic('wa')} Send Reminder</button><button class="fx2-b2" data-a="furec" data-reg="${reg}">${ic('edit', 's')} Record Follow-up</button></div>`
     };
   };
@@ -4846,6 +4845,8 @@ html[data-mode=dark] body{background:#05080F}
   try { render(); } catch (e) { }
 })();
 </script>
+
+
 </body>
 </html>
 <script>
@@ -5222,3 +5223,215 @@ label:has(#f-tg){display:none!important}
 .fx-strip{margin:0 -2px;padding-right:18px;scroll-snap-type:x proximity}.fx-due{width:44%;min-width:138px;scroll-snap-align:start}
 .mx-sc{margin-bottom:6px}
 </style>
+<script id="director-fb2">
+/* ===== Director feedback (18 Nov): Super Admin parity, Assessment → Course Completion, de-duplicated UI ===== */
+(function () {
+  const isSup = () => S.role === 'admin' && S.lvl === 'super';
+  const M = () => window.__cm;
+  const P = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
+  const edit = (v, fn) => { if (!v || typeof v.body !== 'string') return v; const r = P(v.body); try { fn(r); } catch (e) { console.error(e); } v.body = r.innerHTML; return v; };
+  const txt = e => (e.textContent || '').replace(/\s+/g, ' ').trim();
+  const swapIc = (el, name) => { const s = el && el.querySelector('svg.ic'); if (!s) return; const cls = (s.getAttribute('class') || '').replace(/^ic\s*/, ''); s.outerHTML = ic(name, cls); };
+  const wrap = (name, fn) => { const o = V[name]; if (!o) return; V[name] = function () { const v = o.apply(this, arguments); try { return fn.call(this, v, arguments[0]) || v; } catch (e) { console.error(e); return v; } }; };
+  const css = document.createElement('style');
+  css.textContent = `
+.ca-w{position:relative}
+.ca{display:flex;align-items:center;gap:13px;background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:14px;position:relative}
+.ca .ci{flex:none;width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:var(--tint,#EEF2FF);color:var(--accent,#2454E8)}
+.ca .ci.o{background:#FFF0E4;color:#F26A10}.ca .ci.g{background:#E4F5EC;color:#12986B}.ca .ci.v{background:#EEEAFE;color:#6D4AE8}.ca .ci.b{background:#E0F0FF;color:#2454E8}
+.ca .ct{flex:1;min-width:0}.ca .ct b{display:block;font-size:15px;line-height:1.25}.ca .ct small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px}
+.ca .cs{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.ca-bar{height:8px;border-radius:8px;background:#E3E8F2;overflow:hidden;margin-top:9px}.ca-bar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#12986B,#35C48D)}
+.ca-pct{font-size:12px;font-weight:700;color:var(--mut);margin-top:4px}
+.ca-c{display:block;width:0;height:14px;margin:0 0 0 36px;border-left:2px dashed #C9D2E6}
+.ca-b{border:1.5px solid var(--navy);color:var(--navy);border-radius:12px;padding:6px 12px;font-weight:700;font-size:12.5px;white-space:nowrap}
+.ca.cert{background:linear-gradient(135deg,#FFF6E8,#FFE9CC);border:1px solid #F7D9AE}
+`;
+  document.head.appendChild(css);
+
+  /* ---------- 1. Assessment == Course Completion procedure (Module 7) ---------- */
+  V.a_tests = V.a_test = V.a_test_form = function () { return V.a_cdash.apply(this, arguments); };
+
+  /* student requirement list: replace legacy "Assessments completed" with the project assessment from Module 7 */
+  const reqs0 = reqs;
+  reqs = function (s) {
+    const r = reqs0(s), X = M(); if (!X) return r; const c = X.comp(s), done = c.assessment_status === 'Done';
+    const i = r.findIndex(x => x[0] === 'Assessments completed');
+    const row = ['Project assessment', done, done ? 'Done' : 'Scheduled ' + fmtS(X.asmtDate(s))];
+    if (i >= 0) r[i] = row; else r.push(row);
+    return r;
+  };
+
+  /* student › Tasks › Assessments : course completion journey (no marks unless the admin releases them) */
+  A.casm = () => {
+    const s = me(), X = M(), c = X.comp(s), d = X.asmtDate(s), done = c.assessment_status === 'Done';
+    openSheet(`<h3>Project presentation</h3><p class="sub">Presentation and assessment of your final project.</p><div class="kv">${kv('Date', fmtD(d))}${c.assessment_time ? kv('Time', t12(c.assessment_time)) : ''}${kv('Status', done ? 'Done' : c.reschedule_date ? 'Rescheduled' : 'Scheduled')}${kv('Project', c.project_submission === 'Done' || (s.project && s.project.status !== 'Pending') ? 'Submitted' : 'Not submitted yet')}</div><div class="btns"><button class="btn" data-a="close">Got it</button></div>`);
+  };
+  const stuComp = s => {
+    const X = M(), c = X.comp(s), T = today(), last = X.endDate(s), d = X.asmtDate(s), ended = c.course_status === 'Completed';
+    const pct = ended ? 100 : Math.min(99, Math.round(+s.enr.progress_percent || 0));
+    const asmt = c.assessment_status === 'Done', has = v => v !== '' && v != null, evald = asmt && has(c.internal_marks) && has(c.external_marks);
+    const cs = s.certificate ? s.certificate.status : 'Pending';
+    const card = (ico, tone, title, sub, side, extra) => `<div class="ca"><span class="ci ${tone}">${ic(ico, 'l')}</span><div class="ct"><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}${extra || ''}</div><div class="cs">${side}</div></div>`;
+    const cn = '<i class="ca-c"></i>';
+    const c1 = card('cap', 'b', esc(s.enr.course_name), ended ? 'Course completed' : (diff(T, last) <= 0 ? 'Final day of your course' : 'Ends ' + fmtD(last)), pill(ended ? 'Completed' : 'In progress', ended ? 'ok' : 'warn'), `<div class="ca-bar"><i style="width:${pct}%"></i></div><div class="ca-pct">${pct}%</div>`);
+    const c2 = card('cal', 'o', 'Project presentation', fmtD(d) + (c.assessment_time ? ' · ' + t12(c.assessment_time) : ''), pill(asmt ? 'Done' : c.reschedule_date ? 'Rescheduled' : 'Scheduled', asmt ? 'ok' : 'warn') + `<button class="ca-b" data-a="casm">Details</button>`);
+    const mk = c.marks_visible && evald ? `Faculty ${c.internal_marks}/${c.max_marks || 100} · External ${c.external_marks}/${c.max_marks || 100}` : '';
+    const c3 = card('target', 'v', 'Evaluation', !asmt ? 'Starts after your presentation' : evald ? (mk || 'Evaluation complete') : 'Your evaluation is in progress', pill(!asmt ? 'Not started' : evald ? 'Evaluated' : 'In evaluation', !asmt ? 'n' : evald ? 'ok' : 'v'));
+    const certTxt = { Pending: 'Processed after your evaluation. We will notify you here when it is ready.', Started: 'Being prepared. We will notify you here when it is ready.', Completed: 'Ready for you. Collect it from the institute.', Issued: 'Issued. View it any time.' }[cs] || '';
+    const c4 = `<button class="ca cert" data-a="go" data-v="s_cert" style="width:100%;text-align:left"><span class="ci o">${ic('award', 'l')}</span><div class="ct"><b>Certificate</b><small>${certTxt}</small></div><div class="cs">${pill(certLabel(cs), cs === 'Issued' ? 'ok' : cs === 'Completed' ? '' : 'warn')}</div></button>`;
+    return `<div class="ca-w">${c1}${cn}${c2}${cn}${c3}${cn}${c4}</div>`;
+  };
+  wrap('s_tasks', function (v) {
+    if (S.seg.tk !== 'Assessments' || !me() || !M()) return v;
+    v.body = seg('tk', ['Assignments', 'Project', 'Assessments']) + stuComp(me()); v.sub = 'Assignments, project and course completion'; return v;
+  });
+
+  /* ---------- 2. icon consistency: one icon per feature across Admin / Super Admin ---------- */
+  const ICO = { a_cdash: 'flag', a_complete: 'award', a_reviews: 'star', a_place: 'brief', a_work: 'cap', a_followups: 'phone', a_courses: 'book', a_materials: 'folder', a_settings: 'gear', a_actlog: 'hist', a_student_form: 'plus', Assignments: 'clip', Projects: 'target', 'tab:students': 'users', 'tab:fees': 'rupee', 'tab:reports': 'chart', 'tab:staff': 'shield', 'tab:att': 'cal' };
+  const fixIcons = r => r.querySelectorAll('button[data-a]').forEach(b => {
+    const k = b.dataset.a === 'tab' ? 'tab:' + b.dataset.t : b.dataset.v; if (!ICO[k]) return;
+    if (b.closest('.seg,.mx-tabs,.cy-tabs,.chips')) return;
+    const f = b.querySelector('svg.ic'); if (f && !b.classList.contains('hbtn')) swapIc(b, ICO[k]);
+  });
+  TABS.staff[3] = ['fees', 'Follow-up', 'phone'];
+  TABS.admin = [['home', 'Home', 'home'], ['students', 'Students', 'users'], ['att', 'Attendance', 'cal'], ['fees', 'Fees', 'rupee'], ['mgmt', 'Manage', 'layers'], ['more', 'More', 'grid']];
+
+  /* ---------- 3. Admin + Super Admin homes: remove the reminder graph and repeated cards ---------- */
+  const fuDue = () => { try { const o = homeBase(); const m = /(\d+) fee follow-ups due/.exec(txt(P(o.body))); return m ? +m[1] : 0; } catch (e) { return 0; } };
+  let homeBase = V.a_home;
+  wrap('a_home', function (v) {
+    return edit(v, r => {
+      r.querySelectorAll('.cd').forEach(c => { const h = c.querySelector('h4'); if (h && /Fee follow-up pipeline|Fee collection|Reminder/i.test(txt(h))) c.remove(); });
+      r.querySelectorAll('button.fc[data-v="a_cdash"]').forEach(b => b.remove());
+      r.querySelectorAll('.qs button[data-v="a_reviews"], button[data-v="a_tests"]').forEach(b => b.remove());
+      const qs = r.querySelector('.qs'), qb = (ico, cls, t, attrs) => `<button ${attrs}><span class="qi ${cls}">${ic(ico)}</span>${t}</button>`;
+      if (qs && isSup()) {
+        if (!qs.querySelector('[data-v="a_work"]')) { const c = qs.querySelector('[data-v="a_cdash"]'); c ? c.insertAdjacentHTML('afterend', qb('cap', 'q-t', 'Academic', 'data-a="go" data-v="a_work"')) : qs.insertAdjacentHTML('beforeend', qb('cap', 'q-t', 'Academic', 'data-a="go" data-v="a_work"')); }
+        if (!qs.querySelector('[data-v="a_notif"]')) { const rp = qs.querySelector('[data-t="reports"]'); const h = qb('mega', 'q-o', 'Message', 'data-a="go" data-v="a_notif"'); rp ? rp.insertAdjacentHTML('beforebegin', h) : qs.insertAdjacentHTML('beforeend', h); }
+      }
+      r.querySelectorAll('.qs button[data-v="a_notif"]').forEach(b => swapIc(b, 'mega'));
+      const mxs = [...r.querySelectorAll('.mx')];
+      if (mxs.length) {
+        const first = mxs[0];
+        mxs.slice(1).forEach(m => { [...m.children].reverse().forEach(ch => first.insertBefore(ch, first.firstChild)); m.remove(); });
+        first.querySelectorAll('button').forEach(b => { if (/onboarding/i.test(txt(b))) b.remove(); });
+        const cb = first.querySelector('button[data-v="a_cdash"]'); if (cb) { first.insertBefore(cb, first.firstChild); const sp = cb.querySelector('span'); if (sp) sp.textContent = 'Courses completed'; }
+      }
+      r.querySelectorAll('.sh h3').forEach(h => { if (/Reviews & quality/.test(txt(h))) h.textContent = 'Completion & reviews'; });
+      fixIcons(r);
+    });
+  });
+  /* Super Admin gets the Admin's "today" summary too */
+
+  /* ---------- 4/5. Manage = the work areas, More = communication & administration (no option appears twice) ---------- */
+  const tile = (ico, cls, t, sub, attrs, m) => `<button ${attrs}><span class="i ${cls}">${ic(ico)}</span><b>${t}</b>${m ? `<span class="m">${m}</span>` : ''}<small>${sub}</small></button>`;
+  const rowOf = (ico, cls, t, s, attrs) => `<button class="ml-r" ${attrs}><span class="i ${cls}">${ic(ico)}</span><span class="t"><b>${t}</b><span>${s}</span></span><span class="ch">›</span></button>`;
+  const GO = v => `data-a="go" data-v="${v}"`, TB = t => `data-a="tab" data-t="${t}"`;
+  const nTodo = () => { try { return M().cList().filter(i => !i.full && i.left <= 0).length; } catch (e) { return 0; } };
+  const nCert = () => D().students.filter(x => x.stage === 'active' && x.certificate && x.certificate.status === 'Completed').length;
+  const nAlerts = () => { try { return adminAlerts().length; } catch (e) { return 0; } };
+  V.a_mgmt = function () {
+    const d = D(), g = (h, t) => `<h3 class="z-h">${h}</h3><div class="mg">${t.join('')}</div>`;
+    return { t: 'Manage', sub: 'Teaching, students and quality', right: bellBtn(), body: `<div class="z"><div class="mm-c"><h3>Institute snapshot</h3><div class="ad-g"><div><b>${d.students.length}</b><span>Students</span></div><div><b>${d.courses.length}</b><span>Courses</span></div><div class="g"><b>${(() => { try { return M().cList().filter(i => i.full).length; } catch (e) { return 0; } })()}</b><span>Closed</span></div></div></div>` +
+      g('Teaching', [tile('book', '', 'Courses', 'Catalogue and batches', GO('a_courses')), tile('folder', 'o', 'Materials', 'Notes and links', GO('a_materials')), tile('cap', 'g', 'Academics', 'Assignments, projects, assessments', GO('a_work'))]) +
+      g('Students', [tile('plus', '', 'Admissions', 'Add a new student', GO('a_student_form')), tile('flag', 'v', 'Completion', 'Final-day checklist', GO('a_cdash'), nTodo()), tile('award', 'o', 'Certificates', 'Ready to issue', GO('a_complete'), nCert())]) +
+      g('Outcomes', [tile('brief', 'g', 'Placement', 'Interviews and offers', GO('a_place')), tile('star', 'o', 'Reviews', 'Google and Justdial', GO('a_reviews'))]) + `</div>` };
+  };
+  const prevMore = V.a_more;
+  V.a_more = function () {
+    const o = P(prevMore.apply(this, arguments).body), mh = o.querySelector('.mh'), so = o.querySelector('.ml-so');
+    const grp = (name, rows) => `<div class="ml-grp"><div class="ml-l">${name}</div><div class="ml-g">${rows.join('')}</div></div>`, n = nAlerts();
+    const comm = [rowOf('bell', 'o', 'Notifications', n + ' alerts · send announcements', GO('a_notif'))];
+    const body = isSup()
+      ? grp('Overview', comm.concat([rowOf('chart', 'g', 'Reports', 'Charts and exports', TB('reports')), rowOf('hist', '', 'Activity logs', 'Date, time and admin', GO('a_actlog'))])) + grp('Administration', [rowOf('shield', 'v', 'Admins', (D().staff_list || []).length + ' accounts', TB('staff')), rowOf('gear', 'g', 'Settings', 'Profile, data and access', GO('a_settings'))])
+      : grp('Teaching', [rowOf('book', '', 'Courses', 'Catalogue and batches', GO('a_courses')), rowOf('folder', 'o', 'Materials', 'Notes and links', GO('a_materials')), rowOf('cap', 'g', 'Academics', 'Assignments, projects, assessments', GO('a_work'))]) + grp('Students', [rowOf('flag', 'v', 'Completion', 'Final-day checklist', GO('a_cdash')), rowOf('award', 'o', 'Certificates', nCert() + ' ready to issue', GO('a_complete')), rowOf('brief', 'g', 'Placement', 'Interviews and offers', GO('a_place'))]) + grp('Communication', comm);
+    return { t: 'More', body: `<div class="z ml">${mh ? mh.outerHTML : ''}${body}${so ? so.outerHTML : ''}</div>` };
+  };
+
+  /* ---------- 6. Fees tab (Super Admin): follow-ups one tap away, like the Admin ---------- */
+  wrap('a_fees', function (v) {
+    if (!isSup()) return v;
+    return edit(v, r => {
+      if (r.querySelector('[data-v="a_followups"]')) return;
+      const n = fuDue(), card = `<button class="fc" style="--c:#F26A10" data-a="go" data-v="a_followups"><span class="i">${ic('phone')}</span><span class="t"><b>Fee follow-ups</b><span>${n} due now · reminders and call log</span></span><span class="n">${ic('next', 's')}</span></button>`;
+      const anchor = r.querySelector('.m-ft'); if (anchor) anchor.insertAdjacentHTML('afterend', card); else r.insertAdjacentHTML('afterbegin', card);
+    });
+  });
+
+  /* ---------- 6b. Completion dashboard — same layout language as Placement / Courses ---------- */
+  (function () {
+    const hue = n => { let h = 0; for (const ch of String(n)) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; };
+    const has = v => v !== '' && v != null;
+    const stg = i => { const c = i.c; if (i.full) return 'Closed'; if (c.course_status !== 'Completed') return i.left <= 0 ? 'Last day' : 'Running';
+      if (c.assessment_status !== 'Done' || !has(c.internal_marks) || !has(c.external_marks)) return 'Assessment'; return c.oral_feedback !== 'Done' ? 'Feedback' : 'Reviews'; };
+    const TONE = { 'Last day': 'bad', Assessment: 'warn', Feedback: 'v', Reviews: '', Running: 'n', Closed: 'ok' };
+    const tabOf = k => k === 'Closed' ? 'Closed' : k === 'Running' ? 'Running' : 'To do';
+    const PRI = { 'Last day': 0, Assessment: 1, Feedback: 2, Reviews: 3 };
+    A.cytab = d => { S.cyt = d.v; render(); };
+    V.a_cdash = () => {
+      const X = M(), L = X.cList().map(i => Object.assign(i, { stg: stg(i) })), N = L.length || 1, T = today();
+      const cnt = { 'To do': 0, Running: 0, Closed: 0 }; L.forEach(i => cnt[tabOf(i.stg)]++);
+      const lastDay = L.filter(i => i.stg === 'Last day').length;
+      const tab = S.cyt || (cnt['To do'] ? 'To do' : 'Running'), q = ((S.q && S.q.cd) || '').toLowerCase();
+      const tiles = `<div class="pk"><div><b>${cnt.Running}</b><span>Running</span></div><div class="a"><b>${cnt['To do']}</b><span>To do</span></div><div class="g"><b>${cnt.Closed}</b><span>Closed</span></div><div class="r"><b>${lastDay}</b><span>Last day</span></div></div>`;
+      const F = [['Course completed', i => i.c.course_status === 'Completed'], ['Project assessed', i => i.c.assessment_status === 'Done'], ['Marks updated', i => has(i.c.internal_marks) && has(i.c.external_marks)], ['Oral feedback', i => i.c.oral_feedback === 'Done'], ['Google review', i => i.c.google_review === 'Done'], ['Justdial review', i => i.c.justdial_review === 'Done']];
+      const funnel = `<div class="cd"><h4>Completion funnel</h4><small>Active students at each completion step</small><div class="fn">${F.map(([l, f]) => { const n = L.filter(f).length; return `<div><span>${l}</span><span class="tr"><i style="width:${Math.round(n / N * 100)}%"></i></span><b>${n}</b></div>`; }).join('')}</div></div>`;
+      const due = L.filter(i => i.c.assessment_status !== 'Done' && diff(T, X.asmtDate(i.s)) <= 14).sort((a, b) => X.asmtDate(a.s) < X.asmtDate(b.s) ? -1 : 1).slice(0, 8);
+      const dueH = due.length ? `<div class="sh"><h3>Presentations due</h3></div><div class="ds">${due.map(i => { const d = X.asmtDate(i.s), late = d < T; return `<button class="dc" data-a="go" data-v="a_comp_stu" data-reg="${i.s.registration_number}"><div class="av" style="background:hsl(${hue(i.s.full_name)} 55% 45%)">${ic('target')}</div><b>${esc(i.s.full_name)}</b><small>${esc(i.s.enr.course_name)}</small><div class="am" style="font-size:13px;font-weight:600">${fmtD(d)}</div><span class="dp ${late ? '' : 'w'}">${late ? 'Overdue' : i.c.reschedule_date ? 'Rescheduled' : 'Scheduled'}</span></button>`; }).join('')}</div>` : '';
+      const chips = `<div class="chips">${['To do', 'Running', 'Closed'].map(k => `<button class="chip ${tab === k ? 'on' : ''}" data-a="cytab" data-v="${k}">${k}<i>${cnt[k]}</i></button>`).join('')}</div>`;
+      const list = L.filter(i => tabOf(i.stg) === tab && (!q || (i.s.full_name + i.s.enr.course_name).toLowerCase().includes(q))).sort((a, b) => (PRI[a.stg] ?? 9) - (PRI[b.stg] ?? 9) || a.left - b.left);
+      const NEXT = { 'Last day': 'Mark course completion', Assessment: 'Record presentation and marks', Feedback: 'Collect oral feedback', Reviews: 'Collect Google and Justdial reviews', Running: 'Course in progress', Closed: 'All steps complete' };
+      const card = i => { const c = i.c, nm = i.s.full_name, rev = c.google_review === 'Done' && c.justdial_review === 'Done';
+        const when = i.stg === 'Running' ? 'Ends ' + fmtD(i.last) + ' · ' + i.left + ' days left' : i.stg === 'Closed' ? 'Ended ' + fmtD(i.last) : i.stg === 'Assessment' && c.assessment_status !== 'Done' ? 'Presentation ' + fmtD(X.asmtDate(i.s)) : 'Ended ' + fmtD(i.last);
+        return `<div class="pc"><div class="top"><span class="avatar" style="width:42px;height:42px;background:hsl(${hue(nm)} 55% 45%)">${ini(nm)}</span><button class="t" data-a="go" data-v="a_comp_stu" data-reg="${i.s.registration_number}"><b>${esc(nm)}</b><small>${esc(i.s.enr.course_name)}</small></button>${pill(i.stg, TONE[i.stg])}</div><div class="rd"><span class="${c.course_status === 'Completed' ? 'on' : ''}">Course</span><span class="${c.assessment_status === 'Done' ? 'on' : ''}">Assessment</span><span class="${rev ? 'on' : ''}">Reviews</span></div><div class="nx">${ic('flag', 's')} ${NEXT[i.stg]} · ${when} · ${i.done}/${i.total}</div></div>`; };
+      return { t: 'Completion', sub: 'Course closure, assessment and reviews', right: bellBtn(), body: tiles + funnel + dueH + searchBox('cd', 'Search student or course') + chips + (list.length ? list.map(card).join('') : empty('Nothing here', tab === 'To do' ? 'No student needs a completion action right now.' : 'No students in this tab.', 'flag')) };
+    };
+  })();
+
+  /* ---------- 7. Academics: Assignments | Projects | Assessments — Assessments follows the Module 7 completion workflow ---------- */
+  wrap('a_work', function (v) {
+    return edit(v, r => {
+      r.querySelectorAll('.fx-due').forEach(b => { if (/Assessment/i.test(txt(b.querySelector('small')))) b.remove(); });
+      r.querySelectorAll('.nx-lnk').forEach(b => { if (/Completion dashboard/.test(txt(b))) b.remove(); });
+      const bn = r.querySelector('.m-banner small'); if (bn) bn.textContent = 'Assignments, projects and course completion';
+      const tabs = r.querySelector('.mx-tabs');
+      if (S.seg && S.seg.wk === 'Assessments' && tabs && M()) {
+        const need = M().cList().filter(i => !i.full && i.left <= 0).length;
+        tabs.querySelectorAll('button').forEach(b => { if (/^Assessments/.test(txt(b))) b.innerHTML = 'Assessments' + (need ? '<i>' + need + '</i>' : ''); });
+        const banner = r.querySelector('.m-banner'), cd = P(V.a_cdash().body);
+        r.innerHTML = '';
+        if (banner) r.appendChild(banner);
+        r.appendChild(tabs); [...cd.childNodes].forEach(n => r.appendChild(n));
+        v.fab = null;
+      } else {
+        tabs && tabs.querySelectorAll('button').forEach(b => { if (/^Assessments/.test(txt(b))) { const i = b.querySelector('i'); if (i) i.textContent = M() ? M().cList().filter(x => !x.full && x.left <= 0).length : i.textContent; } });
+      }
+      fixIcons(r);
+    });
+  });
+
+  /* ---------- 8. completion screens: distinct icons per item ---------- */
+  const compIcons = r => {
+    r.querySelectorAll('.cm-r').forEach(b => { const t = txt(b); if (/^Google Review/.test(t)) swapIc(b, 'star'); else if (/^Justdial Review/.test(t)) swapIc(b, 'pin'); else if (/^Assessment Marks/.test(t)) swapIc(b, 'chart'); });
+    r.querySelectorAll('.cm-mk > div').forEach(d => { const t = txt(d); if (/Faculty Marks/.test(t)) swapIc(d, 'edit'); else if (/External Marks/.test(t)) swapIc(d, 'target'); });
+  };
+  ['a_comp_stu', 'a_comp_edit'].forEach(k => wrap(k, v => edit(v, compIcons)));
+  ['a_student', 'a_fee_stu', 'a_cdash', 'a_complete', 'a_place', 'a_courses', 'a_materials', 'a_reviews', 'a_followups', 'a_student_form', 'a_settings', 'a_staff', 'a_att'].forEach(k => wrap(k, v => edit(v, fixIcons)));
+
+
+  /* ---------- 9. Student home: the legacy "Upcoming assessments" test card becomes the project presentation ---------- */
+  A.sasm = () => { S.seg.tk = 'Assessments'; tab('tasks'); };
+  wrap('s_home', function (v) {
+    const s = me(); if (!s || !M()) return v;
+    return edit(v, r => {
+      const h = [...r.querySelectorAll('.sh h3')].find(x => /Upcoming assessments/.test(txt(x))); if (!h) return;
+      const sh = h.closest('.sh'), nx = sh.nextElementSibling; if (nx && nx.classList.contains('fc')) nx.remove();
+      const c = M().comp(s), done = c.assessment_status === 'Done', d = M().asmtDate(s);
+      sh.querySelector('h3').textContent = 'Project presentation';
+      sh.insertAdjacentHTML('afterend', `<button class="fc" style="--c:#6D4AE8" data-a="sasm"><span class="i">${ic('target')}</span><span class="t"><b>${done ? 'Presentation done' : fmtD(d)}</b><span>${done ? 'Your evaluation is in progress' : 'Final project presentation and assessment'}</span></span><span class="n">${ic('next', 's')}</span></button>`);
+    });
+  });
+  try { render(); } catch (e) { }
+})();
+</script>
