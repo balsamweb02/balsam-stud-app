@@ -1615,10 +1615,9 @@ V.s_tasks = () => {
     const card = t => { const od = taskOverdue(t); return `<button class="card tap" data-a="go" data-v="s_task" data-id="${t.task_id}" style="padding:12px"><div class="row"><span class="ico ${t.status === 'Completed' ? 'g' : t.status === 'Submitted' ? 'v' : od ? 'r' : 'o'}">${ic('clip')}</span><div class="grow"><div class="row"><b class="grow trunc">${esc(t.title)}</b>${pill(od ? 'Overdue' : t.status === 'Completed' ? 'Grade ' + (t.grade || '–') : t.status, od ? 'bad' : t.status === 'Completed' ? 'ok' : null)}</div><div class="mut trunc">${t.task_type} · ${t.status === 'Completed' || t.status === 'Submitted' ? 'submitted ' + fmtS(t.submitted_at) : 'due ' + rel(t.due_date)}</div></div></div></button>`; };
     b += `<div class="stat3"><div><b style="color:var(--orange)">${todo.length}</b><span>To do</span></div><div><b style="color:var(--violet)">${sub.length}</b><span>In review</span></div><div><b style="color:var(--ok)">${done.length}</b><span>Completed</span></div></div>` + (L.length ? (todo.length ? sec('To do') + todo.map(card).join('') : '') + (sub.length ? sec('Submitted') + sub.map(card).join('') : '') + (done.length ? sec('Completed') + done.map(card).join('') : '') : empty('No assignments', 'Your faculty will assign work here.', 'clip'));
   } else if (k === 'Assessments') {
-    const L = testsOf(s).sort((a, b2) => a.scheduled_date < b2.scheduled_date ? 1 : -1);
-    b += L.length ? L.map(t => `<button class="card tap" data-a="go" data-v="s_test" data-id="${t.schedule_id}" style="padding:12px"><div class="row"><span class="ico ${t.status === 'Completed' ? 'g' : ''}">${ic('check')}</span><div class="grow"><div class="row"><b class="grow trunc">${esc(t.title)}</b>${t.status === 'Completed' ? pill(t.marks + '/' + t.max_marks, 'ok') : pill(t.status)}</div><div class="mut trunc">${t.assessment_type} · ${fmtS(t.scheduled_date)}, ${t12(t.scheduled_time)} · ${t.mode}</div></div></div></button>`).join('') : empty('No assessments', 'Scheduled tests and results appear here.', 'check');
+    b += window.m7StuAssess(s);
   } else b += projectCard(s);
-  return { t: 'Tasks', sub: 'Assignments, project and assessments', right: bellBtn(), body: b };
+  return { t: 'Tasks', sub: 'Assignments, project and assessment', right: bellBtn(), body: b };
 };
 const PJ = ['Pending', 'Submitted', 'Under Review', 'Evaluated'];
 function projectCard(s) {
@@ -1838,7 +1837,7 @@ A.portsave = () => { const s = me(); if (!fv('pu')) return toast('Paste your por
 
   /* ---------------- ASSIGNMENTS / TESTS / PROJECTS ---------------- */
   V.a_work = () => {
-    const tabs = ['Assignments', 'Projects', 'Assessments'], tabv = sg('wk', tabs), d = D(), T = today();
+    const tabs = ['Assignments', 'Projects'], tabv = sg('wk', tabs), d = D(), T = today();
     const cn = r => (stu(r) || { enr: { course_name: 'Other' } }).enr.course_name, nm = r => (stu(r) || { full_name: r }).full_name;
     const build = {
       Assignments: () => d.tasks.map(t => { const od = taskOverdue(t); let b = 'wait', tone = od ? 'r' : 'o', pl = pill(od ? 'Overdue' : t.status, od ? 'bad' : null);
@@ -1861,7 +1860,7 @@ A.portsave = () => { const s = me(); if (!fv('pu')) return toast('Paste your por
     const secs = ['act', 'wait', 'done'].map(k => { const L = base.filter(i => i.b === k).sort((x, y) => k === 'done' ? (x.sort < y.sort ? 1 : -1) : (x.sort < y.sort ? -1 : 1)); return L.length ? H(LAB[k], L.length) + `<div class="mx-list">${L.map(row).join('')}</div>` : ''; }).join('');
     const fab = { Assignments: { a: 'go', d: 'data-v="a_task_form"', l: 'New', i: 'plus' }, Assessments: { a: 'go', d: 'data-v="a_test_form"', l: 'Schedule', i: 'plus' }, Projects: { a: 'go', d: 'data-v="a_proj_form"', l: 'Assign', i: 'plus' } }[tabv];
     return {
-      t: 'Academics', sub: 'Assignments, projects &amp; assessments', fab,
+      t: 'Academics', sub: 'Assignments &amp; projects', fab,
       body: tabsBar('wk', tabs, badges) + `<div class="mx-sc"><div class="${n('act') ? 'hot' : ''}"><b>${n('act')}</b><span>To review</span></div><div><b>${n('wait')}</b><span>${tabv === 'Assessments' ? 'Upcoming' : 'Pending'}</span></div><div><b style="color:var(--ok)">${n('done')}</b><span>Done</span></div></div>` +
         `<div class="tools"><label class="search tl">${ic('search', 's')}<input id="q-wq" data-q="wq" value="${esc(S.q.wq || '')}" placeholder="Search title or student" autocomplete="off"></label><select class="wsel" data-onchange="wflt" aria-label="Course">${courses.map(c => `<option ${c === cf ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div>` +
         (secs || empty('Nothing here', 'Tap the + button to add one.', 'clip'))
@@ -2349,9 +2348,9 @@ html[data-mode=dark] body{background:#05080F}
   };
 
   /* ---------- global search / command palette ---------- */
-  const ADM_ACTS = [['Take attendance', 'cal', 'g', 'att', 'Mark today\'s register'], ['Collect fee', 'rupee', 'o', 'pay', 'Record a payment'], ['Add student', 'plus', '', 'addstu', 'New admission'], ['Send message', 'mega', 'v', 'msg', 'Notify students'], ['Reports', 'chart', '', 'rep', 'Attendance, progress, fees'], ['Courses', 'book', '', 'courses', 'Course catalogue'], ['Learning materials', 'folder', 'o', 'mats', 'Notes and links'], ['Assignments & projects', 'clip', 'v', 'work', 'Review submissions'], ['Assessments', 'check', 'k', 'tests', 'Schedule and marks'], ['Completion & certificates', 'award', 'g', 'comp', 'Progress and issue'], ['Placement', 'brief', 'v', 'place', 'Resumes and interviews'], ['Import / export', 'swap', 'v', 'data', 'CSV transfer'], ['Appearance', 'palette', 'o', 'look', 'Dark mode, colours'], ['Settings', 'gear', '', 'set', 'Account and data']];
+  const ADM_ACTS = [['Take attendance', 'cal', 'g', 'att', 'Mark today\'s register'], ['Collect fee', 'rupee', 'o', 'pay', 'Record a payment'], ['Add student', 'plus', '', 'addstu', 'New admission'], ['Send message', 'mega', 'v', 'msg', 'Notify students'], ['Reports', 'chart', '', 'rep', 'Attendance, progress, fees'], ['Courses', 'book', '', 'courses', 'Course catalogue'], ['Learning materials', 'folder', 'o', 'mats', 'Notes and links'], ['Assignments & projects', 'clip', 'v', 'work', 'Review submissions'], ['Course completion & assessment', 'layers', 'g', 'cdash', 'Project assessment, feedback, reviews'], ['Certificates', 'award', 'g', 'comp', 'Prepare and issue'], ['Placement', 'brief', 'v', 'place', 'Resumes and interviews'], ['Import / export', 'swap', 'v', 'data', 'CSV transfer'], ['Appearance', 'palette', 'o', 'look', 'Dark mode, colours'], ['Settings', 'gear', '', 'set', 'Account and data']];
   const STU_ACTS = () => { const s = me(), a = [['Notifications', 'bell', 'r', 'snotif', 'Alerts from the institute'], ['My profile', 'user', '', 'sme', 'Details and course'], ['Appearance', 'palette', 'o', 'look', 'Dark mode, colours']];
-    if (s.stage !== 'new') a.unshift(['Attendance', 'cal', 'g', 'sattend', 'Your calendar'], ['Assignments', 'clip', 'o', 'sassign', 'To do and graded'], ['Assessments', 'check', 'k', 'stest', 'Tests and results'], ['Final project', 'target', 'v', 'sproj', 'Submit and track'], ['Materials', 'folder', '', 'smat', 'Notes and links'], ['Fees', 'rupee', 'r', 'sfees', 'Balance and receipts'], ['Certificate', 'award', 'g', 'scert', 'Status and download'], ['Course completion', 'layers', 'g', 'scomp', 'Requirements']);
+    if (s.stage !== 'new') a.unshift(['Attendance', 'cal', 'g', 'sattend', 'Your calendar'], ['Assignments', 'clip', 'o', 'sassign', 'To do and graded'], ['Final project', 'target', 'v', 'sproj', 'Submit and track'], ['Materials', 'folder', '', 'smat', 'Notes and links'], ['Fees', 'rupee', 'r', 'sfees', 'Balance and receipts'], ['Certificate', 'award', 'g', 'scert', 'Status and download'], ['Course completion', 'layers', 'g', 'scomp', 'Requirements']);
     if (s.placement_enabled) a.push(['Placement', 'brief', 'v', 'splace', 'Resume and interviews']); return a; };
   function gsResults(q) {
     q = (q || '').trim().toLowerCase(); const adm = S.role === 'admin', d = D(), s = me();
@@ -2388,12 +2387,12 @@ html[data-mode=dark] body{background:#05080F}
       case 'addstu': go('a_student_form'); break;
       case 'msg': go('a_notif', { tab: 'Compose' }); break;
       case 'rep': go('a_reports'); break; case 'courses': go('a_courses'); break; case 'mats': go('a_materials'); break;
-      case 'work': go('a_work'); break; case 'tests': S.seg.wk = 'Assessments'; go('a_work'); break; case 'comp': go('a_complete'); break;
+      case 'work': go('a_work'); break; case 'tests': S.seg.wk = 'Assessments'; go('a_work'); break; case 'comp': go('a_complete'); break; case 'cdash': go('a_cdash'); break;
       case 'place': go('a_place'); break; case 'data': go('a_data'); break; case 'set': go('a_settings'); break; case 'look': go('appearance'); break;
       case 'mat': S.role === 'admin' ? (render(), A.matview({ id: p })) : A.matopen({ id: p }); break;
       case 'task': go('s_task', { id: p }); break;
       case 'sattend': T('learn', 'lr', 'Attendance'); break; case 'smat': T('learn', 'lr', 'Materials'); break;
-      case 'sassign': T('tasks', 'tk', 'Assignments'); break; case 'stest': T('tasks', 'tk', 'Assessments'); break; case 'sproj': T('tasks', 'tk', 'Project'); break;
+      case 'sassign': T('tasks', 'tk', 'Assignments'); break; case 'stest': T('tasks', 'tk', 'Assessments'); break; case 'stest': T('tasks', 'tk', 'Assessments'); break; case 'sproj': T('tasks', 'tk', 'Project'); break;
       case 'sfees': T('fees'); break; case 'sme': T('me'); break; case 'scert': go('s_cert'); break; case 'scomp': go('s_complete'); break;
       case 'snotif': go('s_notif'); break; case 'splace': go('s_place'); break;
       default: render();
@@ -3105,7 +3104,7 @@ html[data-mode=dark] body{background:#05080F}
 (function () {
   const fD = d => { const t = new Date(d + 'T00:00:00'); return isNaN(t) ? '-' : t.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }); };
   const cdl = /<button class="alert b" data-a="go" data-v="a_cdash">[\s\S]*?<\/button>/;
-  const slim = '<button class="nx-lnk" data-a="go" data-v="a_cdash">Completion dashboard \u2192</button>';
+  const slim = '<button class="nx-lnk" data-a="go" data-v="a_cdash">Course completion &amp; assessment \u2192</button>';
 
   /* Courses: 2-column tile grid */
   const tones = ['linear-gradient(135deg,#2454E8,#6B8FFF)', 'linear-gradient(135deg,#F26A10,#FFA45C)', 'linear-gradient(135deg,#6D4AE8,#A18BFF)', 'linear-gradient(135deg,#12986B,#4CC9A0)', 'linear-gradient(135deg,#0E9FC4,#5CD0EE)', 'linear-gradient(135deg,#D5443A,#FF8A80)'];
@@ -3646,7 +3645,7 @@ html[data-mode=dark] body{background:#05080F}
         <div class="fx2-fee"><div><span>Total Fee</span><b>${inr(s.enr.net_fee)}</b></div><div><span>Paid</span><b style="color:var(--ok)">${inr(paidSum(s))}</b></div><div><span>Balance</span><b style="color:var(--bad)">${inr(m.bal)}</b></div></div></div>` +
         (m.bal > 0 ? `<div class="fx2-nx"><span class="ci">${ic('cal')}</span><div class="grow"><small>Next Installment Due</small><b>${inr(m.amt)}</b><span class="d">${m.due ? 'Due on ' + fmtD(m.due) : 'No due date set'}</span></div><span class="fx2-p ${p0[1]}">${p0[0]}</span></div>` : `<div class="note ok">All fees are paid. No more reminders will run.</div>`) +
         `<div class="fx2-card"><div class="fx2-h">Reminder Schedule</div>${cur.length || dueRow ? cur.map(tr).join('') + dueRow : '<div class="mut">No reminders scheduled.</div>'}</div>` +
-        `<div class="fx2-bar"><button class="fx2-b1" data-a="fuwa" data-reg="${reg}">${ic('wa')} Send Reminder</button><button class="fx2-b2" data-a="furec" data-reg="${reg}">${ic('edit', 's')} Record Follow-up</button></div>`
+                `<div class="fx2-bar"><button class="fx2-b1" data-a="fuwa" data-reg="${reg}">${ic('wa')} Send Reminder</button><button class="fx2-b2" data-a="furec" data-reg="${reg}">${ic('edit', 's')} Record Follow-up</button></div>`
     };
   };
   A.fuwa = d => {
@@ -4031,7 +4030,7 @@ html[data-mode=dark] body{background:#05080F}
     return { t: 'Fees', sub: 'Record payments and track balances', right: bellBtn(),
       body: `<div class="m-ft"><div>${ic('tick', 'l')}<b>${inr(paid)}</b><span>Collected</span></div><div class="o">${ic('clock', 'l')}<b>${inr(out)}</b><span>Outstanding</span></div></div>` + searchBox('sf', 'Search student') + chips('sff', labels, cn) + (L.length ? L.map(row).join('') : empty('No students here', 'Nothing matches this filter.', 'rupee')) + `<button class="m-cta" data-a="go" data-v="a_pendfees">${ic('rupee', 's')} Collect Payment</button>` };
   };
-  V.a_work = function () { const v = pw(); if (!/m-banner/.test(v.body)) v.body = `<div class="m-banner"><span class="ib">${ic('cap', 'l')}</span><div><b>Academics</b><small>Assignments, projects &amp; assessments</small></div></div>` + v.body; return v; };
+  V.a_work = function () { const v = pw(); if (!/m-banner/.test(v.body)) v.body = `<div class="m-banner"><span class="ib">${ic('cap', 'l')}</span><div><b>Academics</b><small>Assignments &amp; projects</small></div></div>` + v.body; return v; };
   try { render(); } catch (e) { }
 })();
 </script>
@@ -4113,17 +4112,16 @@ html[data-mode=dark] body{background:#05080F}
       row('book', '', 'Courses', 'Syllabus, modules and batches', go_('a_courses')),
       row('folder', 'o', 'Materials', 'Notes, files and links', go_('a_materials')),
       row('clip', 'v', 'Assignments', rev ? rev + ' waiting for review' : 'Everything reviewed', 'data-a="wkgo" data-v="Assignments"', rev),
-      row('tick', 'g', 'Tests', 'Quizzes and scores', go_('a_tests')),
       row('target', 'r', 'Projects', 'Capstones and submissions', 'data-a="wkgo" data-v="Projects"'));
     const people = grp('Students',
       row('users', '', 'All students', d.students.length + ' enrolled', tb('students')),
-      row('layers', 'g', 'Course completion', 'Progress towards finishing', go_('a_cdash')),
+      row('layers', 'g', 'Course completion &amp; assessment', 'Project assessment, feedback, reviews', go_('a_cdash')),
       row('award', 'o', 'Certificates', certs ? certs + ' ready to issue' : 'Issue and track', go_('a_complete'), certs),
-      row('chart', 'v', 'Placement', 'Interviews and offers', go_('a_place')));
-    const ops = sup
+      row('brief', 'v', 'Placement', 'Interviews and offers', go_('a_place')));
+    const ops = (sup
       ? grp('Money &amp; insights', row('rupee', 'o', 'Fees', 'Payments and dues', tb('fees')), row('chart', 'g', 'Reports', 'Charts and exports', tb('reports')), row('star', 'v', 'Reviews', 'Google and Justdial', go_('a_reviews')))
-      : grp('Daily tools', row('cal', 'g', 'Attendance', 'Mark today\'s class', tb('att')), row('bell', 'o', 'Follow-ups', fu ? fu + ' due now' : 'All caught up', go_('a_followups'), fu), row('mega', 'v', 'Send message', 'Notify students', go_('a_notif')));
-    const sup2 = grp('Alerts', row('bell', 'r', 'Notifications', al ? al + ' need attention' : 'Nothing pending', go_('a_notif'), al)) + (sup ? grp('Account', row('gear', '', 'Settings', 'Profile, data and access', go_('a_settings'))) : '');
+      : '') + grp('Daily tools', row('cal', 'g', 'Attendance', 'Mark today\'s class', tb('att')), row('clock', 'o', 'Follow-ups', fu ? fu + ' due now' : 'All caught up', go_('a_followups'), fu), row('mega', 'v', 'Send message', 'Notify students', go_('a_notif')));
+    const sup2 = grp('Alerts', row('bell', 'r', 'Notifications', al ? al + ' need attention' : 'Nothing pending', go_('a_notif'), al)) + (sup ? grp('Account', row('clock', 'o', 'Activity log', 'Who did what and when', go_('a_actlog')), row('gear', '', 'Settings', 'Profile, data and access', go_('a_settings'))) : '');
     v.body = `<div class="z ml"><div class="ml-top"><span class="av">${admIni()}</span><div><b>${esc(admName())}</b><small>${admRole()}</small></div></div>
       <label class="ml-q">${ic('search')}<input type="search" placeholder="Search menu…" oninput="mlFilter(this)" aria-label="Search menu"></label>
       <div class="ml-pills"><button ${tb('students')}>Students</button><button ${go_('a_notif')}>Alerts${al ? ` <b>${al}</b>` : ''}</button><button ${go_('a_followups')}>Follow-ups${fu ? ` <b>${fu}</b>` : ''}</button><button ${go_('a_place')}>Placement</button></div>
@@ -4845,8 +4843,6 @@ html[data-mode=dark] body{background:#05080F}
   try { render(); } catch (e) { }
 })();
 </script>
-
-
 </body>
 </html>
 <script>
@@ -5223,215 +5219,442 @@ label:has(#f-tg){display:none!important}
 .fx-strip{margin:0 -2px;padding-right:18px;scroll-snap-type:x proximity}.fx-due{width:44%;min-width:138px;scroll-snap-align:start}
 .mx-sc{margin-bottom:6px}
 </style>
-<script id="director-fb2">
-/* ===== Director feedback (18 Nov): Super Admin parity, Assessment → Course Completion, de-duplicated UI ===== */
+<style id="m7-final">
+.m7-h{position:relative;overflow:hidden;border-radius:24px;padding:18px;color:#fff;background:linear-gradient(135deg,#14246B,#0F1B4D);box-shadow:0 12px 26px rgba(15,27,77,.22);margin-bottom:12px}
+.m7-h:after{content:"";position:absolute;right:-24px;top:-26px;width:100px;height:100px;border-radius:50%;background:#F26A10;opacity:.9}
+.m7-h h2{margin:0;font-size:20px;color:#fff;position:relative;z-index:1}.m7-h p{margin:3px 0 0;font-size:12.5px;opacity:.85;position:relative;z-index:1;max-width:80%}
+.m7-hs{display:flex;gap:10px;margin-top:14px;position:relative;z-index:1}.m7-hs div{flex:1;background:rgba(255,255,255,.12);border-radius:14px;padding:9px 6px;text-align:center}.m7-hs b{display:block;font-size:20px;color:#fff}.m7-hs span{font-size:11px;opacity:.85}
+.m7-st{display:flex;gap:8px;overflow-x:auto;margin:0 -2px 12px;padding:2px 2px 4px}.m7-st button{flex:none;border-radius:99px;padding:8px 14px;font-weight:700;font-size:12.5px;background:var(--card);color:var(--mut);box-shadow:var(--sh)}
+.m7-st button b{margin-left:6px;color:var(--accent)}.m7-st button.on{background:var(--accent);color:#fff}.m7-st button.on b{color:#fff}
+.m7-pd{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:10px}.m7-pd div{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);padding:5px 0;border-bottom:1px solid var(--line)}.m7-pd b{color:var(--ink)}.m7-pd b.z{color:var(--ok)}
+.m7-c{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:14px;margin-bottom:12px}.m7-c>h4{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.m7-c .mut{font-size:12.5px}
+.m7-r{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border-radius:18px;box-shadow:var(--sh);padding:12px 14px;margin-bottom:10px}
+.m7-av{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;background:var(--accent)}
+.m7-r .t{flex:1;min-width:0}.m7-r .t b{display:block;font-size:15px}.m7-r .t span{display:block;font-size:12.5px;color:var(--mut)}
+.m7-dots{display:flex;gap:4px;margin:7px 0 4px}.m7-dots i{flex:1;height:6px;border-radius:4px;background:#E3E8F2}.m7-dots i.y{background:#12986B}
+.m7-nx{font-size:12px;font-weight:700}
+.m7-ln{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}.m7-ln:last-child{border:0}.m7-ln b{flex:1;font-weight:600}
+.m7-ln i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;background:#FDEBDD;color:#E8590C}.m7-ln.y i{background:#E4F5EC;color:#12986B}
+.m7-top{display:flex;align-items:center;gap:14px}.m7-ring{position:relative;width:66px;height:66px;flex:none}.m7-ring svg{transform:rotate(-90deg)}.m7-ring span{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:14px}
+.m7-lk{display:inline-flex;align-items:center;gap:4px;background:var(--badbg,#FDE9E7);color:var(--bad,#D5443A);font-size:10.5px;font-weight:700;border-radius:99px;padding:2px 9px}
+.m7-sg{display:flex;gap:6px;margin:10px 0 0}.m7-sg button{flex:1;padding:10px 4px;border-radius:12px;font-weight:700;font-size:13px;background:var(--bg2,#F1F4FA);color:var(--mut)}.m7-sg button.on{background:var(--accent);color:#fff}
+.m7-tp{margin:8px 0 0;padding:0 0 0 18px;color:var(--mut);font-size:12.5px}
+.mx-tabs{grid-template-columns:repeat(2,1fr)!important}
+</style>
+<script>
+/* ===== FINAL PATCH — manager review (18/11/2026): Super Admin parity, Module 7, de-duplication ===== */
 (function () {
-  const isSup = () => S.role === 'admin' && S.lvl === 'super';
   const M = () => window.__cm;
-  const P = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
-  const edit = (v, fn) => { if (!v || typeof v.body !== 'string') return v; const r = P(v.body); try { fn(r); } catch (e) { console.error(e); } v.body = r.innerHTML; return v; };
-  const txt = e => (e.textContent || '').replace(/\s+/g, ' ').trim();
-  const swapIc = (el, name) => { const s = el && el.querySelector('svg.ic'); if (!s) return; const cls = (s.getAttribute('class') || '').replace(/^ic\s*/, ''); s.outerHTML = ic(name, cls); };
-  const wrap = (name, fn) => { const o = V[name]; if (!o) return; V[name] = function () { const v = o.apply(this, arguments); try { return fn.call(this, v, arguments[0]) || v; } catch (e) { console.error(e); return v; } }; };
-  const css = document.createElement('style');
-  css.textContent = `
-.ca-w{position:relative}
-.ca{display:flex;align-items:center;gap:13px;background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:14px;position:relative}
-.ca .ci{flex:none;width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:var(--tint,#EEF2FF);color:var(--accent,#2454E8)}
-.ca .ci.o{background:#FFF0E4;color:#F26A10}.ca .ci.g{background:#E4F5EC;color:#12986B}.ca .ci.v{background:#EEEAFE;color:#6D4AE8}.ca .ci.b{background:#E0F0FF;color:#2454E8}
-.ca .ct{flex:1;min-width:0}.ca .ct b{display:block;font-size:15px;line-height:1.25}.ca .ct small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px}
-.ca .cs{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.ca-bar{height:8px;border-radius:8px;background:#E3E8F2;overflow:hidden;margin-top:9px}.ca-bar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#12986B,#35C48D)}
-.ca-pct{font-size:12px;font-weight:700;color:var(--mut);margin-top:4px}
-.ca-c{display:block;width:0;height:14px;margin:0 0 0 36px;border-left:2px dashed #C9D2E6}
-.ca-b{border:1.5px solid var(--navy);color:var(--navy);border-radius:12px;padding:6px 12px;font-weight:700;font-size:12.5px;white-space:nowrap}
-.ca.cert{background:linear-gradient(135deg,#FFF6E8,#FFE9CC);border:1px solid #F7D9AE}
-`;
-  document.head.appendChild(css);
 
-  /* ---------- 1. Assessment == Course Completion procedure (Module 7) ---------- */
-  V.a_tests = V.a_test = V.a_test_form = function () { return V.a_cdash.apply(this, arguments); };
+  /* ---------- legacy "Assessments" (test scheduling) retired: assessment is now the course-completion step ---------- */
+  const _render = render;
+  render = function () { try { const d = D(); if (d && d.assessments && d.assessments.length) d.assessments = []; } catch (e) { } return _render.apply(this, arguments); };
 
-  /* student requirement list: replace legacy "Assessments completed" with the project assessment from Module 7 */
-  const reqs0 = reqs;
-  reqs = function (s) {
-    const r = reqs0(s), X = M(); if (!X) return r; const c = X.comp(s), done = c.assessment_status === 'Done';
-    const i = r.findIndex(x => x[0] === 'Assessments completed');
-    const row = ['Project assessment', done, done ? 'Done' : 'Scheduled ' + fmtS(X.asmtDate(s))];
-    if (i >= 0) r[i] = row; else r.push(row);
-    return r;
+  /* ---------- certificate requirements for the student: no marks, no test list ---------- */
+  window.reqs = function (s) {
+    const a = attStats(s), tk = tasksOf(s), pj = s.project, c = s.completion || {};
+    const out = [['Attendance ≥ 75%', !a.t || a.pct >= 75, a.t ? a.pct + '% attended' : 'No classes yet'],
+      ['Assignments submitted', tk.every(t => t.status === 'Completed' || t.status === 'Submitted'), tk.length ? tk.filter(t => t.status === 'Completed' || t.status === 'Submitted').length + ' of ' + tk.length : 'None assigned']];
+    if (pj) out.push(['Final project evaluated', pj.status === 'Evaluated', pj.status === 'Evaluated' ? 'Evaluated' : pj.status]);
+    out.push(['Project presentation', c.assessment_status === 'Done', c.assessment_status === 'Done' ? 'Completed' : 'Held on the last day of your course']);
+    return out;
   };
 
-  /* student › Tasks › Assessments : course completion journey (no marks unless the admin releases them) */
-  A.casm = () => {
-    const s = me(), X = M(), c = X.comp(s), d = X.asmtDate(s), done = c.assessment_status === 'Done';
-    openSheet(`<h3>Project presentation</h3><p class="sub">Presentation and assessment of your final project.</p><div class="kv">${kv('Date', fmtD(d))}${c.assessment_time ? kv('Time', t12(c.assessment_time)) : ''}${kv('Status', done ? 'Done' : c.reschedule_date ? 'Rescheduled' : 'Scheduled')}${kv('Project', c.project_submission === 'Done' || (s.project && s.project.status !== 'Pending') ? 'Submitted' : 'Not submitted yet')}</div><div class="btns"><button class="btn" data-a="close">Got it</button></div>`);
-  };
-  const stuComp = s => {
-    const X = M(), c = X.comp(s), T = today(), last = X.endDate(s), d = X.asmtDate(s), ended = c.course_status === 'Completed';
-    const pct = ended ? 100 : Math.min(99, Math.round(+s.enr.progress_percent || 0));
-    const asmt = c.assessment_status === 'Done', has = v => v !== '' && v != null, evald = asmt && has(c.internal_marks) && has(c.external_marks);
-    const cs = s.certificate ? s.certificate.status : 'Pending';
-    const card = (ico, tone, title, sub, side, extra) => `<div class="ca"><span class="ci ${tone}">${ic(ico, 'l')}</span><div class="ct"><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}${extra || ''}</div><div class="cs">${side}</div></div>`;
-    const cn = '<i class="ca-c"></i>';
-    const c1 = card('cap', 'b', esc(s.enr.course_name), ended ? 'Course completed' : (diff(T, last) <= 0 ? 'Final day of your course' : 'Ends ' + fmtD(last)), pill(ended ? 'Completed' : 'In progress', ended ? 'ok' : 'warn'), `<div class="ca-bar"><i style="width:${pct}%"></i></div><div class="ca-pct">${pct}%</div>`);
-    const c2 = card('cal', 'o', 'Project presentation', fmtD(d) + (c.assessment_time ? ' · ' + t12(c.assessment_time) : ''), pill(asmt ? 'Done' : c.reschedule_date ? 'Rescheduled' : 'Scheduled', asmt ? 'ok' : 'warn') + `<button class="ca-b" data-a="casm">Details</button>`);
-    const mk = c.marks_visible && evald ? `Faculty ${c.internal_marks}/${c.max_marks || 100} · External ${c.external_marks}/${c.max_marks || 100}` : '';
-    const c3 = card('target', 'v', 'Evaluation', !asmt ? 'Starts after your presentation' : evald ? (mk || 'Evaluation complete') : 'Your evaluation is in progress', pill(!asmt ? 'Not started' : evald ? 'Evaluated' : 'In evaluation', !asmt ? 'n' : evald ? 'ok' : 'v'));
-    const certTxt = { Pending: 'Processed after your evaluation. We will notify you here when it is ready.', Started: 'Being prepared. We will notify you here when it is ready.', Completed: 'Ready for you. Collect it from the institute.', Issued: 'Issued. View it any time.' }[cs] || '';
-    const c4 = `<button class="ca cert" data-a="go" data-v="s_cert" style="width:100%;text-align:left"><span class="ci o">${ic('award', 'l')}</span><div class="ct"><b>Certificate</b><small>${certTxt}</small></div><div class="cs">${pill(certLabel(cs), cs === 'Issued' ? 'ok' : cs === 'Completed' ? '' : 'warn')}</div></button>`;
-    return `<div class="ca-w">${c1}${cn}${c2}${cn}${c3}${cn}${c4}</div>`;
-  };
-  wrap('s_tasks', function (v) {
-    if (S.seg.tk !== 'Assessments' || !me() || !M()) return v;
-    v.body = seg('tk', ['Assignments', 'Project', 'Assessments']) + stuComp(me()); v.sub = 'Assignments, project and course completion'; return v;
-  });
+  const stageOf = i => { const c = i.c; if (i.full) return 'Closed'; if (c.course_status !== 'Completed') return i.left <= 0 ? 'Last day' : 'Running';
+    if (c.assessment_status !== 'Done' || c.internal_marks === '' || c.external_marks === '') return 'Assessment'; return c.oral_feedback !== 'Done' ? 'Feedback' : 'Reviews'; };
+  const STG = ['Last day', 'Assessment', 'Feedback', 'Reviews', 'Running', 'Closed'], COL = { 'Last day': '#D5443A', Assessment: '#B9740A', Feedback: '#6D4AE8', Reviews: '#0E9FC4', Running: '#2454E8', Closed: '#12986B' };
+  const info = () => (M() ? M().cList().map(i => Object.assign(i, { stg: stageOf(i) })) : []);
+  const req = i => i.items.filter((x, k) => k !== 6);
+  const awaiting = L => L.filter(i => i.stg === 'Assessment').length;
+  const logC = (reg, text) => { const d = D(); (d.act_log = d.act_log || []).unshift({ at: Date.now(), staff: admName(), kind: 'comp', reg, text }); save(); };
 
-  /* ---------- 2. icon consistency: one icon per feature across Admin / Super Admin ---------- */
-  const ICO = { a_cdash: 'flag', a_complete: 'award', a_reviews: 'star', a_place: 'brief', a_work: 'cap', a_followups: 'phone', a_courses: 'book', a_materials: 'folder', a_settings: 'gear', a_actlog: 'hist', a_student_form: 'plus', Assignments: 'clip', Projects: 'target', 'tab:students': 'users', 'tab:fees': 'rupee', 'tab:reports': 'chart', 'tab:staff': 'shield', 'tab:att': 'cal' };
-  const fixIcons = r => r.querySelectorAll('button[data-a]').forEach(b => {
-    const k = b.dataset.a === 'tab' ? 'tab:' + b.dataset.t : b.dataset.v; if (!ICO[k]) return;
-    if (b.closest('.seg,.mx-tabs,.cy-tabs,.chips')) return;
-    const f = b.querySelector('svg.ic'); if (f && !b.classList.contains('hbtn')) swapIc(b, ICO[k]);
-  });
-  TABS.staff[3] = ['fees', 'Follow-up', 'phone'];
-  TABS.admin = [['home', 'Home', 'home'], ['students', 'Students', 'users'], ['att', 'Attendance', 'cal'], ['fees', 'Fees', 'rupee'], ['mgmt', 'Manage', 'layers'], ['more', 'More', 'grid']];
-
-  /* ---------- 3. Admin + Super Admin homes: remove the reminder graph and repeated cards ---------- */
-  const fuDue = () => { try { const o = homeBase(); const m = /(\d+) fee follow-ups due/.exec(txt(P(o.body))); return m ? +m[1] : 0; } catch (e) { return 0; } };
-  let homeBase = V.a_home;
-  wrap('a_home', function (v) {
-    return edit(v, r => {
-      r.querySelectorAll('.cd').forEach(c => { const h = c.querySelector('h4'); if (h && /Fee follow-up pipeline|Fee collection|Reminder/i.test(txt(h))) c.remove(); });
-      r.querySelectorAll('button.fc[data-v="a_cdash"]').forEach(b => b.remove());
-      r.querySelectorAll('.qs button[data-v="a_reviews"], button[data-v="a_tests"]').forEach(b => b.remove());
-      const qs = r.querySelector('.qs'), qb = (ico, cls, t, attrs) => `<button ${attrs}><span class="qi ${cls}">${ic(ico)}</span>${t}</button>`;
-      if (qs && isSup()) {
-        if (!qs.querySelector('[data-v="a_work"]')) { const c = qs.querySelector('[data-v="a_cdash"]'); c ? c.insertAdjacentHTML('afterend', qb('cap', 'q-t', 'Academic', 'data-a="go" data-v="a_work"')) : qs.insertAdjacentHTML('beforeend', qb('cap', 'q-t', 'Academic', 'data-a="go" data-v="a_work"')); }
-        if (!qs.querySelector('[data-v="a_notif"]')) { const rp = qs.querySelector('[data-t="reports"]'); const h = qb('mega', 'q-o', 'Message', 'data-a="go" data-v="a_notif"'); rp ? rp.insertAdjacentHTML('beforebegin', h) : qs.insertAdjacentHTML('beforeend', h); }
-      }
-      r.querySelectorAll('.qs button[data-v="a_notif"]').forEach(b => swapIc(b, 'mega'));
-      const mxs = [...r.querySelectorAll('.mx')];
-      if (mxs.length) {
-        const first = mxs[0];
-        mxs.slice(1).forEach(m => { [...m.children].reverse().forEach(ch => first.insertBefore(ch, first.firstChild)); m.remove(); });
-        first.querySelectorAll('button').forEach(b => { if (/onboarding/i.test(txt(b))) b.remove(); });
-        const cb = first.querySelector('button[data-v="a_cdash"]'); if (cb) { first.insertBefore(cb, first.firstChild); const sp = cb.querySelector('span'); if (sp) sp.textContent = 'Courses completed'; }
-      }
-      r.querySelectorAll('.sh h3').forEach(h => { if (/Reviews & quality/.test(txt(h))) h.textContent = 'Completion & reviews'; });
-      fixIcons(r);
-    });
-  });
-  /* Super Admin gets the Admin's "today" summary too */
-
-  /* ---------- 4/5. Manage = the work areas, More = communication & administration (no option appears twice) ---------- */
-  const tile = (ico, cls, t, sub, attrs, m) => `<button ${attrs}><span class="i ${cls}">${ic(ico)}</span><b>${t}</b>${m ? `<span class="m">${m}</span>` : ''}<small>${sub}</small></button>`;
-  const rowOf = (ico, cls, t, s, attrs) => `<button class="ml-r" ${attrs}><span class="i ${cls}">${ic(ico)}</span><span class="t"><b>${t}</b><span>${s}</span></span><span class="ch">›</span></button>`;
-  const GO = v => `data-a="go" data-v="${v}"`, TB = t => `data-a="tab" data-t="${t}"`;
-  const nTodo = () => { try { return M().cList().filter(i => !i.full && i.left <= 0).length; } catch (e) { return 0; } };
-  const nCert = () => D().students.filter(x => x.stage === 'active' && x.certificate && x.certificate.status === 'Completed').length;
-  const nAlerts = () => { try { return adminAlerts().length; } catch (e) { return 0; } };
-  V.a_mgmt = function () {
-    const d = D(), g = (h, t) => `<h3 class="z-h">${h}</h3><div class="mg">${t.join('')}</div>`;
-    return { t: 'Manage', sub: 'Teaching, students and quality', right: bellBtn(), body: `<div class="z"><div class="mm-c"><h3>Institute snapshot</h3><div class="ad-g"><div><b>${d.students.length}</b><span>Students</span></div><div><b>${d.courses.length}</b><span>Courses</span></div><div class="g"><b>${(() => { try { return M().cList().filter(i => i.full).length; } catch (e) { return 0; } })()}</b><span>Closed</span></div></div></div>` +
-      g('Teaching', [tile('book', '', 'Courses', 'Catalogue and batches', GO('a_courses')), tile('folder', 'o', 'Materials', 'Notes and links', GO('a_materials')), tile('cap', 'g', 'Academics', 'Assignments, projects, assessments', GO('a_work'))]) +
-      g('Students', [tile('plus', '', 'Admissions', 'Add a new student', GO('a_student_form')), tile('flag', 'v', 'Completion', 'Final-day checklist', GO('a_cdash'), nTodo()), tile('award', 'o', 'Certificates', 'Ready to issue', GO('a_complete'), nCert())]) +
-      g('Outcomes', [tile('brief', 'g', 'Placement', 'Interviews and offers', GO('a_place')), tile('star', 'o', 'Reviews', 'Google and Justdial', GO('a_reviews'))]) + `</div>` };
-  };
-  const prevMore = V.a_more;
-  V.a_more = function () {
-    const o = P(prevMore.apply(this, arguments).body), mh = o.querySelector('.mh'), so = o.querySelector('.ml-so');
-    const grp = (name, rows) => `<div class="ml-grp"><div class="ml-l">${name}</div><div class="ml-g">${rows.join('')}</div></div>`, n = nAlerts();
-    const comm = [rowOf('bell', 'o', 'Notifications', n + ' alerts · send announcements', GO('a_notif'))];
-    const body = isSup()
-      ? grp('Overview', comm.concat([rowOf('chart', 'g', 'Reports', 'Charts and exports', TB('reports')), rowOf('hist', '', 'Activity logs', 'Date, time and admin', GO('a_actlog'))])) + grp('Administration', [rowOf('shield', 'v', 'Admins', (D().staff_list || []).length + ' accounts', TB('staff')), rowOf('gear', 'g', 'Settings', 'Profile, data and access', GO('a_settings'))])
-      : grp('Teaching', [rowOf('book', '', 'Courses', 'Catalogue and batches', GO('a_courses')), rowOf('folder', 'o', 'Materials', 'Notes and links', GO('a_materials')), rowOf('cap', 'g', 'Academics', 'Assignments, projects, assessments', GO('a_work'))]) + grp('Students', [rowOf('flag', 'v', 'Completion', 'Final-day checklist', GO('a_cdash')), rowOf('award', 'o', 'Certificates', nCert() + ' ready to issue', GO('a_complete')), rowOf('brief', 'g', 'Placement', 'Interviews and offers', GO('a_place'))]) + grp('Communication', comm);
-    return { t: 'More', body: `<div class="z ml">${mh ? mh.outerHTML : ''}${body}${so ? so.outerHTML : ''}</div>` };
+  /* ================= MODULE 7 — Student Completion Dashboard ================= */
+  A.m7f = d => { S.m7s = d.v; render(); };
+  V.a_cdash = () => {
+    const L = info(), sel = STG.includes(S.m7s) ? S.m7s : 'All', q = ((S.q && S.q.cd) || '').toLowerCase(), cnt = k => L.filter(i => i.stg === k).length;
+    const shown = L.filter(i => (sel === 'All' || i.stg === sel) && (!q || (i.s.full_name + i.s.enr.course_name).toLowerCase().includes(q))).sort((a, b) => STG.indexOf(a.stg) - STG.indexOf(b.stg) || a.left - b.left);
+    const names = ['Course completion', 'Project submission', 'Project assessment', 'Internal marks', 'External marks', 'Oral feedback', 'Google review', 'Justdial review'];
+    const pend = names.map((n, k) => [n, L.filter(i => !req(i)[k][1]).length]);
+    const row = i => { const nx = req(i).find(x => !x[1]), c = COL[i.stg];
+      return `<button class="m7-r" data-a="go" data-v="a_comp_stu" data-reg="${i.s.registration_number}"><span class="m7-av" style="background:${c}">${esc(ini(i.s.full_name))}</span><span class="t"><b>${esc(i.s.full_name)}</b><span>${esc(i.s.enr.course_name)} · last day ${fmtD(i.last)}</span>
+        <span class="m7-dots">${req(i).map(x => `<i class="${x[1] ? 'y' : ''}"></i>`).join('')}</span><span class="m7-nx" style="color:${c}">${i.stg === 'Closed' ? 'All steps complete' : i.done + '/' + i.total + ' · Next: ' + esc(nx ? nx[0] : '')}</span></span>${pill(i.stg, '')}</button>`; };
+    return { t: 'Completion', sub: 'Student Completion Dashboard', right: bellBtn(), body:
+            `<div class="m7-st">${['All'].concat(STG).map(k => `<button class="${sel === k ? 'on' : ''}" data-a="m7f" data-v="${k}">${k}<b>${k === 'All' ? L.length : cnt(k)}</b></button>`).join('')}</div>` +
+      `<details class="m7-c m7-dt"><summary>Pending by step</summary><div class="m7-pd">${pend.map(p => `<div><span>${p[0]}</span><b class="${p[1] ? '' : 'z'}">${p[1]}</b></div>`).join('')}</div></details>` +
+      searchBox('cd', 'Search student or course') + (shown.length ? shown.map(row).join('') : empty('Nothing here', 'No student is in this stage.', 'award')) };
   };
 
-  /* ---------- 6. Fees tab (Super Admin): follow-ups one tap away, like the Admin ---------- */
-  wrap('a_fees', function (v) {
-    if (!isSup()) return v;
-    return edit(v, r => {
-      if (r.querySelector('[data-v="a_followups"]')) return;
-      const n = fuDue(), card = `<button class="fc" style="--c:#F26A10" data-a="go" data-v="a_followups"><span class="i">${ic('phone')}</span><span class="t"><b>Fee follow-ups</b><span>${n} due now · reminders and call log</span></span><span class="n">${ic('next', 's')}</span></button>`;
-      const anchor = r.querySelector('.m-ft'); if (anchor) anchor.insertAdjacentHTML('afterend', card); else r.insertAdjacentHTML('afterbegin', card);
-    });
-  });
-
-  /* ---------- 6b. Completion dashboard — same layout language as Placement / Courses ---------- */
-  (function () {
-    const hue = n => { let h = 0; for (const ch of String(n)) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; };
-    const has = v => v !== '' && v != null;
-    const stg = i => { const c = i.c; if (i.full) return 'Closed'; if (c.course_status !== 'Completed') return i.left <= 0 ? 'Last day' : 'Running';
-      if (c.assessment_status !== 'Done' || !has(c.internal_marks) || !has(c.external_marks)) return 'Assessment'; return c.oral_feedback !== 'Done' ? 'Feedback' : 'Reviews'; };
-    const TONE = { 'Last day': 'bad', Assessment: 'warn', Feedback: 'v', Reviews: '', Running: 'n', Closed: 'ok' };
-    const tabOf = k => k === 'Closed' ? 'Closed' : k === 'Running' ? 'Running' : 'To do';
-    const PRI = { 'Last day': 0, Assessment: 1, Feedback: 2, Reviews: 3 };
-    A.cytab = d => { S.cyt = d.v; render(); };
-    V.a_cdash = () => {
-      const X = M(), L = X.cList().map(i => Object.assign(i, { stg: stg(i) })), N = L.length || 1, T = today();
-      const cnt = { 'To do': 0, Running: 0, Closed: 0 }; L.forEach(i => cnt[tabOf(i.stg)]++);
-      const lastDay = L.filter(i => i.stg === 'Last day').length;
-      const tab = S.cyt || (cnt['To do'] ? 'To do' : 'Running'), q = ((S.q && S.q.cd) || '').toLowerCase();
-      const tiles = `<div class="pk"><div><b>${cnt.Running}</b><span>Running</span></div><div class="a"><b>${cnt['To do']}</b><span>To do</span></div><div class="g"><b>${cnt.Closed}</b><span>Closed</span></div><div class="r"><b>${lastDay}</b><span>Last day</span></div></div>`;
-      const F = [['Course completed', i => i.c.course_status === 'Completed'], ['Project assessed', i => i.c.assessment_status === 'Done'], ['Marks updated', i => has(i.c.internal_marks) && has(i.c.external_marks)], ['Oral feedback', i => i.c.oral_feedback === 'Done'], ['Google review', i => i.c.google_review === 'Done'], ['Justdial review', i => i.c.justdial_review === 'Done']];
-      const funnel = `<div class="cd"><h4>Completion funnel</h4><small>Active students at each completion step</small><div class="fn">${F.map(([l, f]) => { const n = L.filter(f).length; return `<div><span>${l}</span><span class="tr"><i style="width:${Math.round(n / N * 100)}%"></i></span><b>${n}</b></div>`; }).join('')}</div></div>`;
-      const due = L.filter(i => i.c.assessment_status !== 'Done' && diff(T, X.asmtDate(i.s)) <= 14).sort((a, b) => X.asmtDate(a.s) < X.asmtDate(b.s) ? -1 : 1).slice(0, 8);
-      const dueH = due.length ? `<div class="sh"><h3>Presentations due</h3></div><div class="ds">${due.map(i => { const d = X.asmtDate(i.s), late = d < T; return `<button class="dc" data-a="go" data-v="a_comp_stu" data-reg="${i.s.registration_number}"><div class="av" style="background:hsl(${hue(i.s.full_name)} 55% 45%)">${ic('target')}</div><b>${esc(i.s.full_name)}</b><small>${esc(i.s.enr.course_name)}</small><div class="am" style="font-size:13px;font-weight:600">${fmtD(d)}</div><span class="dp ${late ? '' : 'w'}">${late ? 'Overdue' : i.c.reschedule_date ? 'Rescheduled' : 'Scheduled'}</span></button>`; }).join('')}</div>` : '';
-      const chips = `<div class="chips">${['To do', 'Running', 'Closed'].map(k => `<button class="chip ${tab === k ? 'on' : ''}" data-a="cytab" data-v="${k}">${k}<i>${cnt[k]}</i></button>`).join('')}</div>`;
-      const list = L.filter(i => tabOf(i.stg) === tab && (!q || (i.s.full_name + i.s.enr.course_name).toLowerCase().includes(q))).sort((a, b) => (PRI[a.stg] ?? 9) - (PRI[b.stg] ?? 9) || a.left - b.left);
-      const NEXT = { 'Last day': 'Mark course completion', Assessment: 'Record presentation and marks', Feedback: 'Collect oral feedback', Reviews: 'Collect Google and Justdial reviews', Running: 'Course in progress', Closed: 'All steps complete' };
-      const card = i => { const c = i.c, nm = i.s.full_name, rev = c.google_review === 'Done' && c.justdial_review === 'Done';
-        const when = i.stg === 'Running' ? 'Ends ' + fmtD(i.last) + ' · ' + i.left + ' days left' : i.stg === 'Closed' ? 'Ended ' + fmtD(i.last) : i.stg === 'Assessment' && c.assessment_status !== 'Done' ? 'Presentation ' + fmtD(X.asmtDate(i.s)) : 'Ended ' + fmtD(i.last);
-        return `<div class="pc"><div class="top"><span class="avatar" style="width:42px;height:42px;background:hsl(${hue(nm)} 55% 45%)">${ini(nm)}</span><button class="t" data-a="go" data-v="a_comp_stu" data-reg="${i.s.registration_number}"><b>${esc(nm)}</b><small>${esc(i.s.enr.course_name)}</small></button>${pill(i.stg, TONE[i.stg])}</div><div class="rd"><span class="${c.course_status === 'Completed' ? 'on' : ''}">Course</span><span class="${c.assessment_status === 'Done' ? 'on' : ''}">Assessment</span><span class="${rev ? 'on' : ''}">Reviews</span></div><div class="nx">${ic('flag', 's')} ${NEXT[i.stg]} · ${when} · ${i.done}/${i.total}</div></div>`; };
-      return { t: 'Completion', sub: 'Course closure, assessment and reviews', right: bellBtn(), body: tiles + funnel + dueH + searchBox('cd', 'Search student or course') + chips + (list.length ? list.map(card).join('') : empty('Nothing here', tab === 'To do' ? 'No student needs a completion action right now.' : 'No students in this tab.', 'flag')) };
-    };
-  })();
-
-  /* ---------- 7. Academics: Assignments | Projects | Assessments — Assessments follows the Module 7 completion workflow ---------- */
-  wrap('a_work', function (v) {
-    return edit(v, r => {
-      r.querySelectorAll('.fx-due').forEach(b => { if (/Assessment/i.test(txt(b.querySelector('small')))) b.remove(); });
-      r.querySelectorAll('.nx-lnk').forEach(b => { if (/Completion dashboard/.test(txt(b))) b.remove(); });
-      const bn = r.querySelector('.m-banner small'); if (bn) bn.textContent = 'Assignments, projects and course completion';
-      const tabs = r.querySelector('.mx-tabs');
-      if (S.seg && S.seg.wk === 'Assessments' && tabs && M()) {
-        const need = M().cList().filter(i => !i.full && i.left <= 0).length;
-        tabs.querySelectorAll('button').forEach(b => { if (/^Assessments/.test(txt(b))) b.innerHTML = 'Assessments' + (need ? '<i>' + need + '</i>' : ''); });
-        const banner = r.querySelector('.m-banner'), cd = P(V.a_cdash().body);
-        r.innerHTML = '';
-        if (banner) r.appendChild(banner);
-        r.appendChild(tabs); [...cd.childNodes].forEach(n => r.appendChild(n));
-        v.fab = null;
-      } else {
-        tabs && tabs.querySelectorAll('button').forEach(b => { if (/^Assessments/.test(txt(b))) { const i = b.querySelector('i'); if (i) i.textContent = M() ? M().cList().filter(x => !x.full && x.left <= 0).length : i.textContent; } });
-      }
-      fixIcons(r);
-    });
-  });
-
-  /* ---------- 8. completion screens: distinct icons per item ---------- */
-  const compIcons = r => {
-    r.querySelectorAll('.cm-r').forEach(b => { const t = txt(b); if (/^Google Review/.test(t)) swapIc(b, 'star'); else if (/^Justdial Review/.test(t)) swapIc(b, 'pin'); else if (/^Assessment Marks/.test(t)) swapIc(b, 'chart'); });
-    r.querySelectorAll('.cm-mk > div').forEach(d => { const t = txt(d); if (/Faculty Marks/.test(t)) swapIc(d, 'edit'); else if (/External Marks/.test(t)) swapIc(d, 'target'); });
+  /* ================= MODULE 7 — one consolidated screen per student ================= */
+  V.a_comp_stu = V.a_comp_edit = p => {
+    const s = stu(p.reg); if (!s || !M()) return { t: 'Completion', body: empty('Student not found', '') };
+    const X = M(), c = X.comp(s), I = X.cinfo(s), r = s.registration_number, pj = s.project, T = today(), asm = X.asmtDate(s), pct = Math.round(I.done / I.total * 100);
+    const done = c.course_status === 'Completed', rs = I.left > 0 ? 'in ' + I.left + ' day' + (I.left > 1 ? 's' : '') : I.left === 0 ? 'today' : Math.abs(I.left) + ' day' + (Math.abs(I.left) > 1 ? 's' : '') + ' ago';
+    const R = 26, C = 2 * Math.PI * R, ring = `<div class="m7-ring"><svg width="66" height="66"><circle cx="33" cy="33" r="${R}" fill="none" stroke="#E3E8F2" stroke-width="7"/><circle cx="33" cy="33" r="${R}" fill="none" stroke="${I.full ? '#12986B' : '#2454E8'}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(pct / 100 * C).toFixed(1)} ${C.toFixed(1)}"/></svg><span>${pct}%</span></div>`;
+    const sg = (k, cur, opts) => `<div class="m7-sg">${opts.map(o => `<button class="${cur === o ? 'on' : ''}" data-a="cset" data-reg="${r}" data-k="${k}" data-v="${o}">${o}</button>`).join('')}</div>`;
+    const projDone = I.items[1][1] ? 'Done' : 'Not Done';
+    const log = (D().act_log || []).filter(l => l.kind === 'comp' && l.reg === r).slice(0, 8);
+    const body = `<div class="m7-c"><div class="m7-top">${ring}<div class="t" style="flex:1;min-width:0"><b style="font-size:17px">${esc(s.full_name)}</b><div class="mut">${esc(s.enr.course_name)}</div><div class="mut">${I.done} of ${I.total} steps · last day ${fmtD(I.last)} (${rs})</div></div></div></div>` +
+      `<div class="m7-c"><h4>Final completion checklist</h4><div class="m7-ck">${I.items.map(i => `<div class="${i[1] ? 'y' : ''}"><i>${i[1] ? '✓' : ''}</i><span>${i[0].replace(' Updated', '').replace(' Collected', '').replace(' Recorded', '').replace('Project Presentation & Assessment', 'Presentation').replace('External Assessment Marks', 'External Marks').replace('Student Concerns', 'Concerns')}</span><em>${i[1] ? i[2] : i[3]}</em></div>`).join('')}</div></div>` +
+      `<div class="m7-c"><h4>1 · Course completion</h4><div class="mut">The last day is the Course Completion &amp; Assessment Day. <button class="b" style="color:var(--accent)" data-a="clast" data-reg="${r}">Change last day</button></div>${sg('course_status', done ? 'Completed' : 'Not Completed', ['Completed', 'Not Completed'])}</div>` +
+      `<div class="m7-c"><h4>2 · Project presentation &amp; assessment</h4><div class="mut">Held on <b>${fmtD(asm)}</b>${c.reschedule_date ? ' (revised date)' : ' (last day)'} · Student project: ${pj ? esc(pj.status) : 'not assigned'}</div>` +
+      (c.reschedule_date ? `<div class="note warn" style="margin:10px 0 0"><b>Separate date.</b> ${esc(c.reschedule_reason || 'Project not completed on the last day')} · <button class="b" style="color:var(--warn)" data-a="cresclr" data-reg="${r}">Move back to last day</button></div>` : '') +
+      `<div class="mut" style="margin-top:10px">Project submission</div>${sg('project_submission', projDone, ['Done', 'Not Done'])}<div class="mut" style="margin-top:10px">Assessment status</div>${sg('assessment_status', c.assessment_status, ['Done', 'Not Done'])}${(c.reschedule_date || projDone !== 'Done' || c.assessment_status !== 'Done') ? `<button class="btn sec sm" style="margin-top:12px" data-a="cres" data-reg="${r}">${ic('cal', 's')} ${c.reschedule_date ? 'Change assessment date' : 'Reschedule project'}</button>` : ''}</div>` +
+      `<div class="m7-c"><h4>3 · Assessment details <span class="m7-lk">${ic('lock', 'xs')} Admin only</span></h4><div class="m7-g3">${F.t('cmi', 'Internal', c.internal_marks, { type: 'number', attr: 'min="0"' })}${F.t('cme', 'External', c.external_marks, { type: 'number', attr: 'min="0"' })}${F.t('cmx', 'Out of', c.max_marks, { type: 'number', attr: 'min="1"' })}</div><div class="mut" style="margin:-4px 0 12px">Internal = faculty marks · External = assessor marks</div><label class="row m7-sw"><span class="grow"><b>Show marks to student</b><div class="mut">Off by default. Marks stay hidden from the Student Dashboard unless you switch this on.</div></span><input type="checkbox" id="f-cvis" ${c.marks_visible ? 'checked' : ''}></label><button class="btn" data-a="cmarks" data-reg="${r}">${ic('tick', 's')} Save marks</button></div>` +
+      `<div class="m7-c"><h4>4 · Student oral feedback</h4><ul class="m7-tp"><li>Overall course experience</li><li>Faculty teaching and support</li><li>Learning experience</li><li>Project development and presentation</li></ul>${sg('oral_feedback', c.oral_feedback, ['Done', 'Not Done'])}<div style="margin-top:12px">${F.ta('c-feedback_notes', 'Feedback notes', c.feedback_notes, 'What the student said…')}</div><button class="btn sec sm" data-a="cnote" data-reg="${r}" data-k="feedback_notes">Save feedback notes</button></div>` +
+      `<div class="m7-c"><h4>5 · Student concerns &amp; admin notes <span class="m7-lk">${ic('lock', 'xs')} Admin &amp; management only</span></h4><div class="mut" style="margin-bottom:10px">Concerns, course or faculty issues, project difficulties and other observations. Never visible to students or faculty.</div>${F.ta('c-concerns', 'Notes', c.concerns, 'Record anything important…')}<button class="btn sec sm" data-a="cnote" data-reg="${r}" data-k="concerns">Save notes</button></div>` +
+      `<div class="m7-c"><h4>6 · Online reviews</h4><div class="mut">Google Business Profile</div>${sg('google_review', c.google_review, ['Done', 'Not Done'])}<div class="mut" style="margin-top:10px">Justdial</div>${sg('justdial_review', c.justdial_review, ['Done', 'Not Done'])}</div>` +
+      `<div class="m7-c"><h4>Activity</h4>${log.length ? log.map(l => `<div class="m7-ln"><b>${esc(l.text)}<div class="mut">${fmtTs(l.at)} · ${esc(l.staff)}</div></b></div>`).join('') : '<div class="mut">Every update is saved with date, time and staff name.</div>'}</div>`;
+    return { t: esc(s.full_name), sub: 'Course completion &amp; assessment', right: bellBtn(), body };
   };
-  ['a_comp_stu', 'a_comp_edit'].forEach(k => wrap(k, v => edit(v, compIcons)));
-  ['a_student', 'a_fee_stu', 'a_cdash', 'a_complete', 'a_place', 'a_courses', 'a_materials', 'a_reviews', 'a_followups', 'a_student_form', 'a_settings', 'a_staff', 'a_att'].forEach(k => wrap(k, v => edit(v, fixIcons)));
 
+  /* ================= Academics: Assignments & Projects only; assessment lives in Module 7 ================= */
+  const wrap = (k, fn) => { const o = V[k]; if (!o) return; V[k] = function () { const v = o.apply(this, arguments); try { if (v && typeof v.body === 'string') fn(v, arguments[0] || {}); } catch (e) { console.error(k, e); } return v; }; };
+  wrap('a_work', v => { v.body = v.body.replace(/<button class="nx-lnk"[^>]*a_cdash[^>]*>[\s\S]*?<\/button>/g, '').replace(/<h2 class="sec">[^<]*<\/h2>/, m => m);
+    const lnk = `<button class="nx-lnk" data-a="go" data-v="a_cdash"><span>Course completion &amp; assessment</span><span>→</span></button>`, k = v.body.search(/<div class="mx-sc"/); v.body = k > 0 ? v.body.slice(0, k) + lnk + v.body.slice(k) : lnk + v.body; });
 
-  /* ---------- 9. Student home: the legacy "Upcoming assessments" test card becomes the project presentation ---------- */
-  A.sasm = () => { S.seg.tk = 'Assessments'; tab('tasks'); };
-  wrap('s_home', function (v) {
-    const s = me(); if (!s || !M()) return v;
-    return edit(v, r => {
-      const h = [...r.querySelectorAll('.sh h3')].find(x => /Upcoming assessments/.test(txt(x))); if (!h) return;
-      const sh = h.closest('.sh'), nx = sh.nextElementSibling; if (nx && nx.classList.contains('fc')) nx.remove();
-      const c = M().comp(s), done = c.assessment_status === 'Done', d = M().asmtDate(s);
-      sh.querySelector('h3').textContent = 'Project presentation';
-      sh.insertAdjacentHTML('afterend', `<button class="fc" style="--c:#6D4AE8" data-a="sasm"><span class="i">${ic('target')}</span><span class="t"><b>${done ? 'Presentation done' : fmtD(d)}</b><span>${done ? 'Your evaluation is in progress' : 'Final project presentation and assessment'}</span></span><span class="n">${ic('next', 's')}</span></button>`);
-    });
-  });
+  /* ================= More: drop the duplicate quick tiles ================= */
+  wrap('a_more', v => { v.body = v.body.replace(/<div class="mt-g">[\s\S]*?<\/div>(?=\s*<label class="ml-q"|\s*<div class="ml-grp"|\s*<div class="ml)/, ''); });
+
+  /* ================= Homes (Super Admin has everything Admin has) ================= */
+  const Q = a => `<div class="qs">${a.map(x => `<button ${x[3]}>${x[4] ? `<u>${x[4]}</u>` : ''}<span class="qi q-${x[1]}">${ic(x[0])}</span>${x[2]}</button>`).join('')}</div>`;
+  const att = () => `data-a="attopen" data-d="${today()}"`, G = v => `data-a="go" data-v="${v}"`, TB = t => `data-a="tab" data-t="${t}"`;
+  const fixHome = v => {
+    const L = info(), aw = awaiting(L), act = L.filter(i => ['Last day', 'Assessment', 'Feedback', 'Reviews'].includes(i.stg)).length;
+    v.body = v.body.replace(/(\d+ )completions? need action<\/b><span>[^<]*<\/span>/, act + ' completion' + (act === 1 ? ' needs' : 's need') + ' action</b><span>' + aw + ' awaiting project assessment</span>')
+      .replace(/<div class="ad-f"><i[^>]*><\/i><div><b>Fee overdue<\/b>[\s\S]*?<\/div><\/div>/g, '');
+    return v;
+  };
+  const _ah = V.a_home;
+  V.a_home = function () {
+    const v = _ah.apply(this, arguments); if (!v || typeof v.body !== 'string' || v.body.indexOf('class="qs"') < 0) return v; fixHome(v);
+    const L = info(), aw = awaiting(L), d = D(), od = (v.body.match(/class="pn od"[^>]*><b>(\d+)<\/b>/) || [, 0])[1];
+    if (isStaff()) {
+      v.body = v.body.replace(/<div class="hx-kpi">[\s\S]*?<\/div>(?=\s*<div class="qs">)/, `<div class="hx-kpi"><button ${att()}><b class="g">${(v.body.match(/<b class="g">([^<]*)<\/b><span>Present today/) || [, '–'])[1]}</b><span>Present today</span></button><button ${TB('students')}><b>${d.students.length}</b><span>Students</span></button><button ${G('a_followups')}><b class="r">${od}</b><span>Fees overdue</span></button></div>`)
+        .replace(/<div class="qs">[\s\S]*?<\/button><\/div>/, Q([['cal', 'g', 'Attendance', att()], ['bell', 'o', 'Follow-ups', G('a_followups')], ['book', 'b', 'Courses', G('a_courses')], ['clip', 't', 'Academics', G('a_work')], ['layers', 'v', 'Completion', G('a_cdash')], ['brief', 'r', 'Placement', G('a_place')], ['mega', 'o', 'Message', G('a_notif')], ['star', 'v', 'Reviews', G('a_reviews')]]));
+    } else {
+      v.body = v.body.replace(/<div class="qs">[\s\S]*?<\/button><\/div>/, Q([['cal', 'g', 'Attendance', att()], ['plus', 'b', 'Admission', G('a_student_form')], ['bell', 'o', 'Follow-ups', G('a_followups')], ['book', 'b', 'Courses', G('a_courses')], ['clip', 't', 'Academics', G('a_work')], ['layers', 'v', 'Completion', G('a_cdash')], ['brief', 'r', 'Placement', G('a_place')], ['mega', 'o', 'Message', G('a_notif')]]))
+        .replace(/(<h4>Fee collection<\/h4><small>)[^<]*(<\/small>[\s\S]*?)<ul>[\s\S]*?<\/ul>/, (m, a, b) => { const n = [...m.matchAll(/<b>₹([\d,]+)<\/b>/g)].map(x => +x[1].replace(/,/g, '')); return a + 'Share of total fees collected' + b + `<div class="mut" style="flex:1;font-size:13px">₹${(n[0] || 0).toLocaleString('en-IN')} collected out of ₹${((n[0] || 0) + (n[1] || 0)).toLocaleString('en-IN')}</div>`; })
+        .replace(/<div class="sh"><h3>Reviews &amp; quality<\/h3><\/div>[\s\S]*?(?=\s*<div class="sh"><h3>Recent activity)/, `<div class="sh"><h3>Quality &amp; completion</h3></div><div class="mx"><button ${G('a_reviews')}><i class="q-o">${ic('shield')}</i><b>${(v.body.match(/<b>(\d+ \/ \d+)<\/b><span>Google/) || [, '0 / 0'])[1]}</b><span>Google / Justdial reviews</span></button><button ${G('a_student_form')}><i class="q-b">${ic('user')}</i><b>${d.students.filter(s => s.stage === 'new').length}</b><span>Students onboarding</span></button></div><div class="mx"><button ${G('a_cdash')}><i class="q-g">${ic('award')}</i><b>${L.filter(i => i.stg === 'Closed').length}/${L.length}</b><span>Completions closed</span></button><button ${G('a_cdash')}><i class="q-r">${ic('file')}</i><b>${aw}</b><span>Awaiting assessment</span></button></div>`);
+    }
+    return v;
+  };
+  const _sh = V.s_home;
+  V.s_home = function () { const v = _sh.apply(this, arguments); if (v && typeof v.body === 'string') v.body = v.body.replace(/<div class="sh"><h3>Upcoming assessments<\/h3><\/div>[\s\S]*?(<\/button>)(?=\s*<\/div>\s*$)/, ''); return v; };
+
+  /* ================= Student: Tasks no longer lists tests; sub-title cleaned ================= */
   try { render(); } catch (e) { }
 })();
 </script>
+
+<style id="m7-stu">
+.sa-h{display:flex;align-items:center;gap:14px;margin:4px 0 14px}.sa-h .ib{flex:none;width:52px;height:52px;border-radius:16px;background:#FDEBDD;color:#F26A10;display:grid;place-items:center}.sa-h h2{margin:0;font-size:20px}.sa-h p{margin:2px 0 0;font-size:13px;color:var(--mut)}
+.sa-c{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:14px;margin-bottom:12px;display:flex;gap:12px;align-items:flex-start}
+.sa-c .ic{flex:none;width:46px;height:46px;border-radius:14px;background:#EEF2FF;color:#2454E8;display:grid;place-items:center}.sa-c .tx{flex:1;min-width:0}.sa-c .tx b{display:block;font-size:15.5px}.sa-c .tx small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px}
+.sa-pb{height:8px;border-radius:6px;background:#E3E8F2;margin-top:10px;overflow:hidden}.sa-pb i{display:block;height:100%;background:#12986B;border-radius:6px}
+.sa-dt{white-space:nowrap;display:flex;align-items:center;gap:8px;margin-top:8px;font-weight:700;font-size:13.5px}
+.sa-cert{display:flex;gap:14px;align-items:center;border-radius:22px;padding:16px;margin-top:6px;background:linear-gradient(135deg,#FFF4E5,#FFE9CC);border:1px solid #FBD9A8}.sa-cert .ic{flex:none;width:56px;height:56px;border-radius:16px;background:#fff;color:#F26A10;display:grid;place-items:center}.sa-cert h3{margin:0 0 4px;font-size:17px}.sa-cert p{margin:0 0 8px;font-size:13px;color:#6B4A1D}
+</style>
+<script>
+window.m7StuAssess = function (s) {
+  const X = window.__cm; if (!X) return '';
+  const c = X.comp(s), asm = X.asmtDate(s), cs = (s.certificate || {}).status, done = c.course_status === 'Completed', ad = c.assessment_status === 'Done', resch = !!c.reschedule_date;
+  const pct = done ? 100 : Math.min(99, +s.enr.progress_percent || 0), tm = t12(s.enr.slot_start_time);
+  const stat = ad ? ['Completed', 'ok', 'Your project assessment is complete.'] : done ? ['In Evaluation', null, 'Your project evaluation is in progress.'] : ['Not started', null, 'Starts after your course is completed.'];
+  const marks = c.marks_visible && c.internal_marks !== '' && c.external_marks !== '' ? `<div class="note ok" style="margin:10px 0 0">Marks: internal ${esc(c.internal_marks)}, external ${esc(c.external_marks)} out of ${esc(c.max_marks)}</div>` : '';
+  const cert = cs === 'Issued' ? ['Certificate Issued', 'Your certificate has been issued' + (s.certificate.certificate_number ? ' · ' + esc(s.certificate.certificate_number) : '') + '.', 'Issued'] : cs === 'Completed' ? ['Certificate Ready', 'Your certificate is ready. The institute will issue it to you.', 'Ready'] : ['Certificate Status', 'After project evaluation, your certificate will be processed. We will notify you here once it is ready.', 'Certificate in Progress'];
+  A.m7asm = () => openSheet(`<h3>Project assessment</h3><p class="sub">${esc(s.enr.course_name)}</p><div class="card flush list"><div class="kv">${kv('Date', fmtD(asm))}${kv('Time', tm)}${kv('Status', ad ? 'Completed' : resch ? 'Rescheduled' : 'Scheduled')}</div></div><div class="note">${resch ? 'Your assessment has been moved to a new date. ' : 'Your assessment is held on the last day of your course. '}Bring your completed project.</div><button class="btn sec" data-a="close">Close</button>`);
+  return `<div class="sa-h"><span class="ib">${ic('clip', 'l')}</span><div><h2>Project Assessment</h2><p>Track your course, project assessment and certificate status</p></div></div>` +
+    `<div class="sa-c"><span class="ic">${ic('cap')}</span><div class="tx"><b>Course Completion</b><small>${esc(s.enr.course_name)}</small><div class="sa-pb"><i style="width:${pct}%"></i></div></div>${pill(done ? 'Completed' : 'In progress', done ? 'ok' : null)}</div>` +
+    `<div class="sa-c"><span class="ic">${ic('cal')}</span><div class="tx"><b>Project Assessment</b><small>Scheduled date &amp; time${resch ? ' (revised)' : ''}</small><div class="sa-dt">${fmtD(asm)} &nbsp;|&nbsp; ${tm}</div><button class="btn sec sm" style="margin-top:10px;width:auto" data-a="m7asm">View details</button></div>${pill(ad ? 'Completed' : 'Scheduled', ad ? 'ok' : 'warn')}</div>` +
+    `<div class="sa-c"><span class="ic">${ic('target')}</span><div class="tx"><b>Project Assessment Status</b><small>${stat[2]}</small>${marks}</div>${pill(stat[0], stat[1])}</div>` +
+    `<div class="sa-cert"><span class="ic">${ic('award', 'l')}</span><div><h3>${cert[0]}</h3><p>${cert[1]}</p>${pill(cert[2], cs === 'Issued' || cs === 'Completed' ? 'ok' : 'warn')}</div></div>`;
+};
+try { render(); } catch (e) { }
+</script>
+
+<style id="ui-final">
+/* ---- one calm, consistent layer over every screen ---- */
+*{scrollbar-width:none}*::-webkit-scrollbar{display:none}
+.view{padding-bottom:128px!important}
+.view .chips{display:flex!important;flex-wrap:wrap!important;overflow:visible!important;gap:8px!important;margin:0 0 14px!important;padding:0!important}
+.view .chips .chip{flex:none!important;white-space:nowrap}
+.qs{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:16px 4px!important;overflow:visible!important;margin:0 0 10px!important;padding:6px 0 4px!important}
+.qs button{width:auto!important;min-width:0}
+.qs .qi{width:52px!important;height:52px!important;border-radius:18px!important}
+.fab{bottom:calc(100px + var(--hb,0px))!important;right:18px!important;padding:12px 18px!important}
+.fab.pg{bottom:calc(24px + var(--hb,0px))!important}
+.ds,.fx-strip{margin:0 -16px!important;padding:2px 16px 12px!important;scroll-snap-type:x mandatory}
+.ds>*,.fx-strip>*{scroll-snap-align:start;flex:none}
+.view .sh h3,.view .sec,.view h3.z-h{font-size:15px!important;letter-spacing:0!important;text-transform:none!important;color:var(--ink)!important;margin:18px 2px 10px!important}
+.view .card,.view .cd{border-radius:20px!important}
+.m7-dt{padding:0!important}.m7-dt summary{list-style:none;padding:14px;font-weight:800;font-size:14.5px;display:flex;justify-content:space-between;cursor:pointer}.m7-dt summary::after{content:"＋";color:var(--accent)}.m7-dt[open] summary::after{content:"－"}.m7-dt .m7-pd{padding:0 14px 12px;margin:0}
+.m7-ck{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.m7-ck>div{display:grid;grid-template-columns:20px 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;background:#FFF6EE;border-radius:14px;padding:10px}
+.m7-ck>div.y{background:#E9F7F0}.m7-ck i{grid-row:1/3;width:20px;height:20px;border-radius:50%;border:2px solid #F3B27C;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:800;color:#fff}.m7-ck .y i{background:#12986B;border-color:#12986B}
+.m7-ck span{font-size:12.5px;font-weight:700;line-height:1.2}.m7-ck em{font-style:normal;font-size:11.5px;color:#B9740A}.m7-ck .y em{color:#12986B}
+.rv{display:flex;gap:6px}.rv i{font-style:normal;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:#F1F4FA;color:var(--mut)}.rv i.y{background:#E4F5EC;color:#12986B}
+</style>
+<script>
+(function () {
+  /* Super Admin: five tabs (Management duplicated Home and More) */
+  TABS.admin = [['home', 'Home', 'home'], ['students', 'Students', 'users'], ['staff', 'Admins', 'user'], ['reports', 'Reports', 'chart'], ['more', 'More', 'grid']];
+  const _r = render;
+  render = function () { const x = _r.apply(this, arguments); try { tidy(); } catch (e) { console.error(e); } return x; };
+  function tidy() {
+    const v = document.querySelector('#root .view'); if (!v) return;
+    const rm = sel => v.querySelectorAll(sel).forEach(e => e.remove());
+    rm('.m-banner'); rm(':scope > .mx-sc'); rm('.tools > .fx-sec'); rm('.tools > .fx-strip');
+    rm('.fx2-tiles'); rm('.nx-ban'); rm('.li-sts'); rm('.sh-hero');
+    if (v.querySelector('.fc-g')) { rm('.fx-hero'); rm('.fc-feat'); v.querySelectorAll('.fx-sec').forEach(e => e.remove()); }
+    if (v.querySelector('.pc') && v.querySelector('.pk')) rm('.pk');
+    v.querySelectorAll('.card.flush.list > .item').forEach(b => { if (/^(Change password|Edit profile)/.test(b.innerText.trim()) && v.querySelector('.li-prof')) b.remove(); });
+    v.querySelectorAll('.item small,.item .mut,.item .sub').forEach(e => { const m = e.textContent.trim().match(/^G\s*([✓–-])\s*·\s*J\s*([✓–-])$/); if (m) e.innerHTML = '<span class="rv"><i class="' + (m[1] === '✓' ? 'y' : '') + '">Google ' + (m[1] === '✓' ? '✓' : '–') + '</i><i class="' + (m[2] === '✓' ? 'y' : '') + '">Justdial ' + (m[2] === '✓' ? '✓' : '–') + '</i></span>'; });
+  }
+  try { render(); } catch (e) { }
+})();
+</script>
+
+<style id="ui-final2">
+.fab{font-size:0!important;width:56px!important;height:56px!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center!important;gap:0!important}
+.fab svg{width:26px!important;height:26px!important}
+.m7-st{flex-wrap:wrap!important;overflow:visible!important;margin:0 0 12px!important}
+.view .ds,.view .fx-strip{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;overflow:visible!important;margin:0 0 6px!important;padding:2px 0 8px!important}
+.view .ds>*,.view .fx-strip>*{width:auto!important;min-width:0!important}
+</style>
+<script>
+(function(){const _r=render;render=function(){const x=_r.apply(this,arguments);try{document.querySelectorAll('#root .view .ds,#root .view .fx-strip').forEach(g=>[...g.children].slice(4).forEach(c=>c.remove()));}catch(e){}return x};try{render()}catch(e){}})();
+</script>
+
+<style id="ui-final3">.view:has(.m-cta){padding-bottom:14px!important}.m-cta{bottom:10px!important}</style>
+<script>
+(function(){const _r=render;render=function(){const x=_r.apply(this,arguments);try{
+ document.querySelectorAll('#root .view .item .pill').forEach(p=>{const m=p.textContent.trim().match(/^G\s*(\S+)\s*·\s*J\s*(\S+)$/);if(!m)return;const y=t=>/✓|Done|Yes/.test(t);
+  p.outerHTML='<span class="rv"><i class="'+(y(m[1])?'y':'')+'">Google '+(y(m[1])?'✓':'–')+'</i><i class="'+(y(m[2])?'y':'')+'">Justdial '+(y(m[2])?'✓':'–')+'</i></span>'});
+}catch(e){}return x};try{render()}catch(e){}})();
+</script>
+
+<style id="ui-final4">
+.view:has(.a2-bar,.m-cta){padding-bottom:14px!important}
+</style>
+<script>
+(function(){const _r=render;render=function(){const x=_r.apply(this,arguments);try{
+ const v=document.querySelector('#root .view');if(!v)return x;const rm=e=>e&&e.remove();
+ const txt=e=>(e.innerText||'').replace(/\s+/g,' ').trim();
+ /* student */
+ if(S.role==='student'){
+  v.querySelectorAll(':scope > .stat3').forEach(rm);                        /* Learn + Tasks tiles repeat what is already on the page */
+  rm(v.querySelector(':scope > .nx-pr'));
+  v.querySelectorAll(':scope > .card.fx-c').forEach(c=>{if(/^Course progress/.test(txt(c)))rm(c)});
+  v.querySelectorAll('.z > .cd').forEach(c=>{if(/^Course journey/.test(txt(c)))rm(c)});
+  v.querySelectorAll('.z > .z-c').forEach(c=>{if(/^Requirements/.test(txt(c)))rm(c)});
+ }else{ rm(v.querySelector(':scope > .as-t')); }
+}catch(e){}return x};try{render()}catch(e){}})();
+</script>
+<style id="ux2">
+/* ===== ux2: richer detail, form and catalogue screens ===== */
+.view:has(.ux-bar){padding-bottom:0!important}
+.ux{display:flex;flex-direction:column;gap:14px;padding-bottom:6px}
+.ux-hero{position:relative;overflow:hidden;border-radius:26px;padding:18px 16px 16px;color:#fff;background:linear-gradient(150deg,#0F1B4D 0%,#1F3A9E 60%,#2454E8 100%);box-shadow:0 16px 34px rgba(20,36,107,.28)}
+.ux-hero:before{content:"";position:absolute;right:-40px;top:-50px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.22),transparent 70%)}
+.ux-hero:after{content:"";position:absolute;left:-30px;bottom:-60px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(242,106,16,.35),transparent 70%)}
+.ux-hero>*{position:relative;z-index:1}
+.ux-hr{display:flex;align-items:center;gap:12px}
+.ux-av{flex:none;width:46px;height:46px;border-radius:16px;display:grid;place-items:center;font-weight:800;font-size:15px;color:#14246B;background:#fff;box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.ux-hr b{display:block;font-size:15px}.ux-hr small{display:block;opacity:.8;font-size:12px;margin-top:1px}.ux-hr>div{flex:1;min-width:0}
+.ux-chip{flex:none;font-size:11.5px;font-weight:800;padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.28)}
+.ux-chip.ok{background:#12986B;border-color:#12986B}.ux-chip.warn{background:#F26A10;border-color:#F26A10}.ux-chip.bad{background:#E5484D;border-color:#E5484D}
+.ux-hero h2{margin:16px 0 8px;font-size:21px;line-height:1.2;color:#fff}
+.ux-tags{display:flex;gap:8px;flex-wrap:wrap}.ux-tags span{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.14)}
+.ux-st{display:flex;margin-top:18px;padding:14px 8px 10px;border-radius:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16)}
+.ux-st>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;font-size:11px;font-weight:700;text-align:center}
+.ux-st>div:not(:first-child):before{content:"";position:absolute;top:13px;right:50%;width:100%;height:3px;border-radius:3px;background:rgba(255,255,255,.22)}
+.ux-st>div.d:not(:first-child):before,.ux-st>div.c:not(:first-child):before{background:#4FD1A1}
+.ux-st i{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;background:rgba(255,255,255,.2);color:#fff}
+.ux-st .d i{background:#12986B}.ux-st .c i{background:#fff;color:#2454E8;box-shadow:0 0 0 5px rgba(255,255,255,.28)}
+.ux-st small{opacity:.75;font-size:10px;font-weight:600}
+.ux-card{background:var(--card);border-radius:24px;box-shadow:0 8px 24px rgba(20,36,107,.07);border:1px solid rgba(20,36,107,.05);padding:16px}
+.ux-h{display:flex;align-items:center;gap:12px;margin-bottom:14px}.ux-h b{display:block;font-size:15.5px}.ux-h small{display:block;color:var(--mut);font-size:12px;margin-top:1px}
+.ux-ic{flex:none;width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#EAF0FF,#DDE6FF);color:#2454E8}
+.ux-ic.o{background:linear-gradient(135deg,#FFF0E3,#FFE1C8);color:#F26A10}.ux-ic.g{background:linear-gradient(135deg,#E6F8EF,#CFF0E0);color:#12986B}.ux-ic.v{background:linear-gradient(135deg,#F0EAFF,#E2D8FF);color:#7C4DFF}
+.ux-tl{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ux-t{display:flex;align-items:center;gap:10px;padding:12px;border-radius:18px;background:#F5F8FE;min-width:0}
+.ux-t.w{grid-column:1/-1}.ux-t .ux-ic{width:34px;height:34px;border-radius:11px}.ux-t small{display:block;font-size:11px;color:var(--mut);font-weight:600}.ux-t b{display:block;font-size:13.5px;overflow-wrap:anywhere}.ux-t a{color:#2454E8}
+.ux-p{margin:0;font-size:14px;line-height:1.55;color:#2B3552}
+.ux-gr{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ux-gr button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 4px;border-radius:18px;background:#F5F8FE;border:2px solid transparent;transition:.15s}
+.ux-gr b{font-size:20px;color:#14246B}.ux-gr small{font-size:10.5px;color:var(--mut);font-weight:600}
+.ux-gr button.on{background:linear-gradient(135deg,#2454E8,#5B8CFF);box-shadow:0 10px 20px rgba(36,84,232,.35);transform:translateY(-2px)}.ux-gr button.on b,.ux-gr button.on small{color:#fff}
+.ux-sc{display:flex;align-items:baseline;gap:8px;padding:14px 16px;border-radius:20px;background:linear-gradient(135deg,#F5F8FE,#EAF0FF);margin-bottom:12px}
+.ux-sc input{flex:1;min-width:0;border:0!important;background:none!important;font-size:34px!important;font-weight:800;color:#14246B;padding:0!important;height:auto!important;outline:0;box-shadow:none!important}
+.ux-sc span{font-weight:700;color:var(--mut)}
+.ux-sg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.ux-sg button{padding:11px 4px;border-radius:14px;background:#F5F8FE;font-weight:700;font-size:13px;color:var(--mut)}.ux-sg button.on{background:#14246B;color:#fff}
+.ux-bar{position:sticky;bottom:0;z-index:5;display:flex;gap:10px;margin:14px -16px 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(to bottom,rgba(243,246,252,0),var(--bg) 28%)}
+.ux-bar .btn{flex:1;margin:0;height:52px;border-radius:18px;font-weight:800}
+.ux-del{align-self:center;display:flex;gap:8px;align-items:center;color:#D5443A;font-weight:700;font-size:13px;padding:10px}
+.ux-wait{display:flex;gap:14px;align-items:center;padding:16px;border-radius:22px;background:linear-gradient(135deg,#FFF6EA,#FFEBD3);color:#6B4A1D}.ux-wait .ux-ic{background:#fff}
+.ux-wait b{display:block}.ux-wait small{opacity:.8}
+/* forms */
+.ux-fh{display:flex;gap:14px;align-items:center;padding:16px;border-radius:24px;color:#fff;background:var(--g,linear-gradient(135deg,#14246B,#2454E8));box-shadow:0 14px 30px rgba(36,84,232,.28);position:relative;overflow:hidden}
+.ux-fh:after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.14)}
+.ux-fh>span{flex:none;width:52px;height:52px;border-radius:17px;background:rgba(255,255,255,.2);display:grid;place-items:center}.ux-fh b{display:block;font-size:18px}.ux-fh p{margin:3px 0 0;font-size:12.5px;opacity:.88}
+.ux .field{margin-bottom:12px}.ux .field:last-child{margin-bottom:0}
+.ux .field>span{font-size:12px;font-weight:700;color:#4A5675;margin-bottom:6px;display:block}
+.ux .field input,.ux .field select,.ux .field textarea{width:100%;border:1.5px solid #E3E8F2;background:#F8FAFE;border-radius:16px;padding:14px;font-size:14.5px;min-height:50px;transition:.15s}
+.ux .field input:focus,.ux .field select:focus,.ux .field textarea:focus{border-color:#2454E8;background:#fff;box-shadow:0 0 0 4px rgba(36,84,232,.12);outline:0}
+.ux .field textarea{min-height:96px}
+.ux .pk{border-radius:20px;border:1.5px solid #E3E8F2;background:#fff;overflow:hidden}
+.ux .pk-list{max-height:300px}
+/* courses */
+.ux-cl{display:flex;flex-direction:column;gap:12px}
+.ux-cc{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:14px;border-radius:24px;background:var(--card);box-shadow:0 8px 22px rgba(20,36,107,.07);border:1px solid rgba(20,36,107,.05);position:relative;overflow:hidden}
+.ux-cc:before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--c)}
+.ux-cb{flex:none;width:56px;height:56px;border-radius:18px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;letter-spacing:.3px;box-shadow:0 10px 18px rgba(20,36,107,.18)}
+.ux-cm{flex:1;min-width:0}.ux-cm b{display:block;font-size:15.5px}.ux-cm small{display:block;color:var(--mut);font-size:12.5px;margin:2px 0 8px}
+.ux-av3{display:flex}.ux-av3 i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:9.5px;font-weight:800;color:#fff;background:var(--c);border:2px solid #fff;margin-left:-7px}.ux-av3 i:first-child{margin-left:0}.ux-av3 i.m{background:#E3E8F2;color:#4A5675}
+.ux-av3 em{font-style:normal;font-size:12px;color:var(--mut)}
+.ux-rg{flex:none;position:relative;width:54px;height:54px}.ux-rg svg{transform:rotate(-90deg)}.ux-rg span{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:800;color:#14246B}
+.ux-off{position:absolute;right:12px;top:10px;font-size:10px;font-weight:800;color:#98A3BC;background:#EEF1F7;border-radius:99px;padding:2px 8px}
+</style>
+<script>
+(function () {
+  const PAL = ['#2454E8', '#F26A10', '#7C4DFF', '#0E9FC4', '#E5484D', '#12986B'], LT = ['#5B8CFF', '#FFA45C', '#A58BFF', '#4CC9E8', '#FF8A8D', '#4FD1A1'];
+  const grad = i => `linear-gradient(135deg,${PAL[i % 6]},${LT[i % 6]})`;
+  const stepper = (labels, idx, sub) => `<div class="ux-st">${labels.map((l, i) => `<div class="${i < idx ? 'd' : i === idx ? 'c' : ''}"><i>${i < idx ? '✓' : i + 1}</i><span>${l}</span>${sub && sub[i] ? `<small>${sub[i]}</small>` : ''}</div>`).join('')}</div>`;
+  const card = (ico, t, sub, body, tone) => `<section class="ux-card"><div class="ux-h"><span class="ux-ic ${tone || ''}">${ic(ico)}</span><div><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div></div>${body}</section>`;
+  const tile = (ico, l, v, tone, wide) => `<div class="ux-t ${wide ? 'w' : ''}"><span class="ux-ic ${tone || ''}">${ic(ico)}</span><div style="min-width:0"><small>${l}</small><b>${v}</b></div></div>`;
+  const fh = (ico, t, s, g) => `<div class="ux-fh" ${g ? `style="--g:${g}"` : ''}><span>${ic(ico, 'l')}</span><div><b>${t}</b><p>${s}</p></div></div>`;
+  const chip = (txt, tone) => `<span class="ux-chip ${tone || ''}">${txt}</span>`;
+
+  /* ---------- assignment review ---------- */
+  const GL = { 'A+': 'Outstanding', A: 'Excellent', 'B+': 'Very good', B: 'Good', C: 'Fair', D: 'Needs work' };
+  V.a_task = p => {
+    const t = D().tasks.find(x => x.task_id == p.id); if (!t) return { t: 'Task', body: empty('Not found', '') };
+    const s = stu(t.registration_number) || { full_name: t.registration_number, enr: { course_name: '' } }, od = taskOverdue(t), can = t.status === 'Submitted' || t.status === 'Completed';
+    const idx = t.status === 'Completed' ? 4 : t.status === 'Submitted' ? 3 : 1;
+    const hero = `<div class="ux-hero"><div class="ux-hr"><span class="ux-av">${ini(s.full_name)}</span><div><b>${esc(s.full_name)}</b><small>${esc(s.enr.course_name)}</small></div>${chip(od ? 'Overdue' : t.status === 'Completed' ? 'Reviewed' : t.status, od ? 'bad' : t.status === 'Completed' ? 'ok' : t.status === 'Submitted' ? '' : 'warn')}</div><h2>${esc(t.title)}</h2><div class="ux-tags"><span>${esc(t.task_type)}</span><span>Due ${fmtD(t.due_date)}</span>${t.grade ? `<span>Grade ${esc(t.grade)}</span>` : ''}</div>${stepper(['Assigned', 'Due', 'Submitted', 'Reviewed'], idx, ['', fmtS ? fmtS(t.due_date) : '', t.submitted_at ? fmtS(t.submitted_at) : '', ''])}</div>`;
+    const dets = card('cal', 'Timeline', 'Key dates', `<div class="ux-tl">${tile('cal', 'Due', fmtD(t.due_date), 'o')}${tile('clock', 'Submitted', t.submitted_at ? fmtD(t.submitted_at) : 'Not yet', t.submitted_at ? 'g' : 'o')}${tile('clock', 'Timing', rel(t.due_date), od ? 'o' : 'g', 1)}</div>`);
+    const brief = card('book', 'Brief', 'What the student was asked to do', `<p class="ux-p">${esc(t.description) || 'No instructions were added.'}</p>${t.submission_file ? `<div class="ux-tl" style="margin-top:12px">${tile('file', 'Submission', fileLink(t.submission_file), 'v', 1)}</div>` : ''}`, 'o');
+    const review = can ? card('tick', 'Review', 'Pick a grade and leave feedback', `<div class="ux-gr">${['A+', 'A', 'B+', 'B', 'C', 'D'].map(g => `<button class="${t.grade === g ? 'on' : ''}" data-a="gradepick" data-g="${g}"><b>${g}</b><small>${GL[g]}</small></button>`).join('')}</div><div style="display:none">${F.s('tg', 'Grade', ['', 'A+', 'A', 'B+', 'B', 'C', 'D'], t.grade)}</div><div style="margin-top:14px">${F.ta('tr', 'Remarks for the student', t.remarks, 'Write helpful feedback…')}</div>`, 'g')
+      : `<div class="ux-wait"><span class="ux-ic">${ic('clock')}</span><div><b>Waiting for the student</b><small>You will be alerted as soon as they submit.</small></div></div>`;
+    return { t: esc(t.title), sub: esc(s.full_name) + ' · ' + t.task_type, body: `<div class="ux">${hero}${dets}${brief}${review}<button class="ux-del" data-a="taskdel" data-id="${t.task_id}">${ic('trash', 's')} Delete assignment</button>${can ? `<div class="ux-bar"><button class="btn sec" data-a="taskrev" data-id="${t.task_id}" data-v="Revision Required">Request revision</button><button class="btn ok" data-a="taskrev" data-id="${t.task_id}" data-v="Completed">${t.status === 'Completed' ? 'Update review' : 'Approve'}</button></div>` : ''}</div>` };
+  };
+  A.gradepick = d => { const el = document.getElementById('f-tg'); if (el) el.value = d.g; document.querySelectorAll('.ux-gr button').forEach(b => b.classList.toggle('on', b.dataset.g === d.g)); };
+
+  /* ---------- project review ---------- */
+  V.a_proj = p => {
+    const s = stu(p.reg), pj = s && s.project; if (!pj) return { t: 'Project', body: empty('Not found', '') };
+    const can = ['Submitted', 'Under Review', 'Evaluated'].includes(pj.status), idx = { Pending: 1, Submitted: 2, 'Under Review': 2, Evaluated: 4 }[pj.status] || 1;
+    const hero = `<div class="ux-hero"><div class="ux-hr"><span class="ux-av">${ini(s.full_name)}</span><div><b>${esc(s.full_name)}</b><small>${esc(s.enr.course_name)}</small></div>${chip(pj.status, pj.status === 'Evaluated' ? 'ok' : pj.status === 'Pending' ? 'warn' : '')}</div><h2>${esc(pj.title)}</h2><div class="ux-tags"><span>Final project</span><span>Due ${fmtD(pj.due_date)}</span>${pj.evaluation_score !== '' && pj.status === 'Evaluated' ? `<span>Score ${pj.evaluation_score}/100</span>` : ''}</div>${stepper(['Assigned', 'Submitted', 'Review', 'Evaluated'], idx)}</div>`;
+    const sub = card('file', 'Submission', pj.description ? esc(pj.description) : '', `<div class="ux-tl">${tile('cal', 'Due', fmtD(pj.due_date), 'o')}${tile('clock', 'Submitted', pj.submitted_at ? fmtD(pj.submitted_at) : 'Not yet', pj.submitted_at ? 'g' : 'o')}${tile('file', 'File', pj.submission_file ? fileLink(pj.submission_file) : 'None', 'v', 1)}${tile('link', 'Portfolio', pj.portfolio_link ? `<a href="${esc(pj.portfolio_link)}" target="_blank" rel="noopener" data-a="noop">${esc(pj.portfolio_link)}</a>` : 'None', '', 1)}</div>`, 'o');
+    const pps = pj.portfolio_status || 'Pending';
+    const ev = can ? card('star', 'Evaluation', 'Score the work and record the portfolio outcome', `<div class="ux-sc"><input id="f-ps" type="number" min="0" max="100" value="${esc(pj.evaluation_score)}" placeholder="0"><span>/ 100</span></div><div class="ux-sg">${['Pending', 'Approved', 'Rejected'].map(o => `<button class="${pps === o ? 'on' : ''}" data-a="ppspick" data-v="${o}">${o}</button>`).join('')}</div><div style="display:none">${F.s('pps', 'Portfolio', ['Pending', 'Approved', 'Rejected'], pps)}</div>${F.ta('pr', 'Remarks', pj.remarks, 'Strengths and what to improve…')}`, 'g')
+      : `<div class="ux-wait"><span class="ux-ic">${ic('clock')}</span><div><b>Waiting for the submission</b><small>The student has not submitted the project yet.</small></div></div>`;
+    return { t: 'Project review', sub: esc(s.full_name), body: `<div class="ux">${hero}${sub}${ev}<button class="ux-del" data-a="projdel" data-reg="${s.registration_number}">${ic('trash', 's')} Remove project</button>${can ? `<div class="ux-bar">${pj.status === 'Submitted' ? `<button class="btn sec" data-a="projrev" data-reg="${s.registration_number}" data-v="Under Review">Start review</button>` : ''}<button class="btn ok" data-a="projeval" data-reg="${s.registration_number}">Save evaluation</button></div>` : ''}</div>` };
+  };
+  A.ppspick = d => { const el = document.getElementById('f-pps'); if (el) el.value = d.v; document.querySelectorAll('.ux-sg button').forEach(b => b.classList.toggle('on', b.dataset.v === d.v)); };
+
+  /* ---------- assign forms ---------- */
+  const bar = (a, l) => `<div class="ux-bar"><button class="btn" data-a="${a}">${l}</button></div>`;
+  V.a_task_form = () => ({ t: 'Assign task', sub: 'To one or many students', body: `<div class="ux">${fh('book', 'New task', 'Send an assignment or homework to one or many students.')}` +
+    card('edit', 'Task details', 'Tell students what to do', F.t('tt', 'Title *', '', { ph: 'e.g. Build a portfolio page' }) + F.ta('td', 'Instructions', '', 'What should the student do?')) +
+    card('cal', 'Type &amp; deadline', 'When is it due?', `<div class="g2">${F.s('tty', 'Type', ['Assignment', 'Homework'])}${F.t('tdue', 'Due date *', addDays(today(), 7), { type: 'date' })}</div>`, 'o') +
+    card('users', 'Assign to', 'Choose one or many students', picker('task', activeStu()), 'g') + bar('tasksave', 'Assign to selected') + '</div>' });
+  V.a_proj_form = () => { const L = activeStu().filter(s => !s.project); return { t: 'Assign project', sub: 'One final project per student', body: `<div class="ux">${fh('target', 'New final project', 'Each student gets one capstone. They upload files and a portfolio link, and you review it.', 'linear-gradient(135deg,#6D3FE0,#2454E8)')}` +
+    card('edit', 'Project details', 'Title and brief', F.t('pt', 'Project title *', '', { ph: 'e.g. E-commerce website' }) + F.ta('pd', 'Brief', '', 'What should they build? List the scope and deliverables.')) +
+    card('cal', 'Deadline', 'Shown on the student’s dashboard', F.t('pdue', 'Due date *', addDays(today(), 30), { type: 'date', hint: 'Default is 30 days from today.' }), 'o') +
+    card('users', 'Assign to', L.length + ' student' + (L.length === 1 ? '' : 's') + ' without a project', picker('proj', L), 'g') + bar('projsave', 'Assign project') + '</div>' }; };
+
+  /* ---------- courses ---------- */
+  const _c = V.a_courses;
+  V.a_courses = function () {
+    const v = _c.apply(this, arguments), d = D(), q = ((S.q && S.q.cs) || '').toLowerCase(), f = flt('csf', ['All', 'Active', 'Inactive']);
+    const L = d.courses.filter(c => (!q || (c.course_name + c.course_code).toLowerCase().includes(q)) && (f === 'All' || (f === 'Active') === !!c.is_active));
+    const R = 22, C = 2 * Math.PI * R;
+    const cc = c => { const i = d.courses.indexOf(c), st = d.students.filter(x => x.enr.course_id === c.course_id), avg = st.length ? Math.round(st.reduce((a, x) => a + (+x.enr.progress_percent || 0), 0) / st.length) : 0, col = PAL[i % 6];
+      return `<button class="ux-cc" style="--c:${col}" data-a="go" data-v="a_course" data-id="${c.course_id}">${c.is_active ? '' : '<span class="ux-off">Off</span>'}<span class="ux-cb" style="background:${grad(i)}">${esc(c.course_code)}</span>
+        <div class="ux-cm"><b>${esc(c.course_name)}</b><small>${c.duration_weeks} weeks · ${st.length} student${st.length === 1 ? '' : 's'}</small><div class="ux-av3">${st.slice(0, 3).map(s => `<i>${ini(s.full_name)}</i>`).join('')}${st.length > 3 ? `<i class="m">+${st.length - 3}</i>` : ''}${st.length ? '' : '<em>No students yet</em>'}</div></div>
+        <div class="ux-rg"><svg width="54" height="54"><circle cx="27" cy="27" r="${R}" fill="none" stroke="#E8ECF6" stroke-width="6"/><circle cx="27" cy="27" r="${R}" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${(avg / 100 * C).toFixed(1)} ${C.toFixed(1)}"/></svg><span>${avg}%</span></div></button>`; };
+    v.body = searchBox('cs', 'Search courses') + chips('csf', ['All', 'Active', 'Inactive'], {}) + (L.length ? `<div class="ux-cl">${L.map(cc).join('')}</div>` : empty('No courses', 'Nothing matches.', 'book'));
+    return v;
+  };
+  try { render(); } catch (e) { }
+})();
+</script>
+<style id="ux2b">.ux-bar{align-items:stretch!important}.ux-bar .btn{margin:0!important;height:52px!important;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 22px rgba(20,36,107,.18)}.ux-bar .btn.sec{background:#fff!important;color:#14246B!important;border:1.5px solid #DCE3F4!important;box-shadow:none}</style>
+<style id="ux2c">.ux .pk-top{padding:10px}.ux .pk-s{width:100%;box-sizing:border-box}</style>
+<style id="ux-polish">
+#app .mut{font-size:13px;color:#4F5B76}
+#app ::placeholder{color:#76819B;opacity:1}
+#app .stp .s{font-size:12px;color:#4F5B76}
+#app .ux-st>div{font-size:12px}#app .ux-st small{font-size:11px;opacity:.9}
+#app .ux-av3 em{font-size:12.5px}
+#app .adm-only,#app .m7-lk,#app .cx-h .lk{background:#FFF3DC;color:#9A5A00;font-size:11.5px;border:1px solid #F4D9A4}
+#app .m7-sg button,#app .seg button{background:#fff;border:1.5px solid #D5DCEC;color:#3D4A68}
+#app .m7-sg button.on[data-v="Done"],#app .m7-sg button.on[data-v="Completed"]{background:#12986B;border-color:#12986B;color:#fff}
+#app .m7-sg button.on[data-v="Not Done"],#app .m7-sg button.on[data-v="Not Completed"]{background:#FFF1E0;border-color:#F0A25A;color:#A4520A}
+#app .m7-sg button.on[data-v="Done"]:before,#app .m7-sg button.on[data-v="Completed"]:before{content:"✓ "}
+#app .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+#app .m7-sw{gap:14px;align-items:center;margin:6px 0 14px;padding:12px;border-radius:14px;background:#F6F8FC;border:1px solid var(--line)}
+#app .m7-sw>input#f-cvis{-webkit-appearance:none;appearance:none;flex:none;width:52px;height:30px;border-radius:99px;background:#C3CCE0;position:relative;margin:0;transition:background .2s;cursor:pointer}
+#app .m7-sw>input#f-cvis:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(15,27,77,.3);transition:transform .2s}
+#app .m7-sw>input#f-cvis:checked{background:#12986B}
+#app .m7-sw>input#f-cvis:checked:after{transform:translateX(22px)}
+#app .btn[disabled]{background:#AEB8D0!important;color:#fff!important;box-shadow:none!important;opacity:1;cursor:not-allowed}
+#app .ux-cc:before{display:none}
+#app .ux-av3 i{background:#EEF1F8;color:#4A5675;border-color:#fff}
+#app .ux-rg{margin-bottom:14px}
+#app .ux-rg:after{content:"progress";position:absolute;left:-4px;right:-4px;top:100%;margin-top:2px;text-align:center;font-size:10.5px;font-weight:700;color:#5F6B85}
+</style>
+<script id="ux-polish-js">
+(function(){
+  var app=document.getElementById('app'); if(!app) return;
+  function sync(){
+    var b=app.querySelector('button[data-a="projsub"]'); if(!b) return;
+    var f=app.querySelector('#f-pf'), l=app.querySelector('#f-pl');
+    var has=(f&&f.files&&f.files.length)||(l&&l.value.trim());
+    var off=!has&&!/Update submission/.test(b.textContent);
+    if(b.disabled!==off) b.disabled=off;
+  }
+  app.addEventListener('input',sync,true); app.addEventListener('change',sync,true);
+  new MutationObserver(sync).observe(app,{childList:true,subtree:true});
+  sync();
+})();
+</script>
+
+<style id="ux-polish2">
+/* ---------- Course completion screen ---------- */
+#app .m7-c{padding:16px;border-radius:20px}
+#app .m7-c>h4{font-size:15px;font-weight:800;color:var(--navy-h,#0F1B4D);margin:0 0 6px;gap:8px;flex-wrap:nowrap}
+#app .m7-c>h4 .m7-lk{margin-left:auto;flex:none;white-space:nowrap}
+#app .m7-c>.mut{line-height:1.45}
+#app .m7-ck{grid-template-columns:1fr 1fr;gap:8px;grid-auto-rows:1fr}
+#app .m7-ck>div{padding:10px 10px;min-height:52px;column-gap:9px;min-width:0}
+#app .m7-ck span{font-size:13px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+#app .m7-ck em{font-size:12px;font-weight:600}
+#app .m7-sg{gap:8px;margin:10px 0 4px}
+#app .m7-sg button{height:44px;padding:0 6px;border-radius:12px;font-size:13.5px;display:flex;align-items:center;justify-content:center;white-space:nowrap}
+#app .m7-g3{display:grid;grid-template-columns:1fr 1fr 76px;gap:0 10px;align-items:end;margin-top:8px}
+#app .m7-g3>*{min-width:0}
+#app .m7-g3 label,#app .m7-g3 .lbl{font-size:12.5px;white-space:nowrap}
+#app .m7-c>button.btn,#app .m7-c .btn.sec.sm{width:100%;height:46px;margin-top:12px;border-radius:14px;justify-content:center}
+#app .m7-c .btn.sec.sm{background:#fff;border:1.5px solid #CBD5EE;color:#14246B}
+#app .hbtn u{min-width:20px;height:20px;padding:0 5px;border:2px solid #fff;box-sizing:border-box;font:700 10px/16px Inter,sans-serif}
+
+/* ---------- Project review screen ---------- */
+#app .ux-sg{gap:8px;margin:4px 0 14px}
+#app .ux-sg button{height:44px;padding:0 6px;border-radius:12px;background:#fff;border:1.5px solid #D5DCEC;color:#3D4A68;font-size:13.5px;font-weight:700;white-space:nowrap}
+#app .ux-sg button.on{background:#14246B;border-color:#14246B;color:#fff}
+#app .ux-sg button.on[data-v="Approved"]{background:#12986B;border-color:#12986B}
+#app .ux-sg button.on[data-v="Rejected"]{background:#D5443A;border-color:#D5443A}
+#app .ux-sc{background:#fff;border:1.5px solid #D5DCEC;padding:10px 16px;align-items:center}
+#app .ux-sc input{font-size:28px!important}
+#app .ux-sc span{font-size:14px}
+#app .ux-t b,#app .ux-t a{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .ux-t>div,#app .ux-t>span:last-child{min-width:0}
+#app .ux-bar{gap:10px;padding-top:12px}
+#app .ux-bar .btn{height:50px!important;border-radius:14px!important;font-size:14.5px;box-shadow:none!important}
+#app .ux-bar .btn.sec{flex:0 0 38%;background:#fff!important;border:1.5px solid #14246B!important;color:#14246B!important}
+#app .ux-bar .btn.ok,#app .ux-bar .btn:not(.sec){flex:1;background:var(--accent)!important;color:#fff!important;box-shadow:0 8px 18px rgba(36,84,232,.28)!important}
+#app .ux-del{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:6px 0 16px;padding:12px;border-radius:14px;border:1.5px solid #F3CFCB;background:#fff;color:#B4372E;font-size:13.5px;font-weight:700}
+</style>
