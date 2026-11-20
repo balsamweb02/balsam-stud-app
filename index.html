@@ -1118,11 +1118,14 @@ V.a_student_form = p => {
   const edit = !!p.reg, d = D(), key = 'stu' + (p.reg || 'new');
   if (!S.draft[key]) {
     if (edit) { const s = stu(p.reg), e = s.enr; S.draft[key] = { step: 1, name: s.full_name, mobile: s.mobile, email: s.email, gender: s.gender, dob: s.dob, address: s.address, reg: s.registration_number, adm: s.admission_number, admdate: s.admission_date, course: e.course_name, faculty: e.faculty_name, start: e.course_start_date, months: e.duration_months, days: e.slot_days, from: e.slot_start_time, to: e.slot_end_time, fee: e.net_fee, due: e.next_due_date }; }
-    else S.draft[key] = { step: 1, reg: 'REG' + ('00' + (d.seq.reg + 1)).slice(-3), adm: 'ADM' + (d.seq.adm + 1), admdate: today(), start: today(), months: 6, days: 'Mon-Fri', from: '10:00', to: '11:00', stage: 'new', gender: '' };
+    else S.draft[key] = { step: 1, reg: 'REG' + ('00' + (d.seq.reg + 1)).slice(-3), adm: 'ADM' + (d.seq.adm + 1), admdate: today(), start: today(), months: 6, days: 'Mon-Fri', from: '10:00', to: '11:00', stage: 'new', gender: 'Female',
+      name: 'Meena Lakshmi', mobile: '+91 98765 43210', email: 'meena.lakshmi@example.com', dob: '2003-05-14', address: 'Lawspet, Puducherry',
+      course: ((d.courses.filter(c => c.is_active)[0] || d.courses[0] || {}).course_name) || '', faculty: (d.faculty && d.faculty[0]) || '', fee: 25000, sreg: 2000, sn: 2,
+      user: 'meena' + (d.seq.reg + 1), pass: 'Meena@' + (d.seq.reg + 1) + '25' };
   }
   const x = S.draft[key], last = edit ? 2 : 3;
   let b = `<div class="steps">${Array.from({ length: last }, (_, i) => `<i class="${i < x.step ? 'on' : ''}"></i>`).join('')}</div>`;
-  if (x.step === 1) b += sec('Step 1 · Personal details') + F.t('name', 'Full name *', x.name, { ph: 'Anitha Kumar' }) + `<div class="g2">${F.t('mobile', 'Mobile', x.mobile, { ph: '+91 90000 00000', type: 'tel' })}${F.s('gender', 'Gender', ['', 'Female', 'Male', 'Other'], x.gender)}</div>` + F.t('email', 'Email', x.email, { type: 'email', ph: 'student@example.com' }) + `<div class="g2">${F.t('dob', 'Date of birth', x.dob, { type: 'date' })}${F.t('admdate', 'Admission date', x.admdate, { type: 'date' })}</div>` + F.t('address', 'Address', x.address, { ph: 'City, State' }) + `<div class="g2">${F.t('reg', 'Registration no. *', x.reg)}${F.t('adm', 'Admission no.', x.adm)}</div>`;
+  if (x.step === 1) b += sec('Step 1 · Personal details') + F.t('name', 'Full name *', x.name, { ph: 'Anitha Kumar' }) + `<div class="g2">${F.t('mobile', 'Mobile', x.mobile, { ph: '+91 90000 00000', type: 'tel' })}${F.s('gender', 'Gender', [['', 'Select'], 'Female', 'Male', 'Other'], x.gender)}</div>` + F.t('email', 'Email', x.email, { type: 'email', ph: 'student@example.com' }) + `<div class="g2">${F.t('dob', 'Date of birth', x.dob, { type: 'date' })}${F.t('admdate', 'Admission date', x.admdate, { type: 'date' })}</div>` + F.t('address', 'Address', x.address, { ph: 'City, State' }) + `<div class="g2">${F.t('reg', 'Registration no. *', x.reg)}${F.t('adm', 'Admission no.', x.adm)}</div>`;
   if (x.step === 2) b += sec('Step 2 · Course &amp; one-to-one session') + `<label class="field"><span>Course *</span><input id="f-course" list="cl" value="${esc(x.course || '')}" placeholder="Select or type a course" autocomplete="off"><datalist id="cl">${d.courses.filter(c => c.is_active).map(c => `<option value="${esc(c.course_name)}">`).join('')}</datalist></label><label class="field"><span>Assigned faculty *</span><input id="f-faculty" list="fl" value="${esc(x.faculty || '')}" placeholder="Faculty name" autocomplete="off"><datalist id="fl">${d.faculty.map(c => `<option value="${esc(c)}">`).join('')}</datalist></label>` + `<div class="g2">${F.t('start', 'Start date *', x.start, { type: 'date' })}${F.t('months', 'Duration (months) *', x.months, { type: 'number', attr: 'min="1"' })}</div>` + daysPicker('days', x.days) + `<div class="g2">${F.t('from', 'Session start *', x.from, { type: 'time' })}${F.t('to', 'Session end *', x.to, { type: 'time' })}</div><div class="g2">${F.t('fee', 'Net fee (₹) *', x.fee, { type: 'number', attr: 'min="0"' })}${F.t('due', 'Next due date', x.due, { type: 'date' })}</div><div class="note">Timing, duration and fee are set per student — there are no fixed batches.</div>`;
   if (x.step === 3) b += sec('Step 3 · Login credentials') + F.t('user', 'Username *', x.user || (x.name || '').toLowerCase().replace(/[^a-z\s]/g, '').trim().split(/\s+/)[0] || '') + `<label class="field"><span>Password *</span><input id="f-pass" value="${esc(x.pass || '')}" placeholder="Type or generate" autocomplete="off"></label><button class="btn sec sm" data-a="genpw" style="margin:-4px 0 12px">${ic('hist', 's')} Generate password</button>` + F.s('stage', 'Dashboard mode', [['new', 'Onboarding — welcome screen until joining'], ['active', 'Active — full dashboard now']], x.stage) + `<div class="note">The student signs in with these exactly as set. You can reset them later from the student record.</div>`;
   b += `<div class="btns">${x.step > 1 ? `<button class="btn sec" data-a="stuprev" data-key="${key}">Back</button>` : `<button class="btn sec" data-a="stucancel" data-key="${key}">Cancel</button>`}<button class="btn" data-a="stunext" data-key="${key}" ${edit ? `data-reg="${p.reg}"` : ''}>${x.step === last ? (edit ? 'Save changes' : 'Create student') : 'Next'}</button></div>`;
@@ -1622,11 +1625,20 @@ V.s_tasks = () => {
 const PJ = ['Pending', 'Submitted', 'Under Review', 'Evaluated'];
 function projectCard(s) {
   const p = s.project; if (!p) return empty('No project assigned', 'Your final project will appear here once assigned.', 'target');
-  const i = PJ.indexOf(p.status);
-  return `<div class="card"><div class="row"><b class="grow" style="font-size:15px">${esc(p.title)}</b>${pill(p.status)}</div><div class="mut" style="margin-top:4px">${esc(p.description)}</div><div class="pipe" style="margin-top:14px">${PJ.map((x, j) => `<i class="${j < i ? 'on' : j === i ? 'cur' : ''}">${j < i ? '✓' : j + 1}</i>${j < 3 ? `<s class="${j < i ? 'on' : ''}"></s>` : ''}`).join('')}</div><div class="pipel"><span>Assigned</span><span>Submitted</span><span>Review</span><span>Evaluated</span></div><div class="sepl"></div><div class="kv">${kv('Due', fmtD(p.due_date) + ' (' + rel(p.due_date) + ')')}${kv('Submitted', p.submitted_at ? fmtD(p.submitted_at) : '–')}${p.submission_file ? kv('Your file', fileLink(p.submission_file)) : ''}${p.portfolio_link ? kv('Portfolio', `<a href="${esc(p.portfolio_link)}" target="_blank" rel="noopener" data-a="noop">Open link</a>`) : ''}</div></div>` +
-    (p.status === 'Evaluated' ? `<div class="card"><div class="row"><div class="grow"><div class="mut">Evaluation score</div><div class="big" style="color:var(--ok)">${p.evaluation_score}<span style="font-size:15px;color:var(--mut)"> / 100</span></div></div>${pill('Portfolio ' + p.portfolio_status)}</div>${p.remarks ? `<div class="note" style="margin:12px 0 0">${esc(p.remarks)}</div>` : ''}</div>` :
-      p.status === 'Under Review' ? `<div class="note">Your faculty is reviewing the project. You'll be notified with the result.</div>` :
-        sec(p.status === 'Submitted' ? 'Update submission' : 'Submit project') + `<div class="card">${F.file('pf', p.submission_file ? 'Replace file: ' + p.submission_file.name : 'Upload project file (zip/pdf)')}${F.t('pl', 'Portfolio / live link', p.portfolio_link, { type: 'url', ph: 'https://…' })}<button class="btn" data-a="projsub">${ic('up', 's')} ${p.status === 'Submitted' ? 'Update submission' : 'Submit project'}</button></div>`);
+  const i = p.status === 'Evaluated' ? 4 : Math.max(0, PJ.indexOf(p.status)), od = p.status === 'Pending' && p.due_date < today();
+  const labels = ['Assigned', 'Submitted', 'Review', 'Evaluated'];
+  const stepper = `<div class="pj-st">${labels.map((l, j) => `<div class="${j < i ? 'd' : j === i ? 'c' : ''}"><i>${j < i ? '✓' : j + 1}</i><span>${l}</span></div>`).join('')}</div>`;
+  const tile = (ic_, l, v, tone) => `<div class="pj-t"><span class="pj-ti ${tone || ''}">${ic(ic_)}</span><div><small>${l}</small><b>${v}</b></div></div>`;
+  const tiles = tile('cal', 'Due date', fmtD(p.due_date), od ? 'r' : 'o') + tile('clock', od ? 'Status' : 'Time left', od ? 'Overdue' : (p.status === 'Pending' ? rel(p.due_date) : 'Submitted'), od ? 'r' : 'b') +
+    tile('tick', 'Submitted on', p.submitted_at ? fmtD(p.submitted_at) : 'Not yet', p.submitted_at ? 'g' : '') +
+    (p.submission_file ? tile('file', 'Your file', fileLink(p.submission_file), 'v') : '') +
+    (p.portfolio_link ? tile('link', 'Portfolio', `<a href="${esc(p.portfolio_link)}" target="_blank" rel="noopener" data-a="noop">Open link</a>`, 'b') : '');
+  const head = `<div class="pj-card"><div class="pj-top"><span class="pj-ic">${ic('target')}</span><div class="pj-tt"><b>${esc(p.title)}</b><span>Final project</span></div>${pill(od ? 'Overdue' : p.status, od ? 'bad' : null)}</div>${p.description ? `<p class="pj-ds">${esc(p.description)}</p>` : ''}${stepper}<div class="pj-tl">${tiles}</div></div>`;
+  let tail;
+  if (p.status === 'Evaluated') tail = `<div class="pj-card"><div class="pj-sc"><div><small>Evaluation score</small><b>${esc(p.evaluation_score)}<em>/100</em></b></div>${pill('Portfolio ' + p.portfolio_status)}</div>${p.remarks ? `<div class="pj-rm"><small>Faculty remarks</small>${esc(p.remarks)}</div>` : ''}</div>`;
+  else if (p.status === 'Under Review') tail = `<div class="pj-card pj-wait"><span class="pj-ic">${ic('clock')}</span><div><b>Under review</b><small>Your faculty is reviewing the project. You will be notified with the result.</small></div></div>`;
+  else { const upd = p.status === 'Submitted'; tail = `<div class="pj-card"><div class="pj-sh"><b>${upd ? 'Update your submission' : 'Submit your project'}</b><small>Upload your work file, share a live link, or both.</small></div>${F.file('pf', p.submission_file ? 'Replace file: ' + p.submission_file.name : 'Upload project file', 'Zip or PDF · max 1 MB')}${F.t('pl', 'Portfolio / live link', p.portfolio_link, { type: 'url', ph: 'https://…' })}<button class="btn pj-btn" data-a="projsub">${ic('up', 's')} ${upd ? 'Update submission' : 'Submit project'}</button></div>`; }
+  return head + tail;
 }
 A.projsub = () => { const s = me(), p = s.project; readFile('pf', f => { if (!f && !fv('pl') && !p.submission_file && !p.portfolio_link) return toast('Add a file or a portfolio link.', 'bad'); if (f) p.submission_file = f; if (fv('pl')) p.portfolio_link = fv('pl'); p.submitted_at = today(); p.status = 'Submitted'; save(); toast('Project submitted', 'ok'); render(); }); };
 V.s_proj = () => ({ t: 'Final project', body: projectCard(me()) });
@@ -5657,4 +5669,215 @@ try { render(); } catch (e) { }
 #app .ux-bar .btn.sec{flex:0 0 38%;background:#fff!important;border:1.5px solid #14246B!important;color:#14246B!important}
 #app .ux-bar .btn.ok,#app .ux-bar .btn:not(.sec){flex:1;background:var(--accent)!important;color:#fff!important;box-shadow:0 8px 18px rgba(36,84,232,.28)!important}
 #app .ux-del{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:6px 0 16px;padding:12px;border-radius:14px;border:1.5px solid #F3CFCB;background:#fff;color:#B4372E;font-size:13.5px;font-weight:700}
+</style>
+<style id="ux-tabs">
+/* One tab style for student (Assignments / Project / Assessments) and admin (Assignments / Projects) */
+#app .seg{display:flex;gap:4px;width:100%;box-sizing:border-box;padding:4px;margin:0 0 14px;background:#EAEFF9;border:0;border-radius:16px;overflow:hidden}
+#app .seg button{flex:1 1 0;min-width:0;box-sizing:border-box;height:40px;padding:0 6px;border:0;border-radius:12px;background:transparent;color:#4A5675;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:none}
+#app .seg button.on{background:var(--accent);color:#fff;border-radius:12px;box-shadow:0 4px 10px rgba(36,84,232,.28)}
+#app .fx3-pg .seg button.on{background:#F26A10}
+#app[data-mode=dark] .seg{background:var(--field)}
+#app[data-mode=dark] .seg button{color:var(--mut)}
+#app .lcard .seg button{font-size:12.5px;padding:0 4px}
+</style>
+
+<style id="ux-proj">
+#app .pj-card{background:var(--card);border-radius:22px;box-shadow:0 6px 20px rgba(20,36,107,.07);border:1px solid rgba(20,36,107,.05);padding:16px;margin-bottom:14px}
+#app .pj-top{display:flex;align-items:center;gap:12px}
+#app .pj-ic{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#EAF0FF,#DDE6FF);color:#2454E8}
+#app .pj-tt{flex:1;min-width:0}
+#app .pj-tt b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:15.5px;line-height:1.25;color:var(--navy-h,#0F1B4D)}
+#app .pj-tt span{display:block;font-size:12.5px;color:var(--mut);margin-top:2px}
+#app .pj-ds{margin:12px 0 0;font-size:13.5px;line-height:1.5;color:#4F5B76}
+#app .pj-st{display:flex;margin:18px 0 16px;padding:14px 4px 10px;border-radius:18px;background:#F5F8FE}
+#app .pj-st>div{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;font-size:12px;font-weight:700;color:#5F6B85;text-align:center}
+#app .pj-st>div:not(:first-child):before{content:"";position:absolute;top:13px;right:50%;width:100%;height:3px;border-radius:3px;background:#D5DCEC}
+#app .pj-st>div.d:not(:first-child):before,#app .pj-st>div.c:not(:first-child):before{background:#12986B}
+#app .pj-st i{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;background:#fff;border:2px solid #D5DCEC;color:#5F6B85;box-sizing:border-box}
+#app .pj-st .d i{background:#12986B;border-color:#12986B;color:#fff}
+#app .pj-st .c i{background:#2454E8;border-color:#2454E8;color:#fff;box-shadow:0 0 0 4px rgba(36,84,232,.18)}
+#app .pj-st .c{color:#2454E8}
+#app .pj-tl{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#app .pj-t{display:flex;align-items:center;gap:10px;padding:11px;border-radius:16px;background:#F5F8FE;min-width:0}
+#app .pj-t>div{min-width:0}
+#app .pj-t small{display:block;font-size:12px;color:#5F6B85;font-weight:600}
+#app .pj-t b{display:block;font-size:13.5px;color:var(--navy-h,#0F1B4D);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .pj-t a{color:#2454E8;font-weight:700}
+#app .pj-ti{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#E3EAFF;color:#2454E8}
+#app .pj-ti.o{background:#FFF0E3;color:#F26A10}#app .pj-ti.g{background:#E6F8EF;color:#12986B}#app .pj-ti.v{background:#F0EAFF;color:#7C4DFF}#app .pj-ti.r{background:#FDE9E7;color:#D5443A}
+#app .pj-sh{margin-bottom:14px}#app .pj-sh b{display:block;font-size:15.5px;color:var(--navy-h,#0F1B4D)}#app .pj-sh small{display:block;font-size:13px;color:#5F6B85;margin-top:3px}
+#app .pj-card .drop{margin-bottom:14px}
+#app .pj-btn{width:100%;height:50px;border-radius:14px;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+#app .pj-sc{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#app .pj-sc small{display:block;font-size:12.5px;color:#5F6B85;font-weight:600}
+#app .pj-sc b{font-size:34px;font-weight:800;color:#12986B;line-height:1.1}#app .pj-sc em{font-style:normal;font-size:15px;color:#5F6B85;font-weight:700;margin-left:4px}
+#app .pj-rm{margin-top:14px;padding:12px;border-radius:14px;background:#F5F8FE;font-size:13.5px;line-height:1.5;color:#2D3956}#app .pj-rm small{display:block;font-size:12px;font-weight:700;color:#5F6B85;margin-bottom:4px}
+#app .pj-wait{display:flex;gap:14px;align-items:center;background:#FFF6EA}#app .pj-wait .pj-ic{background:#fff;color:#F26A10}#app .pj-wait b{display:block;font-size:15px;color:#6B4A1D}#app .pj-wait small{display:block;font-size:13px;color:#6B4A1D;margin-top:2px}
+</style>
+
+<style id="ux-stuform">
+/* ===== Add / Edit student form ===== */
+#app .sf-c{background:#F8FAFE;border:1px solid #E6EBF4;border-radius:20px;padding:14px;margin:0 0 14px}
+#app .sf-h{display:flex;align-items:center;gap:12px;margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid #E6EBF4}
+#app .sf-i{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#EAF0FF,#DDE6FF);color:#2454E8}
+#app .sf-h b{display:block;font-size:15px;color:var(--navy-h,#0F1B4D)}
+#app .sf-h small{display:block;font-size:12.5px;color:#5F6B85;margin-top:2px;line-height:1.35}
+#app .sf-c .field:last-child{margin-bottom:0}
+#app .sf-c .g2{align-items:start;gap:0 12px}
+#app .sf-c .field>span{font-size:13px;font-weight:700;color:#3D4A68;margin-bottom:6px}
+#app .sf-c .field input,#app .sf-c .field select{background-color:#fff!important;border:1.5px solid #D5DCEC!important;min-height:50px;font-size:15px}
+#app .sf-c .field input:focus,#app .sf-c .field select:focus{border-color:#2454E8!important;box-shadow:0 0 0 4px rgba(36,84,232,.14)}
+#app .sf-c .field input::placeholder{color:#8792AC}
+#app .sf-c .field small{font-size:12px;color:#5F6B85;margin-top:5px}
+#app .field input[type=email]:not(:placeholder-shown):invalid,#app .field input[type=tel]:not(:placeholder-shown):invalid{border-color:#D5443A!important;background-color:#FFF8F7!important}
+#app .field input[type=email]:not(:placeholder-shown):valid,#app .field input[type=tel]:not(:placeholder-shown):valid{border-color:#12986B!important}
+#app .field select:invalid,#app .field select option[value=""]{color:#8792AC}
+#app .field>span .rqs,#app .field>span em{color:#D5443A;font-style:normal;font-weight:800;margin-left:3px}
+/* steps */
+#app .st3{margin:2px 0 20px}
+#app .st3 .t{font-size:12.5px;font-weight:700;color:#5F6B85}
+#app .st3 .s.on .t{color:#2454E8}#app .st3 .s.done .t{color:#12986B}
+/* action bar: solid, edge to edge, content no longer peeks through */
+#app .st3-act{position:sticky;bottom:0;z-index:6;margin:16px -16px 0!important;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))!important;background:#fff!important;border-top:1px solid #E6EBF4;box-shadow:0 -10px 24px rgba(20,36,107,.07);gap:10px}
+#app .st3-act .btn{height:52px;border-radius:16px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center}
+#app .st3-act .btn.sec{flex:0 0 34%;background:#fff;border:1.5px solid #CBD5EE;color:#14246B;box-shadow:none}
+#app .st3-act .btn:not(.sec){flex:1;box-shadow:0 8px 18px rgba(36,84,232,.28)}
+</style>
+<style id="ux-actbar">
+/* App-style footer: pinned to the very bottom of the screen, outside the form card */
+#app .view:has(> .st3-act){padding-bottom:0!important}
+#app .view>.st3-act{position:sticky;bottom:0;z-index:8;margin:16px -18px 0!important;padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px))!important;background:#fff!important;border-top:1px solid #E6EBF4;box-shadow:0 -10px 24px rgba(20,36,107,.08)}
+</style>
+<script id="ux-actbar-js">
+(function () {
+  try {
+    Object.keys(V).forEach(function (k) {
+      var o = V[k]; if (typeof o !== 'function') return;
+      V[k] = function () {
+        var v = o.apply(this, arguments);
+        if (v && typeof v.body === 'string' && v.body.indexOf('st3-act') > -1) {
+          var m = v.body.match(/<div class="btns st3-act">[\s\S]*?<\/div>/);
+          if (m) v.body = v.body.replace(m[0], '') + m[0];
+        }
+        return v;
+      };
+    });
+    render();
+  } catch (e) { console.error(e); }
+})();
+</script>
+<style id="ux-forms">
+/* All admin forms share the Add Student look: one white card, section titles, plain fields, pinned Cancel / Save bar */
+#app .fm .sf-sub{margin:-6px 0 12px;font-size:13px;color:#5F6B85;line-height:1.4}
+#app .fm .pk{margin-top:2px}
+#app .fm>h2.sec{margin-top:6px}
+#app .fm>h2.sec:first-child{margin-top:0}
+#app .fm .fp-inst{background:#F8FAFE;border:1px solid #E6EBF4;box-shadow:none}
+</style>
+<script id="ux-forms-js">
+(function () {
+  var NAMES = ['a_task_form', 'a_test_form', 'a_proj_form', 'a_material_form', 'a_fee_plan'];
+  function unify(b) {
+    /* 1. banner / card layouts -> flat sections inside one card */
+    b = b.replace(/<div class="ux-fh"[^>]*>[\s\S]*?<\/p><\/div><\/div>/, '');
+    b = b.replace(/<div class="fh3">[\s\S]*?<\/small><\/div><\/div>/, '');
+    b = b.replace(/<div class="ux-h"><span[^>]*>[\s\S]*?<\/span><div><b>([\s\S]*?)<\/b>(?:<small>([\s\S]*?)<\/small>)?<\/div><\/div>/g, function (m, t, s) {
+      return '<h2 class="sec">' + t + '</h2>' + (s ? '<div class="sf-sub">' + s + '</div>' : '');
+    });
+    b = b.replace(/<\/?section[^>]*>/g, '');
+    b = b.replace(/^<div class="ux">/, '<div class="fm">');
+    /* 2. stepper (fee plan) -> same stepper as Add Student */
+    b = b.replace(/<div class="stp">((?:<div class="s[^"]*"><i>\d<\/i>[^<]*<\/div>|<span class="ln[^"]*"><\/span>)+)<\/div>/, function (m, inner) {
+      var steps = []; inner.replace(/<div class="s([^"]*)"><i>\d<\/i>([^<]*)<\/div>/g, function (x, c, t) { steps.push([/\bon\b/.test(c), t]); return x; });
+      var cur = steps.findIndex(function (s) { return s[0]; });
+      return '<div class="st3">' + steps.map(function (s, i) { return '<div class="s ' + (i < cur ? 'done' : i === cur ? 'on' : '') + '"><span class="d">' + (i < cur ? '✓' : i + 1) + '</span><span class="t">' + s[1] + '</span></div>'; }).join('') + '</div>';
+    });
+    /* 3. action bar: Cancel + primary, pinned outside the card */
+    var re = /<div class="(?:btns(?: st3-act)?|ux-bar)">((?:<button[^>]*>[\s\S]*?<\/button>)+)<\/div>/g, m, last = null, inner = '';
+    while ((m = re.exec(b))) last = m;
+    if (last) { inner = last[1]; b = b.slice(0, last.index) + b.slice(last.index + last[0].length); }
+    else { m = b.match(/<button class="btn" data-a="\w+">[^<]*<\/button><\/div>\s*$/); if (m) { inner = m[0].replace(/<\/div>\s*$/, ''); b = b.slice(0, m.index) + '</div>'; } }
+    if (inner) {
+      if (!/class="btn sec"/.test(inner)) inner = '<button class="btn sec" data-a="back">Cancel</button>' + inner;
+      b += '<div class="btns st3-act">' + inner + '</div>';
+    }
+    return b;
+  }
+  try {
+    NAMES.forEach(function (k) {
+      var o = V[k]; if (typeof o !== 'function') return;
+      V[k] = function () { var v = o.apply(this, arguments); if (v && typeof v.body === 'string') v.body = unify(v.body); return v; };
+    });
+    render();
+  } catch (e) { console.error(e); }
+})();
+</script>
+<style id="ux-pin">
+/* short forms: keep the action bar at the very bottom of the screen, like a native app */
+#app .view:has(> .st3-act){display:flex;flex-direction:column}
+#app .view:has(> .st3-act)>*{flex-shrink:0}
+#app .view>.st3-act{margin-top:auto!important}
+</style>
+
+<style id="ux-forms2">
+#app .st3-act{align-items:stretch}
+#app .st3-act .btn,#app .st3-act .btn.sec{margin:0!important;height:52px;min-height:52px}
+#app .fm .btns[style]{margin:4px 0 14px!important}
+#app .fm .btns[style] .btn.sm{width:100%;height:46px;border-radius:14px}
+#app .fm .note{margin:0 0 14px}
+#app .fm .pre{margin-bottom:14px}
+#app .fm #impprev .note,#app .fm #attprev .note{margin-top:4px}
+#app .fm #impprev,#app .fm #attprev{margin-top:4px}
+</style>
+<script id="ux-forms2-js">
+(function () {
+  function pin(b){ var re=/<div class="btns">((?:\s*<button[^>]*>[\s\S]*?<\/button>)+)\s*<\/div>\s*$/, m=b.match(re), inner=''; if(m){inner=m[1]; b=b.slice(0,m.index);} return {b:b,bar:inner}; }
+  function bar(inner){ if(!/class="btn sec"/.test(inner)) inner='<button class="btn sec" data-a="back">Cancel</button>'+inner; return '<div class="btns st3-act">'+inner+'</div>'; }
+  function csvForm(v){ var p=pin(v.body), b=p.b; b='<h2 class="sec">Format</h2>'+b;
+    b=b.replace('<label class="drop">','<h2 class="sec">Upload file</h2><label class="drop">');
+    b=b.replace(/<label class="field"><span>CSV rows/,'<h2 class="sec">Or paste rows</h2><label class="field"><span>CSV rows');
+    v.body='<div class="fm">'+b+'</div>'+bar(p.bar); }
+  var wi=V.a_import; V.a_import=function(){var v=wi.apply(this,arguments); if(v&&v.body&&v.body.indexOf('class="fm"')<0) csvForm(v); return v;};
+  var wa=V.a_att_import; V.a_att_import=function(){var v=wa.apply(this,arguments); if(v&&v.body&&v.body.indexOf('class="fm"')<0) csvForm(v); return v;};
+  var wn=V.a_notif;
+  V.a_notif=function(){ var v=wn.apply(this,arguments);
+    if(!v||!v.body||S.seg.nc!=='Compose'||v.body.indexOf('class="fm"')>-1) return v;
+    var sm=v.body.match(/^\s*<div class="seg">[\s\S]*?<\/div>/), seg=sm?sm[0]:'', rest=sm?v.body.slice(seg.length):v.body;
+    var i=rest.search(/<label class="field"><span>Title/), head=i>-1?rest.slice(0,i):rest, msg=i>-1?rest.slice(i):''; msg=msg.replace(/<button[^>]*data-a="ntsend"[^>]*>[\s\S]*?<\/button>/g,'');
+    v.body=seg+'<div class="fm"><h2 class="sec">Audience</h2>'+head+(msg?'<h2 class="sec">Message</h2>'+msg:'')+'</div>'+
+      '<div class="btns st3-act"><button class="btn sec" data-a="back">Cancel</button><button class="btn" data-a="ntsend">'+ic('send','s')+' Send notification</button></div>';
+    return v; };
+  try{render();}catch(e){console.error(e);}
+})();
+</script>
+
+<style id="ux-profile">
+/* Student profile polish */
+#app .z .dh{position:relative;overflow:hidden;padding:0 18px 20px;border-radius:24px;box-shadow:0 10px 30px rgba(30,50,110,.10)}
+#app .z .dh::before{content:"";display:block;height:92px;margin:0 -18px;background:radial-gradient(120% 140% at 85% 0%,rgba(255,255,255,.28),transparent 55%),linear-gradient(135deg,#2454E8 0%,#5B7FFF 55%,#8E7BFF 100%)}
+#app .z .dh .av{position:relative;width:92px;height:92px;margin:-46px auto 12px;border:4px solid #fff;font-size:30px;box-shadow:0 10px 24px rgba(20,36,107,.22)}
+#app .z .dh h2{font-size:22px;letter-spacing:-.2px;border:0;margin:0}
+#app .z .dh small{font-size:13px;margin-top:4px}
+#app .z .dh .pl{margin:12px 0 4px;border:0;padding:0}
+#app .z .dh .pl::before,#app .z .dh .pl::after{display:none!important}
+#app .z .dh .ac{margin-top:16px;gap:12px;border:0;padding:0}
+#app .z .dh .ac a,#app .z .dh .ac button{width:50px;height:50px;box-shadow:0 6px 14px rgba(36,84,232,.16);transition:transform .15s}
+#app .z .dh .ac a:active,#app .z .dh .ac button:active{transform:scale(.92)}
+#app .z .dh .ac .w{box-shadow:0 6px 14px rgba(18,152,107,.18)}
+#app .z .ad-g{gap:10px!important}
+#app .z .ad-g>div{position:relative;padding:16px 4px 14px;border-radius:18px;box-shadow:0 4px 14px rgba(30,50,110,.06)}
+#app .z .ad-g>div::before{content:"";position:absolute;left:50%;top:0;width:28px;height:4px;border-radius:0 0 4px 4px;transform:translateX(-50%);background:#8FA8F2}
+#app .z .ad-g>div.g::before{background:#2FBF8F}#app .z .ad-g>div.a::before{background:#F5A524}#app .z .ad-g>div.r::before{background:#E5484D}
+#app .z .ad-g b{font-size:22px;letter-spacing:-.3px}
+#app .z .ad-g span{display:block;margin-top:2px;font-weight:600}
+#app .z .mm-c{border-radius:22px;padding:16px;box-shadow:0 6px 20px rgba(30,50,110,.07)}
+#app .z .mm-c .rw{padding:13px 0}
+#app .z .mm-c .rw>span{font-weight:500}
+#app .z .mm-c .rw>b{font-weight:700;color:var(--navy)}
+</style>
+
+<style id="ux-actbar2">
+#app .view>.st3-act,#app .st3-act{padding:14px 20px calc(24px + env(safe-area-inset-bottom,0px))!important;gap:12px}
+#app .st3-act .btn.sec{border:1.5px solid #B9C6EA!important;background:#fff!important;box-shadow:none!important;flex:0 0 32%}
+#app .view>.st3-act{margin-left:-18px!important;margin-right:-18px!important}
 </style>
