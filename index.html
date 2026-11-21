@@ -2987,7 +2987,7 @@ html[data-mode=dark] body{background:#05080F}
     const v = ah(), d = D(), act = d.students.filter(x => x.is_active !== false);
     const pend = d.students.reduce((a, x) => a + balance(x), 0);
     const pr = act.length ? Math.round(act.reduce((a, x) => a + Number(x.enr.progress_percent || 0), 0) / act.length) : 0;
-    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= today()).length;
+    const fu = new Set((d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= today()).map(f => f.reg)).size;
     const lakh = pend >= 1e5 ? '\u20B9' + (pend / 1e5).toFixed(1).replace(/\.0$/, '') + 'L' : inr(pend);
     const k = (i, c, l, n, a) => `<button ${a}><span class="ni ${c}">${ic(i)}</span><small>${l}</small><b>${n}</b></button>`;
     const q = (i, l, a) => `<button ${a}>${ic(i)}<span>${l}</span></button>`;
@@ -3131,7 +3131,7 @@ html[data-mode=dark] body{background:#05080F}
   const mo = V.a_more;
   V.a_more = function () {
     const v = mo(), d = D(), T = today();
-    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length, al = adminAlerts().length;
+    const fu = new Set((d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).map(f => f.reg)).size, al = adminAlerts().length;
     const pend = d.tasks.filter(t => t.status === 'Submitted').length, tst = d.assessments.filter(a => a.status === 'Scheduled' && a.scheduled_date <= T).length, prj = d.students.filter(x => x.project && x.project.status === 'Submitted').length;
     const ready = d.students.filter(x => x.certificate.status === 'Completed').length;
     const sc = (i, t, n, l, a) => `<button ${a}><span class="c ${t}">${ic(i)}</span><b>${n}</b><small>${l}</small></button>`;
@@ -3352,7 +3352,7 @@ html[data-mode=dark] body{background:#05080F}
     const d = D(), T = today(), act = activeStu(), sched = act.filter(s => scheduled(s, T)), hol = (d.holidays || {})[T];
     const marked = sched.filter(s => s.attendance[T]).length, pres = sched.filter(s => s.attendance[T] === 'Present').length;
     const pend = d.students.reduce((a, s) => a + balance(s), 0), paid = d.students.reduce((a, s) => a + paidSum(s), 0), tot = pend + paid, pc = tot ? Math.round(paid / tot * 100) : 0;
-    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+    const fu = new Set((d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).map(f => f.reg)).size;
     const rev = d.tasks.filter(t => t.status === 'Submitted').length + d.students.filter(s => s.project && s.project.status === 'Submitted').length;
     const ready = d.students.filter(s => s.certificate.status === 'Completed').length, al = adminAlerts();
     const attTxt = hol ? 'Holiday \u00B7 ' + esc(hol) : !sched.length ? 'No classes today' : marked < sched.length ? (marked ? marked + ' of ' + sched.length + ' marked' : 'Not taken yet') : pres + ' of ' + sched.length + ' present';
@@ -3373,7 +3373,7 @@ html[data-mode=dark] body{background:#05080F}
 
   /* ============ ADMIN MORE (PhonePe) ============ */
   V.a_more = () => {
-    const d = D(), T = today(), fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length, al = adminAlerts().length;
+    const d = D(), T = today(), fu = new Set((d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).map(f => f.reg)).size, al = adminAlerts().length;
     const pend = d.tasks.filter(t => t.status === 'Submitted').length, tst = d.assessments.filter(a => a.status === 'Scheduled' && a.scheduled_date <= T).length, prj = d.students.filter(x => x.project && x.project.status === 'Submitted').length;
     const ready = d.students.filter(x => x.certificate.status === 'Completed').length;
     const grp = (h, items) => `<div class="px-sec" style="margin-top:14px"><div class="px-g"><div class="px-gh">${h}</div>${items.join('')}</div></div>`;
@@ -3448,7 +3448,7 @@ html[data-mode=dark] body{background:#05080F}
     if (!isStaff()) { const v = _homeSuper(); v.t = 'Hello, Super Admin'; v.body = v.body.replace('Hello, Admin', 'Hello, Super Admin'); return v; }
     const d = D(), T = today(), act = activeStu(), sched = act.filter(s => scheduled(s, T)), hol = (d.holidays || {})[T];
     const st = s => s.attendance[T] || '', P = sched.filter(s => st(s) === 'Present'), A_ = sched.filter(s => st(s) === 'Absent'), L = sched.filter(s => st(s) === 'Leave'), N = sched.filter(s => !st(s));
-    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length, pendN = d.students.filter(s => balance(s) > 0 && s.overall_status !== 'Dropped').length;
+    const fu = new Set((d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).map(f => f.reg)).size, pendN = d.students.filter(s => balance(s) > 0 && s.overall_status !== 'Dropped').length;
     const rev = d.tasks.filter(t => t.status === 'Submitted').length + d.students.filter(s => s.project && s.project.status === 'Submitted').length;
     const ready = d.students.filter(s => s.certificate.status === 'Completed').length, al = adminAlerts();
     const row = (i, t, ti, sub, a, r) => `<button class="px-r" ${a}><span class="ci ${t}">${ic(i)}</span><span class="t"><b>${ti}</b><span>${sub}</span></span>${r || ic('next', 's')}</button>`;
@@ -3915,7 +3915,7 @@ html[data-mode=dark] body{background:#05080F}
     const al = adminAlerts(), mark = `data-a="attopen" data-d="${T}"`;
     const row = (s, tag) => `<button class="z-r" data-a="go" data-v="a_att_student" data-reg="${s.registration_number}"><span class="avatar" style="width:36px;height:36px;font-size:12px">${ini(s.full_name)}</span><span class="t"><b>${esc(s.full_name)}</b><span>${esc(s.enr.course_name)}</span></span>${pill(tag, tag === 'Absent' ? 'bad' : 'n')}</button>`;
     if (!isStaff()) {
-      const all = d.students, paid = all.reduce((x, s) => x + paidSum(s), 0), out = all.reduce((x, s) => x + Math.max(0, balance(s)), 0), pend = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+      const all = d.students, paid = all.reduce((x, s) => x + paidSum(s), 0), out = all.reduce((x, s) => x + Math.max(0, balance(s)), 0), pend = new Set((d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).map(f => f.reg)).size;
       v.body = `<div class="z"><div class="z-hi"><small>${greet()}</small><h1>Super Admin</h1><small>Institute overview</small></div>
         <div class="z-c"><h3>Overview</h3><div class="z-k t3">${stat('', all.length, 'Students', 'data-a="tab" data-t="students"')}${stat('', (d.staff_list || []).length || 1, 'Admins', 'data-a="tab" data-t="staff"')}${stat('g', P + '/' + sched.length, 'Present today', mark)}</div></div>
         <div class="z-c"><h3>Fees <button data-a="tab" data-t="fees">Details</button></h3><div class="z-k t3">${stat('g', inr(paid), 'Collected', 'data-a="tab" data-t="fees"')}${stat('r', inr(out), 'Outstanding', 'data-a="go" data-v="a_pendfees"')}${stat('a', pend, 'Follow-ups due', 'data-a="go" data-v="a_followups"')}</div></div>
@@ -3923,7 +3923,7 @@ html[data-mode=dark] body{background:#05080F}
         <div class="z-c"><h3>Needs attention ${al.length > 3 ? `<button data-a="go" data-v="a_notif">All (${al.length})</button>` : ''}</h3>${al.slice(0, 3).map(x => `<div class="z-r"><span class="t"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></span></div>`).join('') || '<small class="mut">All clear</small>'}</div></div>`;
       v.t = ''; v.sub = ''; return v;
     }
-    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+    const fu = new Set((d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).map(f => f.reg)).size;
     v.body = `<div class="z"><div class="z-hi"><small>${greet()}</small><h1>Hello, Admin 👋</h1></div>
       <div class="z-c"><h3>Today's attendance <button ${mark}>Mark</button></h3><div class="z-k">${stat('g', P, 'Present', mark)}${stat('r', A_.length, 'Absent', mark)}${stat('a', L, 'Leave', mark)}${stat('', N.length, 'Not marked', mark)}</div></div>
       <div class="z-c"><h3>Fee follow-ups</h3><div class="z-amt">${fu}</div><small class="mut">pending follow-ups due now</small><button class="z-b" data-a="go" data-v="a_followups">Open follow-ups</button></div>
@@ -3992,7 +3992,7 @@ html[data-mode=dark] body{background:#05080F}
   V.a_home = function () {
     const v = prevA(); if (!/class="z"/.test(v.body || '')) return v; const d = D(), T = today(), sup = !isStaff();
     const sched = activeStu().filter(s => scheduled(s, T)), st = s => s.attendance[T] || '', cnt = k => sched.filter(s => st(s) === k).length, N = sched.filter(s => !st(s)).length, mark = `data-a="attopen" data-d="${T}"`;
-    const fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+    const fu = new Set((d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).map(f => f.reg)).size;
     if (sup) {
       const all = d.students, paid = all.reduce((x, s) => x + paidSum(s), 0), out = all.reduce((x, s) => x + Math.max(0, balance(s)), 0);
       v.body = `<div class="z"><div class="m-hero"><small>${greet()}</small><h1>Super Admin</h1><small>Here's what's happening today</small></div>
@@ -4066,10 +4066,10 @@ html[data-mode=dark] body{background:#05080F}
   const prev = V.a_more;
   V.a_more = function () {
     const v = prev(), d = D(), sup = !isStaff(), al = adminAlerts().length, T = iso(new Date());
-    const rev = d.tasks.filter(t => t.status === 'Submitted').length, certs = d.students.filter(s => s.certificate.status === 'Completed').length, fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+    const rev = d.tasks.filter(t => t.status === 'Submitted').length, certs = d.students.filter(s => s.certificate.status === 'Completed').length, fu = new Set((d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).map(f => f.reg)).size;
     const t = (i, c, l, a, n) => `<button ${a}>${n ? `<u>${n}</u>` : ''}<span class="i ${c}">${ic(i)}</span>${l}</button>`, G = (a, ...x) => `<div class="mm-g ${a}">${x.join('')}</div>`;
     const go_ = vw => `data-a="go" data-v="${vw}"`, tb = k => `data-a="tab" data-t="${k}"`;
-    const learn = `<div class="mm-c"><h3>Learning <button ${go_('a_courses')}>View All →</button></h3>${G('c5', t('book', '', 'Courses', go_('a_courses')), t('folder', 'o', 'Materials', go_('a_materials')), t('clip', 'v', 'Assignments', 'data-a="wkgo" data-v="Assignments"', rev), t('tick', 'g', 'Tests', go_('a_tests')), t('target', 'r', 'Projects', 'data-a="wkgo" data-v="Projects"'))}</div>`;
+    const learn = `<div class="mm-c"><h3>Learning <button ${go_('a_courses')}>View All →</button></h3>${G('c5', t('book', '', 'Courses', go_('a_courses')), t('folder', 'o', 'Materials', go_('a_materials')), t('clip', 'v', 'Assignments', 'data-a="wkgo" data-v="Assignments"', rev), t('tick', 'g', 'Tests', go_('a_cdash')), t('target', 'r', 'Projects', 'data-a="wkgo" data-v="Projects"'))}</div>`;
     const stu = `<div class="mm-c"><h3>Students <button ${tb('students')}>View All →</button></h3>${G('c4', t('users', '', 'All Students', tb('students')), t('layers', 'g', 'Completion', go_('a_cdash')), t('award', 'o', 'Certificates', go_('a_complete'), certs), t('chart', 'v', 'Placement', go_('a_place')))}</div>`;
     const tools = sup ? `<div class="mm-c"><h3>Money &amp; Tools <button ${tb('fees')}>View All →</button></h3>${G('c4', t('rupee', 'o', 'Fees', tb('fees')), t('bell', 'r', 'Alerts', go_('a_notif'), al), t('chart', 'g', 'Reports', tb('reports')), t('star', 'v', 'Reviews', go_('a_reviews')))}</div>`
       : `<div class="mm-c"><h3>Tools</h3>${G('c4', t('cal', 'g', 'Attendance', tb('att')), t('bell', 'o', 'Follow-ups', go_('a_followups'), fu), t('mega', 'v', 'Message', go_('a_notif')), t('bell', 'r', 'Alerts', go_('a_notif'), al))}</div>`;
@@ -4116,7 +4116,7 @@ html[data-mode=dark] body{background:#05080F}
   const prev = V.a_more;
   V.a_more = function () {
     const v = prev(), d = D(), sup = !isStaff(), al = adminAlerts().length, T = iso(new Date());
-    const rev = d.tasks.filter(t => t.status === 'Submitted').length, certs = d.students.filter(s => s.certificate.status === 'Completed').length, fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+    const rev = d.tasks.filter(t => t.status === 'Submitted').length, certs = d.students.filter(s => s.certificate.status === 'Completed').length, fu = new Set((d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).map(f => f.reg)).size;
     const go_ = vw => `data-a="go" data-v="${vw}"`, tb = k => `data-a="tab" data-t="${k}"`;
     const row = (i, c, l, sub, a, n) => `<button class="ml-r" data-k="${(l + ' ' + sub).toLowerCase().replace(/"/g, '')}" ${a}><span class="i ${c}">${ic(i)}</span><span class="t"><b>${l}</b><span>${sub}</span></span>${n ? `<span class="n">${n}</span>` : ''}<span class="ch">›</span></button>`;
     const grp = (h, ...r) => `<div class="ml-grp"><div class="ml-l">${h}</div><div class="ml-g">${r.join('')}</div></div>`;
@@ -4272,7 +4272,7 @@ html[data-mode=dark] body{background:#05080F}
         ${fup}${comp}
         <div class="z-c"><h3>Reviews &amp; admissions</h3><div class="ad-g"><button ${go_('a_reviews')}><b>${g}/${cl.length}</b><span>Google</span></button><button ${go_('a_reviews')}><b>${j}/${cl.length}</b><span>Justdial</span></button><button ${go_('a_student_form')}><b>${onb}</b><span>Onboarding</span></button></div></div>
         ${rec}
-        <div class="z-c"><h3>Quick actions</h3>${Q([['cal', 'g', 'Attendance', mark], ['plus', '', 'Admission', go_('a_student_form')], ['book', 'o', 'Courses', go_('a_courses')], ['cap', 'g', 'Completion', go_('a_cdash')], ['target', 'r', 'Assessments', go_('a_tests')], ['star', 'o', 'Reviews', go_('a_reviews')], ['chart', '', 'Reports', tb('reports')], ['gear', 'v', 'Settings', go_('a_settings')]])}</div>
+        <div class="z-c"><h3>Quick actions</h3>${Q([['cal', 'g', 'Attendance', mark], ['plus', '', 'Admission', go_('a_student_form')], ['book', 'o', 'Courses', go_('a_courses')], ['cap', 'g', 'Completion', go_('a_cdash')], ['target', 'r', 'Assessments', go_('a_cdash')], ['star', 'o', 'Reviews', go_('a_reviews')], ['chart', '', 'Reports', tb('reports')], ['gear', 'v', 'Settings', go_('a_settings')]])}</div>
         <div class="z-c"><h3>Needs attention ${al.length > 3 ? `<button ${go_('a_notif')}>All (${al.length})</button>` : ''}</h3>${al.slice(0, 3).map(x => `<div class="ad-f"><i style="background:var(--orange)"></i><div><b>${esc(x.t)}</b><small>${esc(x.d)}</small></div></div>`).join('') || '<small class="mut">All clear</small>'}</div></div>`;
     } else {
       const fuNow = fu.filter(f => f.status === 'Pending' && f.trigger <= T).length;
@@ -4280,7 +4280,7 @@ html[data-mode=dark] body{background:#05080F}
         ${att}
         <div class="z-c"><h3>Fee follow-ups</h3><div class="z-amt">${fuNow}</div><small class="mut" style="display:block">Pending follow-ups due now</small>${pipe}<button class="m-nav" data-a="go" data-v="a_followups">Open Follow-ups →</button></div>
         ${comp}
-        <div class="z-c"><h3>Quick actions</h3>${Q([['users', '', 'Students', tb('students')], ['cal', 'g', 'Attendance', mark], ['bell', 'o', 'Follow-ups', go_('a_followups'), fuNow], ['layers', 'g', 'Completion', go_('a_cdash')], ['clip', 'v', 'Academic', go_('a_work')], ['mega', 'o', 'Message', go_('a_notif')], ['target', 'r', 'Assessments', go_('a_tests')], ['bell', '', 'Alerts', go_('a_notif'), al.length]])}</div>
+        <div class="z-c"><h3>Quick actions</h3>${Q([['users', '', 'Students', tb('students')], ['cal', 'g', 'Attendance', mark], ['bell', 'o', 'Follow-ups', go_('a_followups'), fuNow], ['layers', 'g', 'Completion', go_('a_cdash')], ['clip', 'v', 'Academic', go_('a_work')], ['mega', 'o', 'Message', go_('a_notif')], ['target', 'r', 'Assessments', go_('a_cdash')], ['bell', '', 'Alerts', go_('a_notif'), al.length]])}</div>
         ${rec.replace(/<button[^>]*>.*?<\/button>/, '')}</div>`;
     }
     v.t = ''; v.sub = ''; return v;
@@ -4352,13 +4352,13 @@ html[data-mode=dark] body{background:#05080F}
   const sup = () => !isStaff();
   V.a_mgmt = function () {
     if (!sup()) return { t: 'Not available', body: empty('Super Admin only', 'This screen is restricted to the Super Admin.', 'users') };
-    const d = D(), T = iso(new Date()), act = activeStu(), cl = window.__cm ? window.__cm.cList() : [], out = d.students.reduce((x, s) => x + Math.max(0, balance(s)), 0), fu = (d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).length;
+    const d = D(), T = iso(new Date()), act = activeStu(), cl = window.__cm ? window.__cm.cList() : [], out = d.students.reduce((x, s) => x + Math.max(0, balance(s)), 0), fu = new Set((d.followups || []).filter(f => f.status === 'Pending' && f.trigger <= T).map(f => f.reg)).size;
     const g = cl.filter(i => i.c.google_review === 'Done').length, j = cl.filter(i => i.c.justdial_review === 'Done').length, asm = (d.assessments || []).filter(a => a.status === 'Scheduled').length, act_ = cl.filter(i => i.c.course_status !== 'Completed' && i.left <= 0).length;
     const t = (i, c, l, m, s, a) => `<button ${a}><span class="i ${c}">${ic(i)}</span><b>${l}</b><span class="m">${m}</span><small>${s}</small></button>`, go_ = vw => `data-a="go" data-v="${vw}"`;
     return { t: 'Management', sub: 'Institute operations', right: bellBtn(), body: `<div class="z"><div class="mm-c" style="background:linear-gradient(135deg,#14246B,#0F1B4D);color:#fff"><h3 style="color:#fff">Institute snapshot</h3><div class="ad-g" style="grid-template-columns:repeat(3,1fr)"><div style="background:rgba(255,255,255,.12);color:#fff"><b style="color:#fff">${d.students.length}</b><span style="color:#cfd8ff">Students</span></div><div style="background:rgba(255,255,255,.12);color:#fff"><b style="color:#fff">${d.courses.length}</b><span style="color:#cfd8ff">Courses</span></div><div style="background:rgba(255,255,255,.12);color:#fff"><b style="color:#fff">${fu}</b><span style="color:#cfd8ff">Follow-ups due</span></div></div></div>
       <h3 class="z-h">Operations</h3><div class="mg">${t('cal', 'g', 'Attendance', act.length, 'Active students', go_('a_att'))}${t('plus', '', 'Admissions', d.students.filter(s => s.stage !== 'active').length, 'Onboarding', go_('a_student_form'))}${t('book', 'o', 'Courses', d.courses.length, 'Catalogue', go_('a_courses'))}${t('clip', 'v', 'Academics', rev_(d), 'To review', go_('a_work'))}</div>
       <h3 class="z-h">Finance</h3><div class="mg">${t('rupee', 'o', 'Fees', inr(out), 'Outstanding', 'data-a="tab" data-t="fees"')}${t('bell', 'r', 'Follow-ups', fu, 'Due now', go_('a_followups'))}</div>
-      <h3 class="z-h">Completion &amp; quality</h3><div class="mg">${t('layers', 'g', 'Completion', act_, 'Action needed', go_('a_cdash'))}${t('target', 'r', 'Assessments', asm, 'Scheduled', go_('a_tests'))}${t('star', 'o', 'Reviews', g + '/' + j, 'Google / Justdial', go_('a_reviews'))}${t('award', 'v', 'Certificates', d.students.filter(s => s.certificate.status === 'Completed').length, 'Ready', go_('a_complete'))}</div>
+      <h3 class="z-h">Completion &amp; quality</h3><div class="mg">${t('layers', 'g', 'Completion', act_, 'Action needed', go_('a_cdash'))}${t('target', 'r', 'Assessments', asm, 'Scheduled', go_('a_cdash'))}${t('star', 'o', 'Reviews', g + '/' + j, 'Google / Justdial', go_('a_reviews'))}${t('award', 'v', 'Certificates', d.students.filter(s => s.certificate.status === 'Completed').length, 'Ready', go_('a_complete'))}</div>
       <h3 class="z-h">System</h3><div class="mg">${t('clock', '', 'Activity logs', '', 'Date, time, admin', go_('a_actlog'))}${t('gear', 'v', 'Settings', '', 'Password &amp; data', go_('a_settings'))}</div></div>` };
   };
   const rev_ = d => d.tasks.filter(x => x.status === 'Submitted').length;
@@ -4450,19 +4450,19 @@ html[data-mode=dark] body{background:#05080F}
     const v = prevA(); if (!/class="(z|m-hero|m-soft|hx)"|class="z"/.test(v.body || '') && !/hx/.test(v.body || '')) return v;
     const d = D(), T = iso(new Date()), S_ = !isStaff(), A_ = activeStu(), sched = A_.filter(s => scheduled(s, T)), st = s => s.attendance[T] || '', P = sched.filter(s => st(s) === 'Present').length, N = sched.filter(s => !st(s)).length, fu = d.followups || [];
     const mark = `data-a="attopen" data-d="${T}"`, go_ = vw => `data-a="go" data-v="${vw}"`, tb = k => `data-a="tab" data-t="${k}"`;
-    const due = fu.filter(f => f.status === 'Pending' && f.trigger <= T).length, over = A_.filter(s => balance(s) > 0 && s.enr.next_due_date && s.enr.next_due_date < T).length, al = adminAlerts();
+    const due = new Set(fu.filter(f => f.status === 'Pending' && f.trigger <= T).map(f => f.reg)).size, over = A_.filter(s => balance(s) > 0 && s.enr.next_due_date && s.enr.next_due_date < T).length, al = adminAlerts();
     const cl = window.__cm ? window.__cm.cList() : [], cDone = cl.filter(i => i.c.course_status === 'Completed').length, cAct = cl.filter(i => i.c.course_status !== 'Completed' && i.left <= 0).length, asm = (d.assessments || []).filter(a => a.status === 'Scheduled').length;
     const marked = sched.length - N, mp = sched.length ? Math.round(marked / sched.length * 100) : 0;
-    const today = FC('cal', '#0E9F6E', N ? 'Mark today’s attendance' : 'Attendance complete', N ? N + ' of ' + sched.length + ' students not marked' : 'All ' + sched.length + ' students marked', mark, mp) + FC('bell', '#F26A10', due + ' fee follow-ups due', 'Tap to open the follow-up list', go_('a_followups'), null) + FC('layers', '#7C4DFF', cAct + ' completions need action', asm + ' assessments scheduled', go_('a_cdash'), null);
+    const today = FC('users', '#0E9F6E', N ? 'Mark today’s attendance' : 'Attendance complete', N ? N + ' of ' + sched.length + ' students not marked' : 'All ' + sched.length + ' students marked', mark, mp) + FC('clock', '#F26A10', due + (due === 1 ? ' student' : ' students') + ' to follow up', 'Installment reminders pending', go_('a_followups'), null) + FC('award', '#7C4DFF', cAct + (cAct === 1 ? ' course' : ' courses') + ' at last day', 'Update status and run the assessment', go_('a_cdash'), null);
     const attCard = `<div class="cd"><h4>Attendance this week</h4><small>Present % of marked students</small>${weekChart()}</div>`;
     const plCard = `<div class="cd"><h4>Fee follow-up pipeline</h4><small>Pending reminders by timing</small>${pipeline(fu, over)}</div>`;
     const dsc = dueSoon(T), dsSec = dsc ? sh('Next installments due', `<button ${go_('a_followups')}>See all</button>`) + `<div class="ds">${dsc}</div>` : '';
-    const mini = `<div class="mx"><button ${go_('a_cdash')}><i class="q-g">${ic('layers')}</i><b>${cDone}/${cl.length}</b><span>Courses completed</span></button><button ${go_('a_tests')}><i class="q-r">${ic('target')}</i><b>${asm}</b><span>Assessments scheduled</span></button></div>`;
+    const mini = `<div class="mx"><button ${go_('a_cdash')}><i class="q-g">${ic('tick')}</i><b>${cDone}/${cl.length}</b><span>Courses completed</span></button><button ${go_('a_cdash')}><i class="q-r">${ic('target')}</i><b>${asm}</b><span>Assessments scheduled</span></button></div>`;
     const attn = al.length ? sh('Needs attention', `<button ${go_('a_notif')}>All (${al.length})</button>`) + `<div class="cd">${al.slice(0, 3).map(x => `<div class="ad-f"><i style="background:#F26A10"></i><div><b>${esc(x.t)}</b><small>${esc(x.d)}</small></div></div>`).join('')}</div>` : '';
     if (S_) {
       const all = d.students, paid = all.reduce((x, s) => x + paidSum(s), 0), out = all.reduce((x, s) => x + Math.max(0, balance(s)), 0), tot = paid + out, cp = tot ? Math.round(paid / tot * 100) : 0, g = cl.filter(i => i.c.google_review === 'Done').length, j = cl.filter(i => i.c.justdial_review === 'Done').length, C = 2 * Math.PI * 40;
       v.body = `<div class="z">${hero('SA', 'Super Admin', 'Institute', [[all.length, 'Students', '', tb('students')], ['₹' + short(paid), 'Collected', 'g', tb('fees')], ['₹' + short(out), 'Outstanding', 'r', go_('a_pendfees')]])}
-        ${QS([['cal', 'g', 'Attendance', mark], ['plus', 'b', 'Admission', go_('a_student_form')], ['book', 'o', 'Courses', go_('a_courses')], ['layers', 'v', 'Completion', go_('a_cdash')], ['target', 'r', 'Assessments', go_('a_tests')], ['star', 'o', 'Reviews', go_('a_reviews')], ['chart', 't', 'Reports', tb('reports')], ['gear', 'b', 'Settings', go_('a_settings')]])}
+        ${QS([['cal', 'g', 'Attendance', mark], ['plus', 'b', 'Admission', go_('a_student_form')], ['book', 'o', 'Courses', go_('a_courses')], ['layers', 'v', 'Completion', go_('a_cdash')], ['target', 'r', 'Assessments', go_('a_cdash')], ['star', 'o', 'Reviews', go_('a_reviews')], ['chart', 't', 'Reports', tb('reports')], ['gear', 'b', 'Settings', go_('a_settings')]])}
         ${sh('Today')}${today}${attCard}
         <div class="cd"><h4>Fee collection</h4><small>Collected vs outstanding</small><div class="dn" style="margin-top:10px"><svg width="104" height="104" viewBox="0 0 104 104"><circle cx="52" cy="52" r="40" fill="none" stroke="#FBD9D9" stroke-width="14"/><circle cx="52" cy="52" r="40" fill="none" stroke="#0E9F6E" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C * cp / 100} ${C}" transform="rotate(-90 52 52)"/><text x="52" y="57" text-anchor="middle" font-size="19" font-weight="800" fill="#14246B">${cp}%</text></svg><ul><li><i style="background:#0E9F6E"></i>Collected<b>${inr(paid)}</b></li><li><i style="background:#F4A3A3"></i>Outstanding<b>${inr(out)}</b></li></ul></div><button class="m-nav" ${tb('fees')}>Open fees</button></div>
         ${plCard}${dsSec}
@@ -4470,7 +4470,7 @@ html[data-mode=dark] body{background:#05080F}
         ${sh('Recent activity', `<button ${go_('a_actlog')}>See all</button>`)}${act(feed(false))}${attn}</div>`;
     } else {
       v.body = `<div class="z">${hero('AD', 'Hello, Admin', 'Admin', [[P + '/' + sched.length, 'Present today', 'g', mark], [N, 'Not marked', N ? 'o' : 'g', mark], [due, 'Follow-ups due', due ? 'r' : 'g', go_('a_followups')]])}
-        ${QS([['cal', 'g', 'Attendance', mark], ['users', 'b', 'Students', tb('students')], ['bell', 'o', 'Follow-ups', go_('a_followups'), due], ['layers', 'v', 'Completion', go_('a_cdash')], ['clip', 't', 'Academic', go_('a_work')], ['target', 'r', 'Assessments', go_('a_tests')], ['mega', 'o', 'Message', go_('a_notif')]])}
+        ${QS([['cal', 'g', 'Attendance', mark], ['users', 'b', 'Students', tb('students')], ['bell', 'o', 'Follow-ups', go_('a_followups'), due], ['layers', 'v', 'Completion', go_('a_cdash')], ['clip', 't', 'Academic', go_('a_work')], ['target', 'r', 'Assessments', go_('a_cdash')], ['mega', 'o', 'Message', go_('a_notif')]])}
         ${sh('Today')}${today}${attCard}${plCard}${dsSec}${mini}${sh('Recent activity')}${act(feed(true))}${attn}</div>`;
     }
     v.t = ''; v.sub = ''; return v;
@@ -5345,7 +5345,7 @@ label:has(#f-tg){display:none!important}
       v.body = v.body.replace(/<div class="hx-kpi">[\s\S]*?<\/div>(?=\s*<div class="qs">)/, `<div class="hx-kpi"><button ${att()}><b class="g">${(v.body.match(/<b class="g">([^<]*)<\/b><span>Present today/) || [, '–'])[1]}</b><span>Present today</span></button><button ${TB('students')}><b>${d.students.length}</b><span>Students</span></button><button ${G('a_followups')}><b class="r">${od}</b><span>Fees overdue</span></button></div>`)
         .replace(/<div class="qs">[\s\S]*?<\/button><\/div>/, Q([['cal', 'g', 'Attendance', att()], ['bell', 'o', 'Follow-ups', G('a_followups')], ['book', 'b', 'Courses', G('a_courses')], ['clip', 't', 'Academics', G('a_work')], ['layers', 'v', 'Completion', G('a_cdash')], ['brief', 'r', 'Placement', G('a_place')], ['mega', 'o', 'Message', G('a_notif')], ['star', 'v', 'Reviews', G('a_reviews')]]));
     } else {
-      v.body = v.body.replace(/<div class="qs">[\s\S]*?<\/button><\/div>/, Q([['cal', 'g', 'Attendance', att()], ['plus', 'b', 'Admission', G('a_student_form')], ['bell', 'o', 'Follow-ups', G('a_followups')], ['book', 'b', 'Courses', G('a_courses')], ['clip', 't', 'Academics', G('a_work')], ['layers', 'v', 'Completion', G('a_cdash')], ['brief', 'r', 'Placement', G('a_place')], ['mega', 'o', 'Message', G('a_notif')]]))
+      v.body = v.body.replace(/<div class="qs">[\s\S]*?<\/button><\/div>/, Q([['cal', 'g', 'Attendance', att()], ['plus', 'b', 'Admission', G('a_student_form')], ['bell', 'o', 'Follow-ups', G('a_followups')], ['book', 'b', 'Courses', G('a_courses')], ['clip', 't', 'Academics', G('a_work')], ['layers', 'v', 'Completion', G('a_cdash')], ['brief', 'r', 'Placement', G('a_place')], ['mega', 'o', 'Message', G('a_notif')], ['star', 'v', 'Reviews', G('a_reviews')], ['rupee', 'g', 'Fees', TB('fees')], ['chart', 'b', 'Reports', TB('reports')], ['hist', 'o', 'Activity log', G('a_actlog')]]))
         .replace(/(<h4>Fee collection<\/h4><small>)[^<]*(<\/small>[\s\S]*?)<ul>[\s\S]*?<\/ul>/, (m, a, b) => { const n = [...m.matchAll(/<b>₹([\d,]+)<\/b>/g)].map(x => +x[1].replace(/,/g, '')); return a + 'Share of total fees collected' + b + `<div class="mut" style="flex:1;font-size:13px">₹${(n[0] || 0).toLocaleString('en-IN')} collected out of ₹${((n[0] || 0) + (n[1] || 0)).toLocaleString('en-IN')}</div>`; })
         .replace(/<div class="sh"><h3>Reviews &amp; quality<\/h3><\/div>[\s\S]*?(?=\s*<div class="sh"><h3>Recent activity)/, `<div class="sh"><h3>Quality &amp; completion</h3></div><div class="mx"><button ${G('a_reviews')}><i class="q-o">${ic('shield')}</i><b>${(v.body.match(/<b>(\d+ \/ \d+)<\/b><span>Google/) || [, '0 / 0'])[1]}</b><span>Google / Justdial reviews</span></button><button ${G('a_student_form')}><i class="q-b">${ic('user')}</i><b>${d.students.filter(s => s.stage === 'new').length}</b><span>Students onboarding</span></button></div><div class="mx"><button ${G('a_cdash')}><i class="q-g">${ic('award')}</i><b>${L.filter(i => i.stg === 'Closed').length}/${L.length}</b><span>Completions closed</span></button><button ${G('a_cdash')}><i class="q-r">${ic('file')}</i><b>${aw}</b><span>Awaiting assessment</span></button></div>`);
     }
@@ -5881,3 +5881,166 @@ try { render(); } catch (e) { }
 #app .st3-act .btn.sec{border:1.5px solid #B9C6EA!important;background:#fff!important;box-shadow:none!important;flex:0 0 32%}
 #app .view>.st3-act{margin-left:-18px!important;margin-right:-18px!important}
 </style>
+
+<style id="ev-skin">
+/* ===== Elegant layer: courses, academics, wizard forms ===== */
+.ev-hero{position:relative;overflow:hidden;border-radius:26px;padding:18px 18px 16px;color:#fff;background:linear-gradient(135deg,#0F1B4D 0%,#1D3FBF 62%,#3C6BFF 100%);box-shadow:0 14px 30px rgba(20,36,107,.22);margin:2px 0 16px}
+.ev-hero:before,.ev-hero:after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.08)}
+.ev-hero:before{width:150px;height:150px;right:-40px;top:-60px}.ev-hero:after{width:90px;height:90px;right:60px;bottom:-50px;background:rgba(255,160,80,.18)}
+.ev-hero h2{margin:0;font-size:21px;color:#fff;font-family:Poppins,Inter,sans-serif;position:relative;z-index:1}
+.ev-hero p{margin:3px 0 0;font-size:13px;opacity:.82;position:relative;z-index:1}
+.ev-hs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;position:relative;z-index:1}
+.ev-hs>div{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:10px 6px;text-align:center}
+.ev-hs b{display:block;font-size:20px;line-height:1.1}.ev-hs span{display:block;font-size:11.5px;opacity:.85;margin-top:3px;font-weight:600}
+.ev-hs .hot{background:rgba(255,150,70,.28);border-color:rgba(255,190,130,.5)}
+/* course cards */
+.ev-cl{display:grid;gap:14px}
+.ev-cc{display:block;width:100%;text-align:left;padding:0;border:0;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 8px 22px rgba(30,50,110,.09);font:inherit;color:inherit;position:relative}
+.ev-ct{display:flex;align-items:center;gap:12px;padding:15px 16px;background:var(--g);color:#fff;position:relative;overflow:hidden}
+.ev-ct:after{content:"";position:absolute;right:-26px;top:-34px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.16)}
+.ev-code{flex:none;min-width:50px;height:50px;border-radius:16px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.35);display:grid;place-items:center;font-weight:800;font-size:14px;letter-spacing:.03em;padding:0 6px;position:relative;z-index:1}
+.ev-nm{min-width:0;flex:1;position:relative;z-index:1}.ev-nm b{display:block;font-size:16.5px;line-height:1.2;font-family:Poppins,Inter,sans-serif}.ev-nm small{display:block;opacity:.88;font-size:12.5px;margin-top:3px}
+.ev-st{position:relative;z-index:1;font-size:11px;font-weight:800;padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.95);color:#12986B}.ev-st.off{color:#8A96B5}
+.ev-cb{padding:13px 16px 15px}
+.ev-cr{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ev-av3{display:flex}.ev-av3 i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:10.5px;font-weight:800;background:#EEF2FF;color:#2454E8;border:2.5px solid #fff;margin-left:-8px}.ev-av3 i:first-child{margin-left:0}.ev-av3 i.m{background:#F1F4FA;color:#6B7794}
+.ev-cr span.n{font-size:12.5px;color:#5B6788;font-weight:600}
+.ev-pr{margin-top:12px}.ev-pr .l{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#5B6788;margin-bottom:6px}.ev-pr .l b{color:var(--c)}
+.ev-pr .t{height:8px;border-radius:8px;background:#EDF0F8;overflow:hidden}.ev-pr .t i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--c),var(--c2))}
+.ev-nostu{font-size:12.5px;color:#8A96B5;font-style:normal}
+/* academics rows */
+.ev-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#fff;border-radius:18px;padding:5px;box-shadow:0 6px 18px rgba(30,50,110,.07);margin:0 0 14px}
+.ev-tabs button{border:0;background:none;border-radius:14px;padding:11px 8px;font:inherit;font-weight:700;font-size:14px;color:#51608A;display:flex;align-items:center;justify-content:center;gap:7px}
+.ev-tabs button.on{background:linear-gradient(135deg,#0F1B4D,#2454E8);color:#fff;box-shadow:0 8px 16px rgba(36,84,232,.28)}
+.ev-tabs i{font-style:normal;font-size:11px;font-weight:800;min-width:20px;height:20px;border-radius:10px;background:#F26A10;color:#fff;display:grid;place-items:center;padding:0 5px}
+.ev-link{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px dashed #BFD0FA;background:linear-gradient(135deg,#F3F6FF,#FFF6EE);border-radius:20px;padding:12px 14px;margin:0 0 14px;font:inherit;color:inherit}
+.ev-link .i{flex:none;width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:#fff;color:#12986B;box-shadow:0 4px 10px rgba(30,50,110,.08)}
+.ev-link b{display:block;font-size:14.5px}.ev-link small{display:block;color:#5B6788;font-size:12px;margin-top:1px}.ev-link .ic:last-child{width:18px;height:18px;color:#8A96B5;margin-left:auto}
+.ev-ch{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 6px;padding:2px 16px 8px}.ev-ch .chip{flex:none;white-space:nowrap}
+.ev-sh{display:flex;align-items:center;gap:8px;margin:18px 2px 10px;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#51608A}
+.ev-sh:before{content:"";width:4px;height:16px;border-radius:3px;background:var(--c,#2454E8)}.ev-sh i{font-style:normal;margin-left:auto;font-size:11.5px;font-weight:800;background:#fff;color:var(--c,#2454E8);padding:3px 10px;border-radius:99px;box-shadow:0 2px 8px rgba(30,50,110,.08)}
+.ev-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:#fff;border-radius:20px;padding:12px 14px 12px 16px;margin:0 0 10px;box-shadow:0 6px 18px rgba(30,50,110,.07);font:inherit;color:inherit;position:relative;overflow:hidden}
+.ev-row:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 4px 4px 0;background:var(--c)}
+.ev-av{flex:none;width:44px;height:44px;border-radius:15px;display:grid;place-items:center;font-weight:800;font-size:13px;color:var(--c);background:var(--bg)}
+.ev-rt{min-width:0;flex:1}.ev-rt b{display:block;font-size:15px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-rt small{display:block;color:#5B6788;font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-mt{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:12px;color:#6B7794;font-weight:600}
+.ev-row>.ic{flex:none;width:18px;height:18px;color:#A3AECA}
+/* wizard form shell */
+.wz-pv{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#0F1B4D,#2454E8);color:#fff;border-radius:24px;padding:16px;margin:0 0 14px;box-shadow:0 12px 26px rgba(20,36,107,.2);position:relative;overflow:hidden}
+.wz-pv:after{content:"";position:absolute;right:-30px;top:-40px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1)}
+.wz-pv .b{flex:none;min-width:54px;height:54px;border-radius:17px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);display:grid;place-items:center;font-weight:800;font-size:15px;padding:0 6px;z-index:1}
+.wz-pv .b .ic{width:26px;height:26px}
+.wz-pv div.t{min-width:0;z-index:1}.wz-pv b.n{display:block;font-size:17px;font-family:Poppins,Inter,sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wz-pv small{display:block;opacity:.85;font-size:12.5px;margin-top:2px}
+.wz{padding:18px 16px 6px!important}
+.wzp[hidden]{display:none!important}
+.wz .ev-fh{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;color:var(--navy,#0F1B4D);margin:2px 0 2px}.wz .ev-fh:before{content:"";width:4px;height:16px;border-radius:3px;background:#2454E8}
+.wz .ev-fs{margin:0 0 14px 12px;color:#5B6788;font-size:12.5px}
+.wz-q{display:flex;gap:8px;flex-wrap:wrap;margin:-4px 0 14px}.wz-q button{border:1.5px solid #DCE3F4;background:#fff;color:#2454E8;font:inherit;font-weight:700;font-size:12.5px;padding:7px 13px;border-radius:99px}
+.wz-sum{display:grid;gap:8px;background:#F6F8FE;border-radius:18px;padding:12px 14px;margin:2px 0 14px}.wz-sum div{display:flex;justify-content:space-between;gap:12px;font-size:13px}.wz-sum span{color:#5B6788}.wz-sum b{text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wz-bar{position:sticky;bottom:0;z-index:5;display:flex;gap:12px;margin:10px -18px 0;padding:14px 20px calc(22px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,#fff 78%,rgba(255,255,255,0))}
+.wz-bar .btn{margin:0!important;height:52px;display:flex;align-items:center;justify-content:center;gap:6px}
+.wz-bar .btn.sec{flex:0 0 32%;border:1.5px solid #B9C6EA!important;background:#fff!important;color:#14246B!important;box-shadow:none!important}.wz-bar .btn:not(.sec){flex:1;box-shadow:0 10px 22px rgba(36,84,232,.28)}
+</style>
+<script>
+(function () {
+  const PAL = ['#2454E8', '#F26A10', '#7C4DFF', '#0E9F6E', '#0EA5C6', '#E5484D'], LT = ['#5B8CFF', '#FFA45C', '#A58BFF', '#4CC9A0', '#5CD3EA', '#FF8A8D'], BG = ['#EAF0FF', '#FFF0E4', '#F0EAFF', '#E4F6EE', '#E3F6FB', '#FDEBEC'];
+  const GR = i => `linear-gradient(135deg,${PAL[i % 6]},${LT[i % 6]})`, cI = s => { let h = 0; String(s).split('').forEach(c => h += c.charCodeAt(0)); return h % 6; };
+  const tabsB = (k, opts, badges) => { const c = sg(k, opts); return `<div class="ev-tabs">${opts.map(o => `<button class="${c === o ? 'on' : ''}" data-a="seg" data-k="${k}" data-v="${o}">${o}${badges && badges[o] ? `<i>${badges[o]}</i>` : ''}</button>`).join('')}</div>`; };
+  const hero = (t, p, st) => `<div class="ev-hero"><h2>${t}</h2><p>${p}</p><div class="ev-hs">${st.map(x => `<div class="${x[2] || ''}"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('')}</div></div>`;
+
+  /* ---------- Courses ---------- */
+  V.a_courses = function () {
+    const d = D(), q = ((S.q && S.q.cs) || '').toLowerCase(), f = flt('csf', ['All', 'Active', 'Inactive']);
+    const L = d.courses.filter(c => (!q || (c.course_name + c.course_code).toLowerCase().includes(q)) && (f === 'All' || (f === 'Active') === !!c.is_active));
+    const act = d.courses.filter(c => c.is_active).length, enrolled = d.students.filter(s => s.overall_status !== 'Dropped').length;
+    const card = c => { const i = d.courses.indexOf(c), st = d.students.filter(x => x.enr.course_id === c.course_id), avg = st.length ? Math.round(st.reduce((a, x) => a + (+x.enr.progress_percent || 0), 0) / st.length) : 0;
+      return `<button class="ev-cc" style="--g:${GR(i)};--c:${PAL[i % 6]};--c2:${LT[i % 6]}" data-a="go" data-v="a_course" data-id="${c.course_id}"><div class="ev-ct"><span class="ev-code">${esc(c.course_code)}</span><div class="ev-nm"><b>${esc(c.course_name)}</b><small>${c.duration_weeks} weeks</small></div><span class="ev-st ${c.is_active ? '' : 'off'}">${c.is_active ? 'Active' : 'Inactive'}</span></div>
+      <div class="ev-cb"><div class="ev-cr"><div class="ev-av3">${st.slice(0, 4).map(s => `<i>${ini(s.full_name)}</i>`).join('')}${st.length > 4 ? `<i class="m">+${st.length - 4}</i>` : ''}${st.length ? '' : '<em class="ev-nostu">No students yet</em>'}</div><span class="n">${st.length} student${st.length === 1 ? '' : 's'}</span></div>
+      ${st.length ? `<div class="ev-pr"><div class="l"><span>Average progress</span><b>${avg}%</b></div><div class="t"><i style="width:${avg}%"></i></div></div>` : ''}</div></button>`; };
+    return { t: 'Courses', sub: 'Catalogue — timing &amp; fee are set per student', fab: { a: 'courseform', l: 'Add', i: 'plus' },
+      body: hero('Course catalogue', 'Everything you teach, in one place', [[d.courses.length, 'Courses'], [act, 'Active'], [enrolled, 'Students']]) + searchBox('cs', 'Search courses') + chips('csf', ['All', 'Active', 'Inactive'], {}) + (L.length ? `<div class="ev-cl">${L.map(card).join('')}</div>` : empty('No courses', 'Nothing matches.', 'book')) };
+  };
+
+  /* ---------- Academics ---------- */
+  V.a_work = function () {
+    const tabs = ['Assignments', 'Projects'], tabv = sg('wk', tabs), d = D();
+    const cn = r => (stu(r) || { enr: { course_name: 'Other' } }).enr.course_name, nm = r => (stu(r) || { full_name: r }).full_name;
+    const build = {
+      Assignments: () => d.tasks.map(t => { const od = taskOverdue(t); let b = 'wait', pl = pill(od ? 'Overdue' : t.status, od ? 'bad' : null), c = od ? '#E5484D' : '#F26A10';
+        if (t.status === 'Submitted') { b = 'act'; pl = pill('Review', 'v'); c = '#7C4DFF'; } else if (t.status === 'Completed') { b = 'done'; pl = pill('Grade ' + (t.grade || '–'), 'ok'); c = '#12986B'; }
+        return { b, c, who: nm(t.registration_number), title: t.title, course: cn(t.registration_number), meta: t.status === 'Submitted' || t.status === 'Completed' ? 'Submitted ' + fmtS(t.submitted_at) : 'Due ' + fmtS(t.due_date), pl, sort: t.due_date, attrs: `data-a="go" data-v="a_task" data-id="${t.task_id}"` }; }),
+      Projects: () => d.students.filter(x => x.project).map(x => { const p = x.project; let b = 'wait', pl = pill(p.status), c = '#7C4DFF';
+        if (p.status === 'Submitted' || p.status === 'Under Review') { b = 'act'; pl = pill(p.status === 'Submitted' ? 'Review' : 'In review', 'v'); } else if (p.status === 'Evaluated') { b = 'done'; c = '#12986B'; pl = pill(p.evaluation_score + '/100', 'ok'); }
+        return { b, c, who: x.full_name, title: p.title, course: x.enr.course_name, meta: 'Due ' + fmtS(p.due_date), pl, sort: p.due_date, attrs: `data-a="go" data-v="a_proj" data-reg="${x.registration_number}"` }; })
+    };
+    const all = {}; tabs.forEach(t => all[t] = build[t]());
+    const badges = {}; tabs.forEach(t => badges[t] = all[t].filter(i => i.b === 'act').length);
+    const items = all[tabv], courses = ['All courses'].concat([...new Set(items.map(i => i.course))].sort()), cf = flt('wc', courses), q = (S.q.wq || '').toLowerCase();
+    const base = items.filter(i => (cf === 'All courses' || i.course === cf) && (!q || (i.title + i.who + i.course).toLowerCase().includes(q)));
+    const n = k => base.filter(i => i.b === k).length;
+    const LAB = { act: ['Needs your review', '#7C4DFF'], wait: ['Waiting for students', '#F26A10'], done: ['Completed', '#12986B'] };
+    const row = i => { const k = cI(i.who); return `<button class="ev-row" style="--c:${i.c};--bg:${BG[k]}" ${i.attrs}><span class="ev-av" style="color:${PAL[k]}">${ini(i.who)}</span><span class="ev-rt"><b>${esc(i.title)}</b><small>${esc(i.who)} · ${esc(i.course)}</small><span class="ev-mt">${i.pl}<span>${esc(i.meta)}</span></span></span>${ic('next', 's')}</button>`; };
+    const secs = ['act', 'wait', 'done'].map(k => { const L = base.filter(i => i.b === k).sort((x, y) => k === 'done' ? (x.sort < y.sort ? 1 : -1) : (x.sort < y.sort ? -1 : 1)); return L.length ? `<div class="ev-sh" style="--c:${LAB[k][1]}">${LAB[k][0]}<i>${L.length}</i></div>${L.map(row).join('')}` : ''; }).join('');
+    const fab = tabv === 'Projects' ? { a: 'go', d: 'data-v="a_proj_form"', l: 'Assign', i: 'plus' } : { a: 'go', d: 'data-v="a_task_form"', l: 'New', i: 'plus' };
+    return { t: 'Academics', sub: 'Assignments &amp; projects', fab,
+      body: hero(tabv === 'Projects' ? 'Final projects' : 'Assignments &amp; homework', tabv === 'Projects' ? 'Capstones students upload for review' : 'Track submissions and grade work', [[n('act'), 'To review', n('act') ? 'hot' : ''], [n('wait'), 'Pending'], [n('done'), 'Done']]) +
+        tabsB('wk', tabs, badges) +
+        `<button class="ev-link" data-a="go" data-v="a_cdash"><span class="i">${ic('award')}</span><span><b>Course completion &amp; assessment</b><small>Project assessment, feedback and reviews</small></span>${ic('next', 's')}</button>` +
+        searchBox('wq', 'Search title or student') + (courses.length > 2 ? `<div class="ev-ch">${courses.map(c => `<button class="chip ${c === cf ? 'on' : ''}" data-a="flt" data-k="wc" data-v="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : '') +
+        (secs || empty('Nothing here', 'Tap the + button to add one.', 'clip')) };
+  };
+
+  /* ---------- wizard shell (same look as Add Student) ---------- */
+  const wz = (o) => {
+    const st = `<div class="st3">${o.steps.map((s, i) => `<div class="s ${i === 0 ? 'on' : ''}"><span class="d">${i + 1}</span><span class="t">${s.t}</span></div>`).join('')}</div>`;
+    const ps = o.steps.map((s, i) => `<div class="wzp" data-i="${i}" data-req="${s.req || ''}" ${i ? 'hidden' : ''}><div class="ev-fh">${s.h}</div><div class="ev-fs">${s.s}</div>${s.body}</div>`).join('');
+    return `${o.pre || ''}<div class="card fk wz" id="wz" data-n="${o.steps.length}" data-final="${o.final}" data-flabel="${o.flabel}" ${o.id ? `data-id="${o.id}"` : ''}>${st}${ps}</div><div class="wz-bar"><button class="btn sec" data-a="wzback">Cancel</button><button class="btn" data-a="wznext">Next</button></div>`;
+  };
+  const wzStep = () => { const r = document.getElementById('wz'); return r ? [...r.querySelectorAll('.st3 .s')].findIndex(s => s.classList.contains('on')) : 0; };
+  const wzShow = i => { const r = document.getElementById('wz'); if (!r) return; const n = +r.dataset.n;
+    r.querySelectorAll('.st3 .s').forEach((s, k) => { s.className = 's ' + (k < i ? 'done' : k === i ? 'on' : ''); s.querySelector('.d').textContent = k < i ? '✓' : k + 1; });
+    r.querySelectorAll('.wzp').forEach((p, k) => p.hidden = k !== i);
+    const b = document.querySelectorAll('.wz-bar .btn'); if (b[0]) b[0].textContent = i ? 'Back' : 'Cancel'; if (b[1]) b[1].textContent = i === n - 1 ? r.dataset.flabel : 'Next';
+    const v = document.querySelector('#root .view'); if (v) v.scrollTop = 0; const sc = document.querySelector('.view'); if (sc && sc.scrollTo) sc.scrollTo(0, 0); wzSum(); };
+  const wzSum = () => { const e = document.getElementById('wz-sum'); if (!e) return; const kind = e.dataset.k; if (kind === 'task') e.innerHTML = `<div><span>Task</span><b>${esc(fv('tt') || '–')}</b></div><div><span>Type</span><b>${esc(fv('tty'))}</b></div><div><span>Due</span><b>${fmtD(fv('tdue'))}</b></div>`; else e.innerHTML = `<div><span>Project</span><b>${esc(fv('pt') || '–')}</b></div><div><span>Due</span><b>${fmtD(fv('pdue'))}</b></div>`; };
+  A.wznext = () => { const r = document.getElementById('wz'); if (!r) return; const i = wzStep(), n = +r.dataset.n, p = r.querySelectorAll('.wzp')[i];
+    for (const pr of (p.dataset.req || '').split(';').filter(Boolean)) { const [id, l] = pr.split(':'); if (!fv(id)) { toast('Please enter ' + l + '.', 'bad'); const el = document.getElementById('f-' + id); if (el) el.focus(); return; } }
+    if (i < n - 1) return wzShow(i + 1); const f = A[r.dataset.final]; if (f) f({ id: r.dataset.id }); };
+  A.wzback = () => { const i = wzStep(); if (i > 0) return wzShow(i - 1); back(); };
+  A.wzdate = d => { const e = document.getElementById('f-' + d.t); if (e) { e.value = addDays(today(), +d.n); wzSum(); } };
+  document.addEventListener('input', e => {
+    const id = e.target && e.target.id; if (!id) return;
+    if (id === 'f-cn' || id === 'f-cc' || id === 'f-cw') { const n = fv('cn'), c = fv('cc') || n.replace(/[^A-Za-z]/g, '').slice(0, 3), w = fv('cw'), pv = document.getElementById('wz-pv'); if (pv) { pv.querySelector('.b').textContent = (c || 'CRS').toUpperCase(); pv.querySelector('.n').textContent = n || 'New course'; pv.querySelector('small').textContent = w ? w + ' weeks' : 'Set the duration in the next step'; } }
+  });
+
+  /* ---------- Course form ---------- */
+  V.a_course_form = p => {
+    const c = p && p.id ? D().courses.find(x => x.course_id == p.id) : null;
+    const pre = `<div class="wz-pv" id="wz-pv"><span class="b">${esc((c && c.course_code) || 'CRS')}</span><div class="t"><b class="n">${esc(c ? c.course_name : 'New course')}</b><small>${c ? c.duration_weeks + ' weeks' : 'Set the duration in the next step'}</small></div></div>`;
+    return { t: c ? 'Edit course' : 'New course', sub: 'Course name, code &amp; duration',
+      body: wz({ pre, final: 'coursesave2', flabel: 'Save course', id: c ? c.course_id : '', steps: [
+        { t: 'Basics', h: 'Course details', s: 'What students will see in the catalogue', req: 'cn:a course name', body: F.t('cn', 'Course name <em class="rqs">*</em>', c ? c.course_name : '', { ph: 'e.g. Full Stack Development' }) + F.t('cc', 'Short code', c ? c.course_code : '', { ph: 'FSD', hint: 'Up to 4 letters. Created from the name if left empty.' }) },
+        { t: 'Duration', h: 'Duration', s: 'Timing and fee are set per student — these are defaults', req: 'cw:the duration', body: F.t('cw', 'Duration (weeks) <em class="rqs">*</em>', c ? c.duration_weeks : '', { type: 'number', ph: 'e.g. 24', attr: 'min="1"' }) + `<div class="wz-q">${[8, 12, 16, 24].map(w => `<button type="button" data-a="wzweeks" data-w="${w}">${w} weeks</button>`).join('')}</div>` }] }) };
+  };
+  A.wzweeks = d => { const e = document.getElementById('f-cw'); if (e) { e.value = d.w; e.dispatchEvent(new Event('input', { bubbles: true })); } };
+  A.courseform = d => go('a_course_form', d && d.id ? { id: d.id } : {});
+  A.coursesave2 = d => {
+    if (!need([['cn', 'a course name'], ['cw', 'the duration']])) return; const dd = D(); let c = d && d.id ? dd.courses.find(x => x.course_id == d.id) : null;
+    if (dd.courses.some(x => x !== c && x.course_name.toLowerCase() === fv('cn').toLowerCase())) return toast('That course already exists.', 'bad');
+    if (!c) { c = { course_id: nid('course'), is_active: true }; dd.courses.push(c); } else dd.students.forEach(s => { if (s.enr.course_id === c.course_id) s.enr.course_name = fv('cn'); });
+    Object.assign(c, { course_name: fv('cn'), course_code: (fv('cc') || fv('cn').replace(/[^A-Za-z]/g, '').slice(0, 3)).toUpperCase(), duration_weeks: +fv('cw') }); save(); toast('Course saved', 'ok'); back(); };
+
+  /* ---------- Assign task / project ---------- */
+  const quick = (t, a) => `<div class="wz-q">${a.map(x => `<button type="button" data-a="wzdate" data-t="${t}" data-n="${x[0]}">${x[1]}</button>`).join('')}</div>`;
+  V.a_task_form = () => ({ t: 'Assign task', sub: 'To one or many students', body: wz({ final: 'tasksave', flabel: 'Assign task', steps: [
+    { t: 'Task', h: 'Task details', s: 'Tell students what to do', req: 'tt:a title', body: F.t('tt', 'Title <em class="rqs">*</em>', '', { ph: 'e.g. Build a portfolio page' }) + F.ta('td', 'Instructions', '', 'What should the student do?') },
+    { t: 'Deadline', h: 'Type &amp; deadline', s: 'When is it due?', req: 'tdue:a due date', body: F.s('tty', 'Type', ['Assignment', 'Homework']) + F.t('tdue', 'Due date <em class="rqs">*</em>', addDays(today(), 7), { type: 'date' }) + quick('tdue', [[1, 'Tomorrow'], [3, 'In 3 days'], [7, 'In a week'], [14, 'In 2 weeks']]) },
+    { t: 'Students', h: 'Assign to', s: 'Choose one or many students', body: `<div class="wz-sum" id="wz-sum" data-k="task"></div>` + picker('task', activeStu()) }] }) });
+  V.a_proj_form = () => { const L = activeStu().filter(s => !s.project); return { t: 'Assign project', sub: 'One final project per student', body: wz({ final: 'projsave', flabel: 'Assign project', steps: [
+    { t: 'Project', h: 'Project details', s: 'Title and brief', req: 'pt:a project title', body: F.t('pt', 'Project title <em class="rqs">*</em>', '', { ph: 'e.g. E-commerce website' }) + F.ta('pd', 'Brief', '', 'What should they build? List the scope and deliverables.') },
+    { t: 'Deadline', h: 'Deadline', s: 'Shown on the student’s dashboard', req: 'pdue:a due date', body: F.t('pdue', 'Due date <em class="rqs">*</em>', addDays(today(), 30), { type: 'date' }) + quick('pdue', [[14, '2 weeks'], [30, '1 month'], [45, '45 days'], [60, '2 months']]) },
+    { t: 'Students', h: 'Assign to', s: L.length + ' student' + (L.length === 1 ? '' : 's') + ' without a project', body: `<div class="wz-sum" id="wz-sum" data-k="proj"></div>` + picker('proj', L) }] }) }; };
+  try { render(); } catch (e) { }
+})();
+</script>
